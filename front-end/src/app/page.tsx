@@ -1,32 +1,32 @@
-"use client";
-
-import React from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom"; // Import Router components
-
-// Import your page components
-import ProductDetailPage from "./products/_components/ProductDetailPage";
-
-// Import your Header and Footer
+import Link from "next/link";
 import Header from "./_components/Header";
 import Footer from "./_components/Footer";
 
-function App() {
-  return (
-    <Router>
-      <div className="flex flex-col min-h-screen">
-        <Header />
-        <main className="flex-grow">
-          <Routes>
-            <Route
-              path="/products/:productId"
-              element={<ProductDetailPage />}
-            />
-          </Routes>
-        </main>
-        <Footer />
-      </div>
-    </Router>
-  );
+interface Product {
+  id: string;
+  name: string;
+  imageUrl: string;
+  price: number;
+  currency: string;
 }
 
-export default App;
+const HomePage = async () => {
+  // const res = await fetch(
+  //   `${process.env.NEXT_PUBLIC_BASE_URL || ""}/api/products`,
+  //   {
+  //     cache: "no-store",
+  //   }
+  // );
+
+  // const products: Product[] = await res.json();
+
+  return (
+    <div>
+      <Header />
+
+      <Footer />
+    </div>
+  );
+};
+
+export default HomePage;
