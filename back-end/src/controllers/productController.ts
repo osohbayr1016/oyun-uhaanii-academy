@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { Product } from "@prisma/client";
-import { prisma } from "../../utils/prisma";
+import { prisma } from "../utils/prisma";
 
 export const getAllProducts = async (req: Request, res: Response) => {
   try {

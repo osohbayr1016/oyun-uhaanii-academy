@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { prisma } from "../../utils/prisma";
+import { prisma } from "../utils/prisma";
 
 // Get all news articles
 export const getAllNews = async (req: Request, res: Response) => {

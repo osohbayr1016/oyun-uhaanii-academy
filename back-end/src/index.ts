@@ -1,14 +1,14 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
-import { PrismaClient } from "./generated/prisma";
+import { PrismaClient } from "@prisma/client";
 
 // Load environment variables from .env file
 dotenv.config();
 
 const app = express();
 const prisma = new PrismaClient();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5001;
 const JWT_SECRET = process.env.JWT_SECRET || "supersecret"; // Fallback for dev, but use .env
 
 // Middleware

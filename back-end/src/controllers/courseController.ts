@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { prisma } from "../../utils/prisma";
+import { prisma } from "../utils/prisma";
 
 // Get all courses
 export const getAllCourses = async (req: Request, res: Response) => {
@@ -25,13 +25,15 @@ export const getAllCourses = async (req: Request, res: Response) => {
     });
 
     // Transform data to include student count and average rating
-    const transformedCourses = courses.map((course) => ({
+    const transformedCourses = courses.map((course: any) => ({
       ...course,
       studentCount: course.enrollments.length,
       averageRating:
         course.reviews.length > 0
-          ? course.reviews.reduce((acc, review) => acc + review.rating, 0) /
-            course.reviews.length
+          ? course.reviews.reduce(
+              (acc: number, review: any) => acc + review.rating,
+              0
+            ) / course.reviews.length
           : 0,
     }));
 

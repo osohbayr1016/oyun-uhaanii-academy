@@ -1,22 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
+
 // GET /api/products
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
-    const backendUrl =
-      process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
-    const response = await fetch(`${backendUrl}/api/products`, {
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
+    const response = await fetch(`${API_BASE_URL}/api/products`);
 
     if (!response.ok) {
-      throw new Error(`Backend responded with status: ${response.status}`);
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
 
-    const data = await response.json();
-    return NextResponse.json(data);
+    const products = await response.json();
+    return NextResponse.json(products);
   } catch (error) {
     console.error("Error fetching products:", error);
     return NextResponse.json(
@@ -30,41 +26,28 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const backendUrl =
-      process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
 
-    console.log("Frontend API: Sending to backend:", body);
-    console.log("Backend URL:", backendUrl);
-
-    const response = await fetch(`${backendUrl}/api/products`, {
+    const response = await fetch(`${API_BASE_URL}/api/products`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: request.headers.get("Authorization") || "",
       },
       body: JSON.stringify(body),
     });
 
-    console.log("Frontend API: Backend response status:", response.status);
-
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error("Frontend API: Backend error response:", errorText);
-      throw new Error(
-        `Backend responded with status: ${response.status} - ${errorText}`
-      );
+      const errorData = await response.json();
+      throw new Error(errorData.message || "Failed to create product");
     }
 
-    const data = await response.json();
-    console.log("Frontend API: Backend success response:", data);
-    return NextResponse.json(data);
+    const product = await response.json();
+    return NextResponse.json(product, { status: 201 });
   } catch (error) {
-    console.error("Frontend API: Error creating product:", error);
+    console.error("Error creating product:", error);
     return NextResponse.json(
       {
-        error: `Failed to create product: ${
-          error instanceof Error ? error.message : "Unknown error"
-        }`,
+        error:
+          error instanceof Error ? error.message : "Failed to create product",
       },
       { status: 500 }
     );
