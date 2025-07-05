@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import {
   Trophy,
@@ -10,71 +10,291 @@ import {
   Search,
   Filter,
   ArrowLeft,
-  Eye,
   Calendar,
   MapPin,
   Users,
-  Award,
+  DollarSign,
+  Eye,
 } from "lucide-react";
+
+interface Tournament {
+  id: string;
+  title: string;
+  description: string;
+  imageUrl: string;
+  startDate: string;
+  endDate: string;
+  location?: string;
+  maxParticipants?: number;
+  entryFee?: number;
+  currency: string;
+  category: string;
+  status: string;
+  rules?: string;
+  prizes?: any;
+  createdAt: string;
+  updatedAt: string;
+  participants?: Array<{
+    id: string;
+    status: string;
+    user: {
+      id: string;
+      name: string;
+      email: string;
+    };
+  }>;
+  matches?: Array<{
+    id: string;
+    status: string;
+    score?: string;
+    matchDate?: string;
+  }>;
+}
+
+interface TournamentFormData {
+  title: string;
+  description: string;
+  imageUrl: string;
+  startDate: string;
+  endDate: string;
+  location: string;
+  maxParticipants: string;
+  entryFee: string;
+  currency: string;
+  category: string;
+  status: string;
+  rules: string;
+  prizes: string;
+}
 
 const AdminTournamentsPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
+  const [filterCategory, setFilterCategory] = useState("all");
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
-  const [selectedTournament, setSelectedTournament] = useState<any>(null);
+  const [selectedTournament, setSelectedTournament] =
+    useState<Tournament | null>(null);
+  const [mounted, setMounted] = useState(false);
+  const [tournaments, setTournaments] = useState<Tournament[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [formData, setFormData] = useState<TournamentFormData>({
+    title: "",
+    description: "",
+    imageUrl: "",
+    startDate: "",
+    endDate: "",
+    location: "",
+    maxParticipants: "",
+    entryFee: "",
+    currency: "MNT",
+    category: "Шатар",
+    status: "upcoming",
+    rules: "",
+    prizes: "",
+  });
+  const [editFormData, setEditFormData] = useState<TournamentFormData>({
+    title: "",
+    description: "",
+    imageUrl: "",
+    startDate: "",
+    endDate: "",
+    location: "",
+    maxParticipants: "",
+    entryFee: "",
+    currency: "MNT",
+    category: "Шатар",
+    status: "upcoming",
+    rules: "",
+    prizes: "",
+  });
+  const [submitting, setSubmitting] = useState(false);
 
-  const tournaments = [
-    {
-      id: "1",
-      title: "Монголын түүхэн олимпиад",
-      description:
-        "Монголын түүхэн дэх чухал үйл явдлуудын талаарх мэдлэгийн тэмцээн",
-      date: "2024-12-15",
-      location: "Улаанбаатар",
-      participants: 150,
-      maxParticipants: 200,
-      prize: "1,000,000 ₮",
-      status: "registration_open",
-      createdAt: "2024-01-15",
-    },
-    {
-      id: "2",
-      title: "Уран зохиолын уншлага",
-      description: "Монголын сонгодог уран зохиолын уншлагын тэмцээн",
-      date: "2024-11-20",
-      location: "Улаанбаатар",
-      participants: 80,
-      maxParticipants: 100,
-      prize: "500,000 ₮",
-      status: "registration_open",
-      createdAt: "2024-02-20",
-    },
-    {
-      id: "3",
-      title: "Географийн мэдлэгийн тэмцээн",
-      description: "Монгол улсын байгаль, газар зүйн мэдлэгийн тэмцээн",
-      date: "2024-10-30",
-      location: "Улаанбаатар",
-      participants: 120,
-      maxParticipants: 150,
-      prize: "750,000 ₮",
-      status: "completed",
-      createdAt: "2024-03-10",
-    },
-    {
-      id: "4",
-      title: "Математикийн олимпиад",
-      description: "7-12 насны хүүхдүүдэд зориулсан математикийн тэмцээн",
-      date: "2025-01-15",
-      location: "Улаанбаатар",
-      participants: 45,
-      maxParticipants: 80,
-      prize: "800,000 ₮",
-      status: "draft",
-      createdAt: "2024-04-05",
-    },
-  ];
+  useEffect(() => {
+    setMounted(true);
+    fetchTournaments();
+  }, []);
+
+  const fetchTournaments = async () => {
+    try {
+      const response = await fetch("/api/tournaments");
+      if (!response.ok) {
+        throw new Error("Failed to fetch tournaments");
+      }
+      const data = await response.json();
+      setTournaments(data);
+    } catch (error) {
+      console.error("Error fetching tournaments:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleInputChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
+  ) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    // Frontend validation
+    if (!formData.title.trim()) {
+      alert("Tournament title is required");
+      return;
+    }
+
+    if (!formData.description.trim()) {
+      alert("Tournament description is required");
+      return;
+    }
+
+    if (!formData.startDate) {
+      alert("Start date is required");
+      return;
+    }
+
+    if (!formData.endDate) {
+      alert("End date is required");
+      return;
+    }
+
+    if (!formData.category.trim()) {
+      alert("Tournament category is required");
+      return;
+    }
+
+    setSubmitting(true);
+
+    try {
+      const tournamentData = {
+        ...formData,
+        prizes: formData.prizes ? JSON.parse(formData.prizes) : null,
+      };
+
+      console.log("Sending tournament data:", tournamentData);
+
+      const response = await fetch("/api/tournaments", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(tournamentData),
+      });
+
+      console.log("Response status:", response.status);
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error("Backend error:", errorData);
+        throw new Error(
+          errorData.message || `HTTP ${response.status}: ${response.statusText}`
+        );
+      }
+
+      const newTournament = await response.json();
+      console.log("Created tournament:", newTournament);
+      setTournaments((prev) => [newTournament, ...prev]);
+      setShowAddModal(false);
+      setFormData({
+        title: "",
+        description: "",
+        imageUrl: "",
+        startDate: "",
+        endDate: "",
+        location: "",
+        maxParticipants: "",
+        entryFee: "",
+        currency: "MNT",
+        category: "Шатар",
+        status: "upcoming",
+        rules: "",
+        prizes: "",
+      });
+    } catch (error) {
+      console.error("Error creating tournament:", error);
+      alert(
+        `Failed to create tournament: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`
+      );
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleEdit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedTournament) return;
+
+    setSubmitting(true);
+
+    try {
+      const tournamentData = {
+        ...editFormData,
+        prizes: editFormData.prizes ? JSON.parse(editFormData.prizes) : null,
+      };
+
+      const response = await fetch(
+        `/api/tournaments/${selectedTournament.id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(tournamentData),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to update tournament");
+      }
+
+      const updatedTournament = await response.json();
+      setTournaments((prev) =>
+        prev.map((tournament) =>
+          tournament.id === selectedTournament.id
+            ? updatedTournament
+            : tournament
+        )
+      );
+      setShowEditModal(false);
+      setSelectedTournament(null);
+    } catch (error) {
+      console.error("Error updating tournament:", error);
+      alert("Failed to update tournament");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleDelete = async (tournamentId: string) => {
+    if (!confirm("Are you sure you want to delete this tournament?")) return;
+
+    try {
+      const response = await fetch(`/api/tournaments/${tournamentId}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to delete tournament");
+      }
+
+      setTournaments((prev) =>
+        prev.filter((tournament) => tournament.id !== tournamentId)
+      );
+    } catch (error) {
+      console.error("Error deleting tournament:", error);
+      alert("Failed to delete tournament");
+    }
+  };
 
   const filteredTournaments = tournaments.filter((tournament) => {
     const matchesSearch =
@@ -82,21 +302,23 @@ const AdminTournamentsPage = () => {
       tournament.description.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus =
       filterStatus === "all" || tournament.status === filterStatus;
-    return matchesSearch && matchesStatus;
+    const matchesCategory =
+      filterCategory === "all" || tournament.category === filterCategory;
+    return matchesSearch && matchesStatus && matchesCategory;
   });
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case "registration_open":
+      case "upcoming":
         return (
-          <span className="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded">
-            Бүртгэл идэвхтэй
+          <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">
+            Удахгүй эхлэх
           </span>
         );
-      case "registration_closed":
+      case "active":
         return (
-          <span className="bg-yellow-100 text-yellow-800 text-xs font-medium px-2.5 py-0.5 rounded">
-            Бүртгэл хаагдсан
+          <span className="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded">
+            Идэвхтэй
           </span>
         );
       case "completed":
@@ -105,38 +327,69 @@ const AdminTournamentsPage = () => {
             Дууссан
           </span>
         );
-      case "draft":
+      case "cancelled":
         return (
-          <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">
-            Ноорог
+          <span className="bg-red-100 text-red-800 text-xs font-medium px-2.5 py-0.5 rounded">
+            Цуцлагдсан
           </span>
         );
       default:
         return (
           <span className="bg-gray-100 text-gray-800 text-xs font-medium px-2.5 py-0.5 rounded">
-            Тодорхойгүй
+            {status}
           </span>
         );
     }
   };
 
-  const getParticipantProgress = (current: number, max: number) => {
-    const percentage = (current / max) * 100;
+  const getCategoryBadge = (category: string) => {
+    switch (category) {
+      case "Шатар":
+        return (
+          <span className="bg-purple-100 text-purple-800 text-xs font-medium px-2.5 py-0.5 rounded">
+            Шатар
+          </span>
+        );
+      case "Го":
+        return (
+          <span className="bg-indigo-100 text-indigo-800 text-xs font-medium px-2.5 py-0.5 rounded">
+            Го
+          </span>
+        );
+      case "Покер":
+        return (
+          <span className="bg-pink-100 text-pink-800 text-xs font-medium px-2.5 py-0.5 rounded">
+            Покер
+          </span>
+        );
+      default:
+        return (
+          <span className="bg-gray-100 text-gray-800 text-xs font-medium px-2.5 py-0.5 rounded">
+            {category}
+          </span>
+        );
+    }
+  };
+
+  const formatDate = (dateString: string) => {
+    if (!mounted) return "";
+    return new Date(dateString).toLocaleDateString("mn-MN", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  };
+
+  if (loading) {
     return (
-      <div className="w-full bg-gray-200 rounded-full h-2">
-        <div
-          className={`h-2 rounded-full ${
-            percentage >= 90
-              ? "bg-red-500"
-              : percentage >= 70
-              ? "bg-yellow-500"
-              : "bg-green-500"
-          }`}
-          style={{ width: `${Math.min(percentage, 100)}%` }}
-        ></div>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Тэмцээнуудыг ачаалж байна...</p>
+        </div>
       </div>
     );
-  };
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -149,7 +402,7 @@ const AdminTournamentsPage = () => {
                 <ArrowLeft className="h-6 w-6 text-gray-600 hover:text-gray-900" />
               </Link>
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">Тэмцээн</h1>
+                <h1 className="text-2xl font-bold text-gray-900">Тэмцээнүүд</h1>
                 <p className="text-gray-600">
                   Тэмцээний жагсаалт, нэмэх, засах
                 </p>
@@ -189,10 +442,20 @@ const AdminTournamentsPage = () => {
                 className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
                 <option value="all">Бүх төлөв</option>
-                <option value="registration_open">Бүртгэл идэвхтэй</option>
-                <option value="registration_closed">Бүртгэл хаагдсан</option>
+                <option value="upcoming">Удахгүй эхлэх</option>
+                <option value="active">Идэвхтэй</option>
                 <option value="completed">Дууссан</option>
-                <option value="draft">Ноорог</option>
+                <option value="cancelled">Цуцлагдсан</option>
+              </select>
+              <select
+                value={filterCategory}
+                onChange={(e) => setFilterCategory(e.target.value)}
+                className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                <option value="all">Бүх ангилал</option>
+                <option value="Шатар">Шатар</option>
+                <option value="Го">Го</option>
+                <option value="Покер">Покер</option>
               </select>
             </div>
           </div>
@@ -205,11 +468,12 @@ const AdminTournamentsPage = () => {
               key={tournament.id}
               className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-200"
             >
-              <div className="h-48 bg-gradient-to-br from-orange-100 to-red-100 flex items-center justify-center">
-                <Trophy className="h-16 w-16 text-orange-600" />
+              <div className="h-48 bg-gradient-to-br from-yellow-100 to-orange-100 flex items-center justify-center">
+                <Trophy className="h-16 w-16 text-yellow-600" />
               </div>
               <div className="p-6">
                 <div className="flex items-center justify-between mb-2">
+                  {getCategoryBadge(tournament.category)}
                   {getStatusBadge(tournament.status)}
                 </div>
                 <h3 className="text-xl font-semibold text-gray-900 mb-2">
@@ -222,56 +486,96 @@ const AdminTournamentsPage = () => {
                 <div className="space-y-2 mb-4">
                   <div className="flex items-center text-sm text-gray-500">
                     <Calendar className="w-4 h-4 mr-2" />
-                    {new Date(tournament.date).toLocaleDateString("mn-MN")}
+                    <span>
+                      {formatDate(tournament.startDate)} -{" "}
+                      {formatDate(tournament.endDate)}
+                    </span>
                   </div>
+                  {tournament.location && (
+                    <div className="flex items-center text-sm text-gray-500">
+                      <MapPin className="w-4 h-4 mr-2" />
+                      <span>{tournament.location}</span>
+                    </div>
+                  )}
                   <div className="flex items-center text-sm text-gray-500">
-                    <MapPin className="w-4 h-4 mr-2" />
-                    {tournament.location}
+                    <Users className="w-4 h-4 mr-2" />
+                    <span>
+                      {tournament.participants?.length || 0}
+                      {tournament.maxParticipants &&
+                        ` / ${tournament.maxParticipants}`}{" "}
+                      оролцогч
+                    </span>
                   </div>
-                  <div className="flex items-center text-sm text-gray-500">
-                    <Award className="w-4 h-4 mr-2" />
-                    {tournament.prize}
-                  </div>
-                  <div className="space-y-1">
-                    <div className="flex items-center justify-between text-sm text-gray-500">
+                  {tournament.entryFee && (
+                    <div className="flex items-center text-sm text-gray-500">
+                      <DollarSign className="w-4 h-4 mr-2" />
                       <span>
-                        Оролцогч: {tournament.participants}/
-                        {tournament.maxParticipants}
+                        {tournament.entryFee} {tournament.currency}
                       </span>
                     </div>
-                    {getParticipantProgress(
-                      tournament.participants,
-                      tournament.maxParticipants
-                    )}
-                  </div>
+                  )}
                 </div>
 
-                <div className="flex items-center justify-between">
+                <div className="flex justify-between items-center">
                   <div className="flex space-x-2">
                     <button
                       onClick={() => {
                         setSelectedTournament(tournament);
+                        setEditFormData({
+                          title: tournament.title,
+                          description: tournament.description,
+                          imageUrl: tournament.imageUrl,
+                          startDate: tournament.startDate.split("T")[0],
+                          endDate: tournament.endDate.split("T")[0],
+                          location: tournament.location || "",
+                          maxParticipants:
+                            tournament.maxParticipants?.toString() || "",
+                          entryFee: tournament.entryFee?.toString() || "",
+                          currency: tournament.currency,
+                          category: tournament.category,
+                          status: tournament.status,
+                          rules: tournament.rules || "",
+                          prizes: tournament.prizes
+                            ? JSON.stringify(tournament.prizes)
+                            : "",
+                        });
                         setShowEditModal(true);
                       }}
-                      className="text-blue-600 hover:text-blue-900 p-2"
+                      className="p-2 text-blue-600 hover:bg-blue-50 rounded"
                     >
                       <Edit className="w-4 h-4" />
                     </button>
-                    <button className="text-green-600 hover:text-green-900 p-2">
-                      <Eye className="w-4 h-4" />
-                    </button>
-                    <button className="text-red-600 hover:text-red-900 p-2">
+                    <button
+                      onClick={() => handleDelete(tournament.id)}
+                      className="p-2 text-red-600 hover:bg-red-50 rounded"
+                    >
                       <Trash2 className="w-4 h-4" />
                     </button>
                   </div>
-                  <span className="text-xs text-gray-400">
-                    {new Date(tournament.createdAt).toLocaleDateString("mn-MN")}
-                  </span>
+                  <Link
+                    href={`/tournaments/${tournament.id}`}
+                    className="inline-flex items-center text-sm font-medium text-blue-600 hover:text-blue-700"
+                  >
+                    <Eye className="w-4 h-4 mr-1" />
+                    Харах
+                  </Link>
                 </div>
               </div>
             </div>
           ))}
         </div>
+
+        {filteredTournaments.length === 0 && (
+          <div className="text-center py-12">
+            <Trophy className="mx-auto h-12 w-12 text-gray-400" />
+            <h3 className="mt-2 text-sm font-medium text-gray-900">
+              Тэмцээн олдсонгүй
+            </h3>
+            <p className="mt-1 text-sm text-gray-500">
+              Одоогоор тэмцээн байхгүй байна.
+            </p>
+          </div>
+        )}
       </div>
 
       {/* Add Tournament Modal */}
@@ -282,13 +586,17 @@ const AdminTournamentsPage = () => {
               <h3 className="text-lg font-medium text-gray-900 mb-4">
                 Тэмцээн нэмэх
               </h3>
-              <form className="space-y-4">
+              <form className="space-y-4" onSubmit={handleSubmit}>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
                     Гарчиг
                   </label>
                   <input
                     type="text"
+                    name="title"
+                    value={formData.title}
+                    onChange={handleInputChange}
+                    required
                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
@@ -298,28 +606,52 @@ const AdminTournamentsPage = () => {
                   </label>
                   <textarea
                     rows={3}
+                    name="description"
+                    value={formData.description}
+                    onChange={handleInputChange}
+                    required
                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700">
-                      Огноо
+                      Эхлэх огноо
                     </label>
                     <input
                       type="date"
+                      name="startDate"
+                      value={formData.startDate}
+                      onChange={handleInputChange}
+                      required
                       className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700">
-                      Байршил
+                      Дуусах огноо
                     </label>
                     <input
-                      type="text"
+                      type="date"
+                      name="endDate"
+                      value={formData.endDate}
+                      onChange={handleInputChange}
+                      required
                       className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Байршил
+                  </label>
+                  <input
+                    type="text"
+                    name="location"
+                    value={formData.location}
+                    onChange={handleInputChange}
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
@@ -328,32 +660,97 @@ const AdminTournamentsPage = () => {
                     </label>
                     <input
                       type="number"
+                      name="maxParticipants"
+                      value={formData.maxParticipants}
+                      onChange={handleInputChange}
+                      min="1"
                       className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700">
-                      Шагнал
+                      Оролцооны хураамж
                     </label>
                     <input
-                      type="text"
-                      placeholder="1,000,000 ₮"
+                      type="number"
+                      name="entryFee"
+                      value={formData.entryFee}
+                      onChange={handleInputChange}
+                      min="0"
+                      step="0.01"
                       className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
+                    Ангилал
+                  </label>
+                  <select
+                    name="category"
+                    value={formData.category}
+                    onChange={handleInputChange}
+                    required
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="Шатар">Шатар</option>
+                    <option value="Го">Го</option>
+                    <option value="Покер">Покер</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
                     Төлөв
                   </label>
-                  <select className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-                    <option value="draft">Ноорог</option>
-                    <option value="registration_open">Бүртгэл идэвхтэй</option>
-                    <option value="registration_closed">
-                      Бүртгэл хаагдсан
-                    </option>
+                  <select
+                    name="status"
+                    value={formData.status}
+                    onChange={handleInputChange}
+                    required
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="upcoming">Удахгүй эхлэх</option>
+                    <option value="active">Идэвхтэй</option>
                     <option value="completed">Дууссан</option>
+                    <option value="cancelled">Цуцлагдсан</option>
                   </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Зургийн URL
+                  </label>
+                  <input
+                    type="url"
+                    name="imageUrl"
+                    value={formData.imageUrl}
+                    onChange={handleInputChange}
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Дүрэм
+                  </label>
+                  <textarea
+                    rows={3}
+                    name="rules"
+                    value={formData.rules}
+                    onChange={handleInputChange}
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Шагнал (JSON)
+                  </label>
+                  <textarea
+                    rows={3}
+                    name="prizes"
+                    value={formData.prizes}
+                    onChange={handleInputChange}
+                    placeholder='{"1st": "1000000", "2nd": "500000"}'
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  />
                 </div>
                 <div className="flex justify-end space-x-3">
                   <button
@@ -365,9 +762,10 @@ const AdminTournamentsPage = () => {
                   </button>
                   <button
                     type="submit"
-                    className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700"
+                    disabled={submitting}
+                    className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50"
                   >
-                    Нэмэх
+                    {submitting ? "Нэмж байна..." : "Нэмэх"}
                   </button>
                 </div>
               </form>
@@ -384,14 +782,19 @@ const AdminTournamentsPage = () => {
               <h3 className="text-lg font-medium text-gray-900 mb-4">
                 Тэмцээн засах
               </h3>
-              <form className="space-y-4">
+              <form className="space-y-4" onSubmit={handleEdit}>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
                     Гарчиг
                   </label>
                   <input
                     type="text"
-                    defaultValue={selectedTournament.title}
+                    name="title"
+                    value={editFormData.title}
+                    onChange={(e) =>
+                      setEditFormData((f) => ({ ...f, title: e.target.value }))
+                    }
+                    required
                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
@@ -401,31 +804,72 @@ const AdminTournamentsPage = () => {
                   </label>
                   <textarea
                     rows={3}
-                    defaultValue={selectedTournament.description}
+                    name="description"
+                    value={editFormData.description}
+                    onChange={(e) =>
+                      setEditFormData((f) => ({
+                        ...f,
+                        description: e.target.value,
+                      }))
+                    }
+                    required
                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700">
-                      Огноо
+                      Эхлэх огноо
                     </label>
                     <input
                       type="date"
-                      defaultValue={selectedTournament.date}
+                      name="startDate"
+                      value={editFormData.startDate}
+                      onChange={(e) =>
+                        setEditFormData((f) => ({
+                          ...f,
+                          startDate: e.target.value,
+                        }))
+                      }
+                      required
                       className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700">
-                      Байршил
+                      Дуусах огноо
                     </label>
                     <input
-                      type="text"
-                      defaultValue={selectedTournament.location}
+                      type="date"
+                      name="endDate"
+                      value={editFormData.endDate}
+                      onChange={(e) =>
+                        setEditFormData((f) => ({
+                          ...f,
+                          endDate: e.target.value,
+                        }))
+                      }
+                      required
                       className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Байршил
+                  </label>
+                  <input
+                    type="text"
+                    name="location"
+                    value={editFormData.location}
+                    onChange={(e) =>
+                      setEditFormData((f) => ({
+                        ...f,
+                        location: e.target.value,
+                      }))
+                    }
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
@@ -434,36 +878,123 @@ const AdminTournamentsPage = () => {
                     </label>
                     <input
                       type="number"
-                      defaultValue={selectedTournament.maxParticipants}
+                      name="maxParticipants"
+                      value={editFormData.maxParticipants}
+                      onChange={(e) =>
+                        setEditFormData((f) => ({
+                          ...f,
+                          maxParticipants: e.target.value,
+                        }))
+                      }
+                      min="1"
                       className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700">
-                      Шагнал
+                      Оролцооны хураамж
                     </label>
                     <input
-                      type="text"
-                      defaultValue={selectedTournament.prize}
+                      type="number"
+                      name="entryFee"
+                      value={editFormData.entryFee}
+                      onChange={(e) =>
+                        setEditFormData((f) => ({
+                          ...f,
+                          entryFee: e.target.value,
+                        }))
+                      }
+                      min="0"
+                      step="0.01"
                       className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
+                    Ангилал
+                  </label>
+                  <select
+                    name="category"
+                    value={editFormData.category}
+                    onChange={(e) =>
+                      setEditFormData((f) => ({
+                        ...f,
+                        category: e.target.value,
+                      }))
+                    }
+                    required
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="Шатар">Шатар</option>
+                    <option value="Го">Го</option>
+                    <option value="Покер">Покер</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
                     Төлөв
                   </label>
                   <select
-                    defaultValue={selectedTournament.status}
+                    name="status"
+                    value={editFormData.status}
+                    onChange={(e) =>
+                      setEditFormData((f) => ({ ...f, status: e.target.value }))
+                    }
+                    required
                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                   >
-                    <option value="draft">Ноорог</option>
-                    <option value="registration_open">Бүртгэл идэвхтэй</option>
-                    <option value="registration_closed">
-                      Бүртгэл хаагдсан
-                    </option>
+                    <option value="upcoming">Удахгүй эхлэх</option>
+                    <option value="active">Идэвхтэй</option>
                     <option value="completed">Дууссан</option>
+                    <option value="cancelled">Цуцлагдсан</option>
                   </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Зургийн URL
+                  </label>
+                  <input
+                    type="url"
+                    name="imageUrl"
+                    value={editFormData.imageUrl}
+                    onChange={(e) =>
+                      setEditFormData((f) => ({
+                        ...f,
+                        imageUrl: e.target.value,
+                      }))
+                    }
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Дүрэм
+                  </label>
+                  <textarea
+                    rows={3}
+                    name="rules"
+                    value={editFormData.rules}
+                    onChange={(e) =>
+                      setEditFormData((f) => ({ ...f, rules: e.target.value }))
+                    }
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Шагнал (JSON)
+                  </label>
+                  <textarea
+                    rows={3}
+                    name="prizes"
+                    value={editFormData.prizes}
+                    onChange={(e) =>
+                      setEditFormData((f) => ({ ...f, prizes: e.target.value }))
+                    }
+                    placeholder='{"1st": "1000000", "2nd": "500000"}'
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  />
                 </div>
                 <div className="flex justify-end space-x-3">
                   <button
@@ -475,9 +1006,10 @@ const AdminTournamentsPage = () => {
                   </button>
                   <button
                     type="submit"
-                    className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700"
+                    disabled={submitting}
+                    className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50"
                   >
-                    Хадгалах
+                    {submitting ? "Хадгалж байна..." : "Хадгалах"}
                   </button>
                 </div>
               </form>

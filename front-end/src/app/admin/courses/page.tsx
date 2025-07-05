@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import {
   BookOpen,
@@ -16,54 +16,197 @@ import {
   DollarSign,
 } from "lucide-react";
 
+interface Course {
+  id: string;
+  title: string;
+  description: string;
+  content: string;
+  imageUrl: string;
+  price: number;
+  currency: string;
+  duration: number;
+  level: string;
+  category: string;
+  instructor: string;
+  maxStudents?: number;
+  isActive: boolean;
+  startDate?: string;
+  endDate?: string;
+  createdAt: string;
+  updatedAt: string;
+  studentCount?: number;
+  averageRating?: number;
+}
+
+interface CourseFormData {
+  title: string;
+  description: string;
+  content: string;
+  imageUrl: string;
+  price: string;
+  currency: string;
+  duration: string;
+  level: string;
+  category: string;
+  instructor: string;
+  maxStudents: string;
+  startDate: string;
+  endDate: string;
+}
+
 const AdminCoursesPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterLevel, setFilterLevel] = useState("all");
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
-  const [selectedCourse, setSelectedCourse] = useState<any>(null);
+  const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [formData, setFormData] = useState<CourseFormData>({
+    title: "",
+    description: "",
+    content: "",
+    imageUrl: "",
+    price: "",
+    currency: "MNT",
+    duration: "",
+    level: "Эхлэгч",
+    category: "",
+    instructor: "",
+    maxStudents: "",
+    startDate: "",
+    endDate: "",
+  });
+  const [submitting, setSubmitting] = useState(false);
 
-  const courses = [
-    {
-      id: "1",
-      title: "Монголын уран зохиол",
-      description: "Монголын сонгодог уран зохиолын сургалт",
-      duration: "8 долоо хоног",
-      level: "Эхлэгч",
-      price: 150000,
-      currency: "₮",
-      instructor: "Б. Батбаяр",
-      students: 45,
-      status: "active",
-      createdAt: "2024-01-15",
-    },
-    {
-      id: "2",
-      title: "Монголын түүх",
-      description: "Монголын түүхэн дэх чухал үйл явдлууд",
-      duration: "12 долоо хоног",
-      level: "Дунд",
-      price: 200000,
-      currency: "₮",
-      instructor: "Д. Сүхбат",
-      students: 32,
-      status: "active",
-      createdAt: "2024-02-20",
-    },
-    {
-      id: "3",
-      title: "Монголын география",
-      description: "Монгол улсын байгаль, газар зүй",
-      duration: "6 долоо хоног",
-      level: "Эхлэгч",
-      price: 120000,
-      currency: "₮",
-      instructor: "Л. Мөнхбат",
-      students: 28,
-      status: "draft",
-      createdAt: "2024-03-10",
-    },
-  ];
+  // Fetch courses on component mount
+  useEffect(() => {
+    fetchCourses();
+  }, []);
+
+  const fetchCourses = async () => {
+    try {
+      const response = await fetch("/api/courses");
+      if (!response.ok) {
+        throw new Error("Failed to fetch courses");
+      }
+      const data = await response.json();
+      setCourses(data);
+    } catch (error) {
+      console.error("Error fetching courses:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleInputChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
+  ) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubmitting(true);
+
+    try {
+      const response = await fetch("/api/courses", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to create course");
+      }
+
+      const newCourse = await response.json();
+      setCourses((prev) => [newCourse, ...prev]);
+      setShowAddModal(false);
+      setFormData({
+        title: "",
+        description: "",
+        content: "",
+        imageUrl: "",
+        price: "",
+        currency: "MNT",
+        duration: "",
+        level: "Эхлэгч",
+        category: "",
+        instructor: "",
+        maxStudents: "",
+        startDate: "",
+        endDate: "",
+      });
+    } catch (error) {
+      console.error("Error creating course:", error);
+      alert("Failed to create course");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleEdit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedCourse) return;
+
+    setSubmitting(true);
+
+    try {
+      const response = await fetch(`/api/courses/${selectedCourse.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to update course");
+      }
+
+      const updatedCourse = await response.json();
+      setCourses((prev) =>
+        prev.map((course) =>
+          course.id === selectedCourse.id ? updatedCourse : course
+        )
+      );
+      setShowEditModal(false);
+      setSelectedCourse(null);
+    } catch (error) {
+      console.error("Error updating course:", error);
+      alert("Failed to update course");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleDelete = async (courseId: string) => {
+    if (!confirm("Are you sure you want to delete this course?")) return;
+
+    try {
+      const response = await fetch(`/api/courses/${courseId}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to delete course");
+      }
+
+      setCourses((prev) => prev.filter((course) => course.id !== courseId));
+    } catch (error) {
+      console.error("Error deleting course:", error);
+      alert("Failed to delete course");
+    }
+  };
 
   const filteredCourses = courses.filter((course) => {
     const matchesSearch =
@@ -102,8 +245,8 @@ const AdminCoursesPage = () => {
     }
   };
 
-  const getStatusBadge = (status: string) => {
-    return status === "active" ? (
+  const getStatusBadge = (isActive: boolean) => {
+    return isActive ? (
       <span className="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded">
         Идэвхтэй
       </span>
@@ -174,71 +317,81 @@ const AdminCoursesPage = () => {
         </div>
 
         {/* Courses Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredCourses.map((course) => (
-            <div
-              key={course.id}
-              className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-200"
-            >
-              <div className="h-48 bg-gradient-to-br from-blue-100 to-indigo-100 flex items-center justify-center">
-                <BookOpen className="h-16 w-16 text-blue-600" />
-              </div>
-              <div className="p-6">
-                <div className="flex items-center justify-between mb-2">
-                  {getLevelBadge(course.level)}
-                  {getStatusBadge(course.status)}
+        {loading ? (
+          <div className="text-center py-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+            <p className="mt-4 text-gray-600">Сургалтууд ачаалж байна...</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredCourses.map((course) => (
+              <div
+                key={course.id}
+                className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-200"
+              >
+                <div className="h-48 bg-gradient-to-br from-blue-100 to-indigo-100 flex items-center justify-center">
+                  <BookOpen className="h-16 w-16 text-blue-600" />
                 </div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                  {course.title}
-                </h3>
-                <p className="text-gray-600 text-sm mb-4 line-clamp-2">
-                  {course.description}
-                </p>
+                <div className="p-6">
+                  <div className="flex items-center justify-between mb-2">
+                    {getLevelBadge(course.level)}
+                    {getStatusBadge(course.isActive)}
+                  </div>
+                  <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                    {course.title}
+                  </h3>
+                  <p className="text-gray-600 text-sm mb-4 line-clamp-2">
+                    {course.description}
+                  </p>
 
-                <div className="space-y-2 mb-4">
-                  <div className="flex items-center text-sm text-gray-500">
-                    <Clock className="w-4 h-4 mr-2" />
-                    {course.duration}
+                  <div className="space-y-2 mb-4">
+                    <div className="flex items-center text-sm text-gray-500">
+                      <Clock className="w-4 h-4 mr-2" />
+                      {course.duration} цаг
+                    </div>
+                    <div className="flex items-center text-sm text-gray-500">
+                      <User className="w-4 h-4 mr-2" />
+                      {course.instructor}
+                    </div>
+                    <div className="flex items-center text-sm text-gray-500">
+                      <DollarSign className="w-4 h-4 mr-2" />
+                      {course.price.toLocaleString()} {course.currency}
+                    </div>
+                    <div className="text-sm text-gray-500">
+                      Сурагч: {course.studentCount || 0}
+                    </div>
                   </div>
-                  <div className="flex items-center text-sm text-gray-500">
-                    <User className="w-4 h-4 mr-2" />
-                    {course.instructor}
-                  </div>
-                  <div className="flex items-center text-sm text-gray-500">
-                    <DollarSign className="w-4 h-4 mr-2" />
-                    {course.price.toLocaleString()} {course.currency}
-                  </div>
-                  <div className="text-sm text-gray-500">
-                    Сурагч: {course.students}
-                  </div>
-                </div>
 
-                <div className="flex items-center justify-between">
-                  <div className="flex space-x-2">
-                    <button
-                      onClick={() => {
-                        setSelectedCourse(course);
-                        setShowEditModal(true);
-                      }}
-                      className="text-blue-600 hover:text-blue-900 p-2"
-                    >
-                      <Edit className="w-4 h-4" />
-                    </button>
-                    <button className="text-green-600 hover:text-green-900 p-2">
-                      <Eye className="w-4 h-4" />
-                    </button>
-                    <button className="text-red-600 hover:text-red-900 p-2">
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+                  <div className="flex items-center justify-between">
+                    <div className="flex space-x-2">
+                      <button
+                        onClick={() => {
+                          setSelectedCourse(course);
+                          setShowEditModal(true);
+                        }}
+                        className="text-blue-600 hover:text-blue-900 p-2"
+                      >
+                        <Edit className="w-4 h-4" />
+                      </button>
+                      <button className="text-green-600 hover:text-green-900 p-2">
+                        <Eye className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(course.id)}
+                        className="text-red-600 hover:text-red-900 p-2"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                    <span className="text-xs text-gray-400">
+                      {new Date(course.createdAt).toLocaleDateString("mn-MN")}
+                    </span>
                   </div>
-                  <span className="text-xs text-gray-400">
-                    {new Date(course.createdAt).toLocaleDateString("mn-MN")}
-                  </span>
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Add Course Modal */}
@@ -249,13 +402,17 @@ const AdminCoursesPage = () => {
               <h3 className="text-lg font-medium text-gray-900 mb-4">
                 Сургалт нэмэх
               </h3>
-              <form className="space-y-4">
+              <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
                     Гарчиг
                   </label>
                   <input
                     type="text"
+                    name="title"
+                    value={formData.title}
+                    onChange={handleInputChange}
+                    required
                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
@@ -265,17 +422,51 @@ const AdminCoursesPage = () => {
                   </label>
                   <textarea
                     rows={3}
+                    name="description"
+                    value={formData.description}
+                    onChange={handleInputChange}
+                    required
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Агуулга
+                  </label>
+                  <textarea
+                    rows={3}
+                    name="content"
+                    value={formData.content}
+                    onChange={handleInputChange}
+                    required
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Зургийн URL
+                  </label>
+                  <input
+                    type="url"
+                    name="imageUrl"
+                    value={formData.imageUrl}
+                    onChange={handleInputChange}
+                    required
                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700">
-                      Үргэлжлэх хугацаа
+                      Үргэлжлэх хугацаа (цаг)
                     </label>
                     <input
-                      type="text"
-                      placeholder="8 долоо хоног"
+                      type="number"
+                      name="duration"
+                      value={formData.duration}
+                      onChange={handleInputChange}
+                      required
+                      placeholder="8"
                       className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
@@ -283,7 +474,12 @@ const AdminCoursesPage = () => {
                     <label className="block text-sm font-medium text-gray-700">
                       Түвшин
                     </label>
-                    <select className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                    <select
+                      name="level"
+                      value={formData.level}
+                      onChange={handleInputChange}
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    >
                       <option value="Эхлэгч">Эхлэгч</option>
                       <option value="Дунд">Дунд</option>
                       <option value="Дээд">Дээд</option>
@@ -297,6 +493,10 @@ const AdminCoursesPage = () => {
                     </label>
                     <input
                       type="number"
+                      name="price"
+                      value={formData.price}
+                      onChange={handleInputChange}
+                      required
                       className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
@@ -306,6 +506,63 @@ const AdminCoursesPage = () => {
                     </label>
                     <input
                       type="text"
+                      name="instructor"
+                      value={formData.instructor}
+                      onChange={handleInputChange}
+                      required
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">
+                      Ангилал
+                    </label>
+                    <input
+                      type="text"
+                      name="category"
+                      value={formData.category}
+                      onChange={handleInputChange}
+                      required
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">
+                      Хамгийн их сурагч
+                    </label>
+                    <input
+                      type="number"
+                      name="maxStudents"
+                      value={formData.maxStudents}
+                      onChange={handleInputChange}
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">
+                      Эхлэх огноо
+                    </label>
+                    <input
+                      type="date"
+                      name="startDate"
+                      value={formData.startDate}
+                      onChange={handleInputChange}
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">
+                      Дуусах огноо
+                    </label>
+                    <input
+                      type="date"
+                      name="endDate"
+                      value={formData.endDate}
+                      onChange={handleInputChange}
                       className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
@@ -320,9 +577,10 @@ const AdminCoursesPage = () => {
                   </button>
                   <button
                     type="submit"
-                    className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700"
+                    disabled={submitting}
+                    className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50"
                   >
-                    Нэмэх
+                    {submitting ? "Нэмж байна..." : "Нэмэх"}
                   </button>
                 </div>
               </form>

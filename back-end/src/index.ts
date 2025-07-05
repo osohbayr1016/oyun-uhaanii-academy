@@ -19,12 +19,16 @@ app.use(express.json()); // Parses JSON request bodies
 import productRoutes from "./routes/productRoutes";
 import authRoutes from "./routes/authRoutes";
 import newsRoutes from "./routes/newsRoutes";
+import courseRoutes from "./routes/courseRoutes";
+import tournamentRoutes from "./routes/tournamentRoutes";
 // import errorHandler from './middleware/errorHandler'; // Optional: for centralized error handling
 
 // Route Middlewares
 app.use("/api/products", productRoutes); // e.g., /api/products, /api/products/:id
 app.use("/api/auth", authRoutes);
 app.use("/api/news", newsRoutes);
+app.use("/api/courses", courseRoutes);
+app.use("/api/tournaments", tournamentRoutes);
 
 // Basic test route
 app.get("/", (req, res) => {

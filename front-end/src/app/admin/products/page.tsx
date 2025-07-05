@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import {
   ShoppingBag,
@@ -16,63 +16,234 @@ import {
   Tag,
 } from "lucide-react";
 
+interface Product {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  currency: string;
+  imageUrl: string;
+  category: string;
+  stock: number;
+  materials: string[];
+  dimensions?: any;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface ProductFormData {
+  name: string;
+  description: string;
+  price: string;
+  currency: string;
+  imageUrl: string;
+  category: string;
+  stock: string;
+  materials: string;
+}
+
 const AdminProductsPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterCategory, setFilterCategory] = useState("all");
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState<any>(null);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [mounted, setMounted] = useState(false);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [formData, setFormData] = useState<ProductFormData>({
+    name: "",
+    description: "",
+    price: "",
+    currency: "MNT",
+    imageUrl: "",
+    category: "Ном",
+    stock: "",
+    materials: "",
+  });
+  const [editFormData, setEditFormData] = useState<ProductFormData>({
+    name: "",
+    description: "",
+    price: "",
+    currency: "MNT",
+    imageUrl: "",
+    category: "",
+    stock: "",
+    materials: "",
+  });
+  const [submitting, setSubmitting] = useState(false);
 
-  const products = [
-    {
-      id: "1",
-      name: "Монголын түүхэн ном",
-      description: "Монголын түүхэн дэх чухал үйл явдлууд",
-      price: 45000,
-      currency: "₮",
-      category: "Ном",
-      stock: 50,
-      status: "active",
-      imageUrl: "/xyno.jpg",
-      createdAt: "2024-01-15",
-    },
-    {
-      id: "2",
-      name: "Уран зохиолын хрестоматия",
-      description: "Монголын сонгодог уран зохиолын сонголт",
-      price: 35000,
-      currency: "₮",
-      category: "Ном",
-      stock: 30,
-      status: "active",
-      imageUrl: "/xyno.jpg",
-      createdAt: "2024-02-20",
-    },
-    {
-      id: "3",
-      name: "Географийн атлас",
-      description: "Монгол улсын дэлгэрэнгүй газрын зураг",
-      price: 25000,
-      currency: "₮",
-      category: "Атлас",
-      stock: 25,
-      status: "active",
-      imageUrl: "/xyno.jpg",
-      createdAt: "2024-03-10",
-    },
-    {
-      id: "4",
-      name: "Монгол хэлний дүрэм",
-      description: "Монгол хэлний дүрэм, зүй",
-      price: 30000,
-      currency: "₮",
-      category: "Ном",
-      stock: 0,
-      status: "out_of_stock",
-      imageUrl: "/xyno.jpg",
-      createdAt: "2024-04-05",
-    },
-  ];
+  useEffect(() => {
+    setMounted(true);
+    fetchProducts();
+  }, []);
+
+  const fetchProducts = async () => {
+    try {
+      const response = await fetch("/api/products");
+      if (!response.ok) {
+        throw new Error("Failed to fetch products");
+      }
+      const data = await response.json();
+      setProducts(data);
+    } catch (error) {
+      console.error("Error fetching products:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleInputChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
+  ) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    // Frontend validation
+    if (!formData.name.trim()) {
+      alert("Product name is required");
+      return;
+    }
+
+    if (!formData.price || isNaN(parseFloat(formData.price))) {
+      alert("Valid price is required");
+      return;
+    }
+
+    if (!formData.description.trim()) {
+      alert("Product description is required");
+      return;
+    }
+
+    if (!formData.category.trim()) {
+      alert("Product category is required");
+      return;
+    }
+
+    setSubmitting(true);
+
+    try {
+      const productData = {
+        ...formData,
+        materials: formData.materials
+          ? formData.materials.split(",").map((m) => m.trim())
+          : [],
+      };
+
+      console.log("Sending product data:", productData);
+
+      const response = await fetch("/api/products", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(productData),
+      });
+
+      console.log("Response status:", response.status);
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error("Backend error:", errorData);
+        throw new Error(
+          errorData.message || `HTTP ${response.status}: ${response.statusText}`
+        );
+      }
+
+      const newProduct = await response.json();
+      console.log("Created product:", newProduct);
+      setProducts((prev) => [newProduct, ...prev]);
+      setShowAddModal(false);
+      setFormData({
+        name: "",
+        description: "",
+        price: "",
+        currency: "MNT",
+        imageUrl: "",
+        category: "Ном",
+        stock: "",
+        materials: "",
+      });
+    } catch (error) {
+      console.error("Error creating product:", error);
+      alert(
+        `Failed to create product: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`
+      );
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleEdit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedProduct) return;
+
+    setSubmitting(true);
+
+    try {
+      const response = await fetch(`/api/products/${selectedProduct.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          ...editFormData,
+          materials: editFormData.materials
+            ? editFormData.materials.split(",").map((m) => m.trim())
+            : [],
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to update product");
+      }
+
+      const updatedProduct = await response.json();
+      setProducts((prev) =>
+        prev.map((product) =>
+          product.id === selectedProduct.id ? updatedProduct : product
+        )
+      );
+      setShowEditModal(false);
+      setSelectedProduct(null);
+    } catch (error) {
+      console.error("Error updating product:", error);
+      alert("Failed to update product");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleDelete = async (productId: string) => {
+    if (!confirm("Are you sure you want to delete this product?")) return;
+
+    try {
+      const response = await fetch(`/api/products/${productId}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to delete product");
+      }
+
+      setProducts((prev) => prev.filter((product) => product.id !== productId));
+    } catch (error) {
+      console.error("Error deleting product:", error);
+      alert("Failed to delete product");
+    }
+  };
 
   const filteredProducts = products.filter((product) => {
     const matchesSearch =
@@ -246,12 +417,16 @@ const AdminProductsPage = () => {
                     <button className="text-green-600 hover:text-green-900 p-2">
                       <Eye className="w-4 h-4" />
                     </button>
-                    <button className="text-red-600 hover:text-red-900 p-2">
+                    <button
+                      onClick={() => handleDelete(product.id)}
+                      className="text-red-600 hover:text-red-900 p-2"
+                    >
                       <Trash2 className="w-4 h-4" />
                     </button>
                   </div>
                   <span className="text-xs text-gray-400">
-                    {new Date(product.createdAt).toLocaleDateString("mn-MN")}
+                    {mounted &&
+                      new Date(product.createdAt).toLocaleDateString("mn-MN")}
                   </span>
                 </div>
               </div>
@@ -275,6 +450,10 @@ const AdminProductsPage = () => {
                   </label>
                   <input
                     type="text"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleInputChange}
+                    required
                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
@@ -284,6 +463,10 @@ const AdminProductsPage = () => {
                   </label>
                   <textarea
                     rows={3}
+                    name="description"
+                    value={formData.description}
+                    onChange={handleInputChange}
+                    required
                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
@@ -294,6 +477,12 @@ const AdminProductsPage = () => {
                     </label>
                     <input
                       type="number"
+                      name="price"
+                      value={formData.price}
+                      onChange={handleInputChange}
+                      required
+                      min="0"
+                      step="0.01"
                       className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
@@ -303,6 +492,9 @@ const AdminProductsPage = () => {
                     </label>
                     <input
                       type="number"
+                      name="stock"
+                      value={formData.stock}
+                      onChange={handleInputChange}
                       className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
@@ -311,7 +503,13 @@ const AdminProductsPage = () => {
                   <label className="block text-sm font-medium text-gray-700">
                     Ангилал
                   </label>
-                  <select className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                  <select
+                    name="category"
+                    value={formData.category}
+                    onChange={handleInputChange}
+                    required
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  >
                     <option value="Ном">Ном</option>
                     <option value="Атлас">Атлас</option>
                     <option value="Хэрэгсэл">Хэрэгсэл</option>
@@ -323,6 +521,21 @@ const AdminProductsPage = () => {
                   </label>
                   <input
                     type="url"
+                    name="imageUrl"
+                    value={formData.imageUrl}
+                    onChange={handleInputChange}
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Материал
+                  </label>
+                  <input
+                    type="text"
+                    name="materials"
+                    value={formData.materials}
+                    onChange={handleInputChange}
                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
@@ -336,6 +549,7 @@ const AdminProductsPage = () => {
                   </button>
                   <button
                     type="submit"
+                    onClick={handleSubmit}
                     className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700"
                   >
                     Нэмэх
@@ -362,7 +576,11 @@ const AdminProductsPage = () => {
                   </label>
                   <input
                     type="text"
-                    defaultValue={selectedProduct.name}
+                    name="name"
+                    value={editFormData.name}
+                    onChange={(e) =>
+                      setEditFormData((f) => ({ ...f, name: e.target.value }))
+                    }
                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
@@ -372,7 +590,14 @@ const AdminProductsPage = () => {
                   </label>
                   <textarea
                     rows={3}
-                    defaultValue={selectedProduct.description}
+                    name="description"
+                    value={editFormData.description}
+                    onChange={(e) =>
+                      setEditFormData((f) => ({
+                        ...f,
+                        description: e.target.value,
+                      }))
+                    }
                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
@@ -383,7 +608,14 @@ const AdminProductsPage = () => {
                     </label>
                     <input
                       type="number"
-                      defaultValue={selectedProduct.price}
+                      name="price"
+                      value={editFormData.price}
+                      onChange={(e) =>
+                        setEditFormData((f) => ({
+                          ...f,
+                          price: e.target.value,
+                        }))
+                      }
                       className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
@@ -393,7 +625,14 @@ const AdminProductsPage = () => {
                     </label>
                     <input
                       type="number"
-                      defaultValue={selectedProduct.stock}
+                      name="stock"
+                      value={editFormData.stock}
+                      onChange={(e) =>
+                        setEditFormData((f) => ({
+                          ...f,
+                          stock: e.target.value,
+                        }))
+                      }
                       className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
@@ -403,7 +642,14 @@ const AdminProductsPage = () => {
                     Ангилал
                   </label>
                   <select
-                    defaultValue={selectedProduct.category}
+                    name="category"
+                    value={editFormData.category}
+                    onChange={(e) =>
+                      setEditFormData((f) => ({
+                        ...f,
+                        category: e.target.value,
+                      }))
+                    }
                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                   >
                     <option value="Ном">Ном</option>
@@ -417,7 +663,31 @@ const AdminProductsPage = () => {
                   </label>
                   <input
                     type="url"
-                    defaultValue={selectedProduct.imageUrl}
+                    name="imageUrl"
+                    value={editFormData.imageUrl}
+                    onChange={(e) =>
+                      setEditFormData((f) => ({
+                        ...f,
+                        imageUrl: e.target.value,
+                      }))
+                    }
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Материал
+                  </label>
+                  <input
+                    type="text"
+                    name="materials"
+                    value={editFormData.materials}
+                    onChange={(e) =>
+                      setEditFormData((f) => ({
+                        ...f,
+                        materials: e.target.value,
+                      }))
+                    }
                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
@@ -431,6 +701,7 @@ const AdminProductsPage = () => {
                   </button>
                   <button
                     type="submit"
+                    onClick={handleEdit}
                     className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700"
                   >
                     Хадгалах

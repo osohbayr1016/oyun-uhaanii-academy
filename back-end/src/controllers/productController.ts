@@ -34,6 +34,8 @@ export const getProductById = async (req: Request, res: Response) => {
 
 export const createProduct = async (req: Request, res: Response) => {
   try {
+    console.log("Backend: Received product data:", req.body);
+
     const {
       name,
       price,
@@ -46,24 +48,57 @@ export const createProduct = async (req: Request, res: Response) => {
       dimensions,
     } = req.body;
 
+    // Validate required fields
+    if (!name || !name.trim()) {
+      return res.status(400).json({
+        message: "Product name is required",
+      });
+    }
+
+    if (!price || isNaN(parseFloat(price))) {
+      return res.status(400).json({
+        message: "Valid price is required",
+      });
+    }
+
+    if (!description || !description.trim()) {
+      return res.status(400).json({
+        message: "Product description is required",
+      });
+    }
+
+    if (!category || !category.trim()) {
+      return res.status(400).json({
+        message: "Product category is required",
+      });
+    }
+
+    const productData = {
+      name: name.trim(),
+      price: parseFloat(price),
+      currency: currency || "MNT",
+      imageUrl: imageUrl || "",
+      description: description.trim(),
+      category: category.trim(),
+      stock: parseInt(stock) || 0,
+      materials: materials || [],
+      dimensions: dimensions || {},
+    };
+
+    console.log("Backend: Creating product with data:", productData);
+
     const product = await prisma.product.create({
-      data: {
-        name,
-        price: parseFloat(price),
-        currency,
-        imageUrl,
-        description,
-        category,
-        stock: parseInt(stock),
-        materials: materials || [],
-        dimensions: dimensions || {},
-      },
+      data: productData,
     });
 
+    console.log("Backend: Product created successfully:", product);
     res.status(201).json(product);
   } catch (error) {
-    console.error("Create product error:", error);
-    res.status(500).json({ message: "Failed to create product" });
+    console.error("Backend: Create product error:", error);
+    res.status(500).json({
+      message: "Failed to create product",
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
   }
 };
 

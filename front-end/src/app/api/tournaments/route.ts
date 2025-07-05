@@ -1,11 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 
-// GET /api/products
 export async function GET(request: NextRequest) {
   try {
     const backendUrl =
       process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
-    const response = await fetch(`${backendUrl}/api/products`, {
+    const response = await fetch(`${backendUrl}/api/tournaments`, {
       headers: {
         "Content-Type": "application/json",
       },
@@ -18,25 +17,24 @@ export async function GET(request: NextRequest) {
     const data = await response.json();
     return NextResponse.json(data);
   } catch (error) {
-    console.error("Error fetching products:", error);
+    console.error("Error fetching tournaments:", error);
     return NextResponse.json(
-      { error: "Failed to fetch products" },
+      { error: "Failed to fetch tournaments" },
       { status: 500 }
     );
   }
 }
 
-// POST /api/products
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const backendUrl =
       process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
 
-    console.log("Frontend API: Sending to backend:", body);
+    console.log("Frontend API: Sending tournament to backend:", body);
     console.log("Backend URL:", backendUrl);
 
-    const response = await fetch(`${backendUrl}/api/products`, {
+    const response = await fetch(`${backendUrl}/api/tournaments`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -59,10 +57,10 @@ export async function POST(request: NextRequest) {
     console.log("Frontend API: Backend success response:", data);
     return NextResponse.json(data);
   } catch (error) {
-    console.error("Frontend API: Error creating product:", error);
+    console.error("Frontend API: Error creating tournament:", error);
     return NextResponse.json(
       {
-        error: `Failed to create product: ${
+        error: `Failed to create tournament: ${
           error instanceof Error ? error.message : "Unknown error"
         }`,
       },

@@ -16,10 +16,11 @@ interface FullProduct {
 export default async function ProductDetailPage({
   params,
 }: {
-  params: { productId: string };
+  params: Promise<{ productId: string }>;
 }) {
+  const { productId } = await params;
   const res = await fetch(
-    `${process.env.NEXT_PUBLIC_BASE_URL}/api/products/${params.productId}`
+    `${process.env.NEXT_PUBLIC_BASE_URL}/api/products/${productId}`
   );
   if (!res.ok) return notFound();
 
