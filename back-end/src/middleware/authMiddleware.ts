@@ -1,5 +1,16 @@
 import { Request, Response, NextFunction } from "express";
-import { verifyToken } from "../utils/jwt";
+import jwt from "jsonwebtoken";
+
+const JWT_SECRET = process.env.JWT_SECRET || "supersecret";
+
+const verifyToken = (token: string): { userId: string } | null => {
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET) as { userId: string };
+    return decoded;
+  } catch (error) {
+    return null; // Token is invalid or expired
+  }
+};
 
 // Extend the Express Request interface to include a 'user' property
 declare global {

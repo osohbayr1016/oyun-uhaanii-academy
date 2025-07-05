@@ -2,400 +2,323 @@
 
 ## Overview
 
-This is a full-stack application with a Next.js frontend and Express.js backend with PostgreSQL database.
+This is a full-stack web application with:
+
+- **Frontend**: Next.js 15 with React, TypeScript, and Tailwind CSS
+- **Backend**: Express.js with TypeScript, Prisma ORM, and PostgreSQL
+- **Database**: PostgreSQL (recommended: Supabase, Railway, or Neon)
 
 ## Prerequisites
 
 - Node.js 18+
+- npm or yarn
 - PostgreSQL database
-- Git
-- PM2 (for production process management)
+- Git repository
 
-## Project Structure
+## Local Development Setup
 
-```
-Oyun-Uhaanii-Academy/
-├── back-end/          # Express.js API server
-├── front-end/         # Next.js frontend
-├── package.json       # Root package.json with scripts
-└── README.md
-```
-
-## Environment Setup
-
-### Backend Environment Variables
-
-Create `back-end/.env`:
-
-```env
-# Database
-DATABASE_URL="postgresql://username:password@localhost:5432/oyun_uhaanii_academy"
-
-# JWT Secret (change this in production!)
-JWT_SECRET="your-super-secret-jwt-key-change-this-in-production"
-
-# Server
-PORT=5001
-
-# Environment
-NODE_ENV="production"
-```
-
-### Frontend Environment Variables
-
-Create `front-end/.env.local`:
-
-```env
-# Backend API URL
-NEXT_PUBLIC_API_URL=http://localhost:5001
-
-# Environment
-NODE_ENV=production
-```
-
-## Database Setup
-
-1. **Install PostgreSQL** and create a database:
-
-```sql
-CREATE DATABASE oyun_uhaanii_academy;
-```
-
-2. **Run Prisma migrations**:
+### 1. Clone and Install Dependencies
 
 ```bash
-cd back-end
-npx prisma migrate deploy
-npx prisma generate
-```
-
-3. **Seed the database** (optional):
-
-```bash
-npx prisma db seed
-```
-
-## Local Development
-
-1. **Install dependencies**:
-
-```bash
-npm run install:all
-```
-
-2. **Start both servers**:
-
-```bash
-npm run dev
-```
-
-This will start:
-
-- Backend on http://localhost:5001
-- Frontend on http://localhost:3000
-
-## Production Deployment
-
-### Option 1: Vercel (Recommended for Frontend)
-
-#### Frontend Deployment on Vercel:
-
-1. Push your code to GitHub
-2. Connect your repository to Vercel
-3. Set environment variables in Vercel dashboard:
-   - `NEXT_PUBLIC_API_URL`: Your backend URL
-4. Deploy
-
-#### Backend Deployment on Railway/Render:
-
-1. Push your code to GitHub
-2. Connect to Railway or Render
-3. Set environment variables:
-   - `DATABASE_URL`: Your PostgreSQL connection string
-   - `JWT_SECRET`: Your secret key
-   - `NODE_ENV`: "production"
-4. Deploy
-
-### Option 2: Traditional VPS Deployment
-
-#### Server Setup:
-
-1. **Install Node.js and PM2**:
-
-```bash
-curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
-sudo apt-get install -y nodejs
-npm install -g pm2
-```
-
-2. **Install PostgreSQL**:
-
-```bash
-sudo apt update
-sudo apt install postgresql postgresql-contrib
-```
-
-3. **Setup PostgreSQL**:
-
-```bash
-sudo -u postgres psql
-CREATE DATABASE oyun_uhaanii_academy;
-CREATE USER academy_user WITH PASSWORD 'your_password';
-GRANT ALL PRIVILEGES ON DATABASE oyun_uhaanii_academy TO academy_user;
-\q
-```
-
-#### Application Deployment:
-
-1. **Clone and setup**:
-
-```bash
-git clone <your-repo>
+git clone <your-repo-url>
 cd Oyun-Uhaanii-Academy
 npm run install:all
 ```
 
-2. **Build applications**:
+### 2. Environment Variables
 
-```bash
-npm run build
+#### Backend (.env in back-end folder)
+
+```env
+DATABASE_URL="postgresql://username:password@host:port/database"
+JWT_SECRET="your-super-secret-jwt-key"
+PORT=5001
+NODE_ENV=development
 ```
 
-3. **Setup environment variables**:
+#### Frontend (.env.local in front-end folder)
 
-```bash
-# Backend
-cp back-end/.env.example back-end/.env
-# Edit back-end/.env with your values
-
-# Frontend
-cp front-end/.env.example front-end/.env.local
-# Edit front-end/.env.local with your values
+```env
+NEXT_PUBLIC_API_URL=http://localhost:5001
 ```
 
-4. **Start with PM2**:
+### 3. Database Setup
 
 ```bash
-# Start backend
+# Generate Prisma client
+npm run prisma:generate
+
+# Push schema to database (for development)
+npm run prisma:push
+
+# Or run migrations (for production)
+npm run prisma:migrate
+```
+
+### 4. Start Development Servers
+
+```bash
+# Start both frontend and backend
+npm run dev
+
+# Or start individually
+npm run backend    # Backend on http://localhost:5001
+npm run frontend   # Frontend on http://localhost:3000
+```
+
+## Production Deployment
+
+### Backend Deployment (Render)
+
+#### Option 1: Using render.yaml (Recommended)
+
+1. Push your code to GitHub
+2. Connect your repository to Render
+3. Render will automatically detect the `render.yaml` file and deploy
+
+#### Option 2: Manual Setup
+
+1. Create a new Web Service on Render
+2. Connect your GitHub repository
+3. Configure the service:
+   - **Build Command**: `cd back-end && npm install && npm run build`
+   - **Start Command**: `cd back-end && npm start`
+   - **Environment**: Node
+   - **Plan**: Free (or paid for better performance)
+
+#### Environment Variables (Render)
+
+Set these in your Render service:
+
+- `DATABASE_URL`: Your PostgreSQL connection string
+- `JWT_SECRET`: A secure random string
+- `NODE_ENV`: `production`
+- `PORT`: `10000` (Render's default)
+
+### Frontend Deployment (Vercel)
+
+#### Option 1: Vercel CLI
+
+```bash
+cd front-end
+npm install -g vercel
+vercel
+```
+
+#### Option 2: GitHub Integration
+
+1. Push your code to GitHub
+2. Connect your repository to Vercel
+3. Configure build settings:
+   - **Framework Preset**: Next.js
+   - **Build Command**: `npm run build`
+   - **Output Directory**: `.next`
+   - **Install Command**: `npm install`
+
+#### Environment Variables (Vercel)
+
+Set these in your Vercel project:
+
+- `NEXT_PUBLIC_API_URL`: Your backend URL (e.g., `https://your-backend.onrender.com`)
+
+### Database Setup (Production)
+
+#### Recommended: Supabase
+
+1. Create a Supabase project
+2. Get your database URL
+3. Run migrations:
+
+```bash
 cd back-end
-pm2 start dist/src/index.js --name "academy-backend"
-
-# Start frontend
-cd ../front-end
-pm2 start npm --name "academy-frontend" -- start
+npx prisma migrate deploy
 ```
 
-5. **Setup PM2 to start on boot**:
+#### Alternative: Railway/Neon
+
+- Follow their respective setup guides
+- Use their PostgreSQL service
+- Update your `DATABASE_URL` accordingly
+
+## Build and Test
+
+### Local Production Build
 
 ```bash
-pm2 startup
-pm2 save
-```
-
-### Option 3: Docker Deployment
-
-#### Create Dockerfile for Backend:
-
-```dockerfile
-FROM node:18-alpine
-
-WORKDIR /app
-
-COPY package*.json ./
-RUN npm ci --only=production
-
-COPY . .
-RUN npm run build
-
-EXPOSE 5001
-
-CMD ["npm", "start"]
-```
-
-#### Create Dockerfile for Frontend:
-
-```dockerfile
-FROM node:18-alpine
-
-WORKDIR /app
-
-COPY package*.json ./
-RUN npm ci
-
-COPY . .
-RUN npm run build
-
-EXPOSE 3000
-
-CMD ["npm", "start"]
-```
-
-#### Docker Compose:
-
-```yaml
-version: "3.8"
-services:
-  postgres:
-    image: postgres:15
-    environment:
-      POSTGRES_DB: oyun_uhaanii_academy
-      POSTGRES_USER: academy_user
-      POSTGRES_PASSWORD: your_password
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
-
-  backend:
-    build: ./back-end
-    environment:
-      DATABASE_URL: postgresql://academy_user:your_password@postgres:5432/oyun_uhaanii_academy
-      JWT_SECRET: your-super-secret-jwt-key
-      NODE_ENV: production
-    ports:
-      - "5001:5001"
-    depends_on:
-      - postgres
-
-  frontend:
-    build: ./front-end
-    environment:
-      NEXT_PUBLIC_API_URL: http://localhost:5001
-    ports:
-      - "3000:3000"
-    depends_on:
-      - backend
-
-volumes:
-  postgres_data:
-```
-
-## SSL/HTTPS Setup
-
-### Using Nginx as Reverse Proxy:
-
-```nginx
-server {
-    listen 80;
-    server_name your-domain.com;
-    return 301 https://$server_name$request_uri;
-}
-
-server {
-    listen 443 ssl;
-    server_name your-domain.com;
-
-    ssl_certificate /path/to/cert.pem;
-    ssl_certificate_key /path/to/key.pem;
-
-    location / {
-        proxy_pass http://localhost:3000;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection 'upgrade';
-        proxy_set_header Host $host;
-        proxy_cache_bypass $http_upgrade;
-    }
-
-    location /api {
-        proxy_pass http://localhost:5001;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection 'upgrade';
-        proxy_set_header Host $host;
-        proxy_cache_bypass $http_upgrade;
-    }
-}
-```
-
-## Monitoring and Maintenance
-
-### PM2 Commands:
-
-```bash
-# View logs
-pm2 logs
-
-# Monitor processes
-pm2 monit
-
-# Restart applications
-pm2 restart academy-backend
-pm2 restart academy-frontend
-
-# Update application
-git pull
+# Build both frontend and backend
 npm run build
-pm2 restart all
+
+# Test backend
+npm start
+
+# Test frontend (in another terminal)
+cd front-end && npm start
 ```
 
-### Database Backup:
+### Verify Deployment
 
-```bash
-# Create backup
-pg_dump oyun_uhaanii_academy > backup.sql
-
-# Restore backup
-psql oyun_uhaanii_academy < backup.sql
-```
-
-## Security Checklist
-
-- [ ] Change default JWT secret
-- [ ] Use strong database passwords
-- [ ] Enable HTTPS
-- [ ] Set up firewall rules
-- [ ] Regular security updates
-- [ ] Database backups
-- [ ] Environment variable security
-- [ ] Input validation
-- [ ] Rate limiting
-- [ ] CORS configuration
+1. **Backend Health Check**: `GET https://your-backend.onrender.com/`
+2. **API Test**: `GET https://your-backend.onrender.com/api/products`
+3. **Frontend**: Visit your Vercel URL
 
 ## Troubleshooting
 
-### Common Issues:
+### Common Issues
 
-1. **Port conflicts**: Kill processes using ports 3000/5001
-2. **Database connection**: Check DATABASE_URL format
-3. **Build errors**: Clear node_modules and reinstall
-4. **CORS issues**: Check backend CORS configuration
-5. **Environment variables**: Ensure all required vars are set
+#### Backend Won't Start
 
-### Debug Commands:
+- Check environment variables
+- Verify database connection
+- Check build logs in Render
+
+#### Frontend Can't Connect to Backend
+
+- Verify `NEXT_PUBLIC_API_URL` is correct
+- Check CORS settings
+- Ensure backend is running
+
+#### Database Connection Issues
+
+- Verify `DATABASE_URL` format
+- Check database credentials
+- Ensure database is accessible from your deployment
+
+#### Build Failures
+
+- Check Node.js version compatibility
+- Verify all dependencies are installed
+- Check TypeScript compilation errors
+
+### Debug Commands
 
 ```bash
-# Check if ports are in use
-lsof -i :3000
-lsof -i :5001
+# Check backend logs
+cd back-end && npm run dev
 
-# Check PM2 status
-pm2 status
-
-# View application logs
-pm2 logs academy-backend
-pm2 logs academy-frontend
+# Check frontend logs
+cd front-end && npm run dev
 
 # Test database connection
-cd back-end
-npx prisma db push
+cd back-end && npx prisma studio
+
+# Regenerate Prisma client
+npm run prisma:generate
 ```
+
+## Security Considerations
+
+### Production Checklist
+
+- [ ] Use strong JWT secret
+- [ ] Enable HTTPS
+- [ ] Set up proper CORS
+- [ ] Use environment variables for secrets
+- [ ] Regular database backups
+- [ ] Monitor application logs
+
+### Environment Variables Security
+
+- Never commit `.env` files
+- Use different secrets for dev/prod
+- Rotate secrets regularly
+- Use secure random generators for JWT secrets
 
 ## Performance Optimization
 
-1. **Enable compression** in backend
-2. **Use CDN** for static assets
-3. **Database indexing** for frequently queried fields
-4. **Caching** for API responses
-5. **Image optimization** in frontend
-6. **Code splitting** in Next.js
+### Backend
+
+- Enable compression middleware
+- Implement caching strategies
+- Optimize database queries
+- Use connection pooling
+
+### Frontend
+
+- Enable Next.js optimizations
+- Implement proper image optimization
+- Use CDN for static assets
+- Enable caching headers
+
+## Monitoring and Maintenance
+
+### Health Checks
+
+- Implement `/health` endpoint
+- Monitor database connections
+- Set up error tracking (Sentry)
+- Monitor API response times
+
+### Regular Maintenance
+
+- Update dependencies regularly
+- Monitor database performance
+- Review and rotate secrets
+- Backup database regularly
 
 ## Support
 
-For deployment issues, check:
+For deployment issues:
 
-- Application logs
-- Database connection
-- Environment variables
-- Network connectivity
-- Server resources
+1. Check the troubleshooting section
+2. Review Render/Vercel documentation
+3. Check application logs
+4. Verify environment variables
+
+## File Structure
+
+```
+Oyun-Uhaanii-Academy/
+├── back-end/                 # Express.js backend
+│   ├── src/
+│   │   ├── controllers/     # API controllers
+│   │   ├── routes/          # API routes
+│   │   ├── middleware/      # Express middleware
+│   │   └── index.ts         # Server entry point
+│   ├── prisma/              # Database schema and migrations
+│   ├── package.json         # Backend dependencies
+│   └── tsconfig.json        # TypeScript config
+├── front-end/               # Next.js frontend
+│   ├── src/
+│   │   ├── app/            # Next.js app router
+│   │   ├── components/     # React components
+│   │   └── lib/           # Utility functions
+│   ├── package.json        # Frontend dependencies
+│   └── next.config.ts      # Next.js config
+├── render.yaml             # Render deployment config
+├── package.json            # Root package.json
+└── DEPLOYMENT_GUIDE.md     # This file
+```
+
+## Quick Deploy Commands
+
+### One-time setup
+
+```bash
+# Install all dependencies
+npm run install:all
+
+# Set up database
+npm run prisma:generate
+npm run prisma:push
+
+# Build for production
+npm run build
+```
+
+### Development
+
+```bash
+# Start development servers
+npm run dev
+
+# Or start individually
+npm run backend
+npm run frontend
+```
+
+### Production
+
+```bash
+# Start production backend
+npm start
+```

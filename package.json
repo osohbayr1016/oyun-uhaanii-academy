@@ -1,27 +1,32 @@
 {
   "name": "oyun-uhaanii-academy",
   "version": "1.0.0",
-  "description": "Oyun Uhaanii Academy - Full Stack Application",
+  "description": "Oyun Uhaanii Academy - Full Stack Web Application",
   "main": "index.js",
   "scripts": {
     "dev": "concurrently \"npm run backend\" \"npm run frontend\"",
     "backend": "cd back-end && npm run dev",
     "frontend": "cd front-end && npm run dev",
-    "install:all": "npm install && cd back-end && npm install && cd ../front-end && npm install",
-    "build": "cd back-end && npm run build && cd ../front-end && npm run build",
+    "build": "npm run build:backend && npm run build:frontend",
+    "build:backend": "cd back-end && npm run build",
+    "build:frontend": "cd front-end && npm run build",
     "start": "cd back-end && npm start",
-    "prisma:generate": "cd back-end && npx prisma generate",
-    "prisma:push": "cd back-end && npx prisma db push",
-    "prisma:migrate": "cd back-end && npx prisma migrate dev",
-    "prisma:studio": "cd back-end && npx prisma studio"
+    "install:all": "npm install && cd back-end && npm install && cd ../front-end && npm install",
+    "prisma:generate": "cd back-end && npm run prisma:generate",
+    "prisma:migrate": "cd back-end && npm run prisma:migrate",
+    "prisma:push": "cd back-end && npm run prisma:push",
+    "prisma:studio": "cd back-end && npm run prisma:studio"
   },
   "keywords": [
-    "mongolia",
     "academy",
+    "gaming",
     "education",
-    "fullstack"
+    "fullstack",
+    "nextjs",
+    "express",
+    "prisma"
   ],
-  "author": "Your Name",
+  "author": "Oyun Uhaanii Academy",
   "license": "MIT",
   "devDependencies": {
     "concurrently": "^8.2.2"
