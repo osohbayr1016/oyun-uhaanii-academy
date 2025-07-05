@@ -1,83 +1,68 @@
-import React from "react";
+import Header from "../_components/Header";
+import Footer from "../_components/Footer";
 import CourseCard from "./_components/CourseCard";
 
-const sampleCourses = [
-  {
-    title: "Ой тогтоолт",
-    description: "",
-    image: "/courses/python-kids.jpg",
-    href: "/courses/rubikcube",
-  },
-  {
-    title: "Түргэн бодолт",
-    description: "",
-    image: "/courses/art-class.jpg",
-    href: "/courses/memory",
-  },
-  {
-    title: "Memory and Math skills",
-    description: "Гарын доорх материалаар бүтээл хийх сургалт.",
-    image: "/courses/art-class.jpg",
-    href: "/courses/memory",
-  },
-  {
-    title: "Mind Games",
-    description: "7-12 насны хүүхдүүдэд зориулсан Python хичээл.",
-    image: "/courses/python-kids.jpg",
-    href: "/courses/rubikcube",
-  },
-  {
-    title: "Хуруундай",
-    description: "Гарын доорх материалаар бүтээл хийх сургалт.",
-    image: "/courses/art-class.jpg",
-    href: "/courses/memory",
-  },
-  {
-    title: "Рубик шоо",
-    description: "Гарын доорх материалаар бүтээл хийх сургалт.",
-    image: "/courses/art-class.jpg",
-    href: "/courses/memory",
-  },
-  {
-    title: "Хүрд",
-    description: "7-12 насны хүүхдүүдэд зориулсан Python хичээл.",
-    image: "/courses/python-kids.jpg",
-    href: "/courses/rubikcube",
-  },
-  {
-    title: "Хурдан уншлага",
-    description: "Гарын доорх материалаар бүтээл хийх сургалт.",
-    image: "/courses/art-class.jpg",
-    href: "/courses/memory",
-  },
-  {
-    title: "Англи үг",
-    description: "Гарын доорх материалаар бүтээл хийх сургалт.",
-    image: "/courses/art-class.jpg",
-    href: "/courses/memory",
-  },
-  {
-    title: "Ки мастер",
-    description: "Гарын доорх материалаар бүтээл хийх сургалт.",
-    image: "/courses/art-class.jpg",
-    href: "/courses/memory",
-  },
-];
-
 const CoursesPage = () => {
+  const courses = [
+    {
+      id: "1",
+      title: "Монголын уран зохиол",
+      description: "Монголын сонгодог уран зохиолын сургалт",
+      duration: "8 долоо хоног",
+      level: "Эхлэгч",
+      price: 150000,
+      currency: "₮",
+      imageUrl: "/xyno.jpg",
+      instructor: "Б. Батбаяр",
+    },
+    {
+      id: "2",
+      title: "Монголын түүх",
+      description: "Монголын түүхэн дэх чухал үйл явдлууд",
+      duration: "12 долоо хоног",
+      level: "Дунд",
+      price: 200000,
+      currency: "₮",
+      imageUrl: "/xyno.jpg",
+      instructor: "Д. Сүхбат",
+    },
+    {
+      id: "3",
+      title: "Монголын география",
+      description: "Монгол улсын байгаль, газар зүй",
+      duration: "6 долоо хоног",
+      level: "Эхлэгч",
+      price: 120000,
+      currency: "₮",
+      imageUrl: "/xyno.jpg",
+      instructor: "Л. Мөнхбат",
+    },
+  ];
+
   return (
-    <section className="py-16 px-6 md:px-12 bg-gray-50">
-      <div className="max-w-7xl mx-auto">
-        <h2 className="text-3xl font-bold mb-10 text-gray-900">
-          Сургалтын төрлүүд
-        </h2>
-        <div className="grid gap-8 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
-          {sampleCourses.map((course, idx) => (
-            <CourseCard key={idx} {...course} />
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+      <Header />
+
+      <main className="container mx-auto px-4 py-12 mt-16">
+        <section className="mb-12">
+          <h1 className="text-4xl font-bold text-center mb-4 text-gray-800">
+            Сургалтууд
+          </h1>
+          <p className="text-lg text-center text-gray-600 max-w-3xl mx-auto">
+            Монголын соёл, түүх, уран зохиолын талаар суралцах боломжтой
+            сургалтууд
+          </p>
+        </section>
+
+        <section className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {courses.map((course) => (
+            <CourseCard key={course.id} course={course} />
           ))}
-        </div>
-      </div>
-    </section>
+        </section>
+      </main>
+
+      <Footer />
+    </div>
   );
 };
 

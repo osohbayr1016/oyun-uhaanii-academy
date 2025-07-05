@@ -11,31 +11,30 @@ interface Product {
   currency: string;
 }
 
-const ProductListPage = async () => {
-  let products: Product[] = []; // Initialize to an empty array
+const ProductListPage = () => {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [error, setError] = useState("");
 
-  try {
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_BASE_URL}/api/products`,
-      {
-        cache: "no-store", // Important for dynamic data in Next.js 13+ App Router
-        // or revalidate: 60, // if you want to revalidate every 60 seconds
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const res = await fetch("/api/products");
+        if (!res.ok) {
+          const text = await res.text();
+          throw new Error(`Failed: ${res.status} ${text}`);
+        }
+        const data = await res.json();
+        setProducts(data);
+      } catch (err: any) {
+        setError(err.message || "Failed to load products.");
       }
-    );
+    };
 
-    if (!res.ok) {
-      // If the response is not OK (e.g., 4xx or 5xx status)
-      const errorText = await res.text(); // Read the response as text, not JSON
-      // console.error(`API Error: ${res.status} - ${errorText}`);
-      // You might want to throw an error, set an error state, or display a message
-      throw new Error(`Failed to fetch products: ${res.status} ${errorText}`);
-    }
+    fetchProducts();
+  }, []);
 
-    products = await res.json(); // This will only be reached if res.ok is true
-  } catch (error) {
-    // console.error("Failed to load products:", error);
-    // You can set an error message in state here to display to the user
-    // e.g., setError('Could not load products. Please try again later.');
+  if (error) {
+    return <p className="text-red-500">{error}</p>;
   }
 
   return (

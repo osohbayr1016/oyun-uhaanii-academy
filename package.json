@@ -1,11 +1,29 @@
 {
-  "dependencies": {
-    "@prisma/client": "^6.11.0",
-    "express": "^5.1.0",
-    "yarn": "^1.22.22"
+  "name": "oyun-uhaanii-academy",
+  "version": "1.0.0",
+  "description": "Oyun Uhaanii Academy - Full Stack Application",
+  "main": "index.js",
+  "scripts": {
+    "dev": "concurrently \"npm run backend\" \"npm run frontend\"",
+    "backend": "cd back-end && npm run dev",
+    "frontend": "cd front-end && npm run dev",
+    "install:all": "npm install && cd back-end && npm install && cd ../front-end && npm install",
+    "build": "cd back-end && npm run build && cd ../front-end && npm run build",
+    "start": "cd back-end && npm start",
+    "prisma:generate": "cd back-end && npx prisma generate",
+    "prisma:push": "cd back-end && npx prisma db push",
+    "prisma:migrate": "cd back-end && npx prisma migrate dev",
+    "prisma:studio": "cd back-end && npx prisma studio"
   },
+  "keywords": [
+    "mongolia",
+    "academy",
+    "education",
+    "fullstack"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
   "devDependencies": {
-    "@types/express": "^5.0.3",
-    "prisma": "^6.11.0"
+    "concurrently": "^8.2.2"
   }
 }

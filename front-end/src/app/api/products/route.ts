@@ -13,11 +13,10 @@ export async function GET() {
 }
 
 // POST /api/products
-// POST /api/products
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    // Ensure these property names exactly match your schema.prisma
+
     const newProduct = await prisma.product.create({
       data: {
         name: body.name,
@@ -27,8 +26,8 @@ export async function POST(req: Request) {
         description: body.description,
         category: body.category,
         stock: body.stock,
-        materials: body.materials,
-        dimensions: body.dimensions, // This should be a plain JS object, e.g., { width: "10cm", height: "5cm", depth: "2cm" }
+        materials: body.materials || [],
+        dimensions: body.dimensions || {},
       },
     });
 

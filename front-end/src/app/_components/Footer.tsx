@@ -1,61 +1,83 @@
 import React from "react";
+import Link from "next/link";
+import Image from "next/image";
 
 const Footer = () => {
   return (
-    <footer className="bg-gray-100 text-gray-700 border-t border-gray-200 py-10 px-6 md:px-12">
-      <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
+    <footer className="bg-gray-900 text-gray-300 py-12 px-6 md:px-12">
+      <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-8">
         {/* Brand Info */}
-        <div>
-          <h2 className="text-xl font-bold text-gray-900">
-            <img src="/about3.png" alt="icon" width={150} height={150} />
-          </h2>
-          <p className="mt-2 text-sm text-gray-600">
+        <div className="md:col-span-2">
+          <div className="flex items-center mb-4">
+            <Image
+              src="/about3.png"
+              alt="Oyun Uhaanii Academy"
+              width={120}
+              height={40}
+              className="h-10 w-auto"
+            />
+          </div>
+          <p className="text-sm text-gray-400 max-w-md">
             Хүүхдүүдэд зориулсан сургалт, бүтээлч контент, хэрэгсэл. Ирээдүйг
             хамтдаа бүтээе.
           </p>
         </div>
 
-        {/* Links */}
+        {/* Quick Links */}
         <div>
-          <h3 className="text-lg font-semibold text-gray-800 mb-3">Цэс</h3>
+          <h3 className="text-lg font-semibold text-white mb-4">Цэс</h3>
           <ul className="space-y-2 text-sm">
             <li>
-              <a href="/" className="hover:underline">
+              <Link
+                href="/"
+                className="hover:text-blue-400 transition-colors duration-200"
+              >
                 Нүүр
-              </a>
+              </Link>
             </li>
             <li>
-              <a href="/courses" className="hover:underline">
+              <Link
+                href="/courses"
+                className="hover:text-blue-400 transition-colors duration-200"
+              >
                 Сургалтууд
-              </a>
+              </Link>
             </li>
             <li>
-              <a href="/merch" className="hover:underline">
+              <Link
+                href="/products"
+                className="hover:text-blue-400 transition-colors duration-200"
+              >
                 Бүтээгдэхүүн
-              </a>
+              </Link>
             </li>
             <li>
-              <a href="/contact" className="hover:underline">
-                Холбоо барих
-              </a>
+              <Link
+                href="/about"
+                className="hover:text-blue-400 transition-colors duration-200"
+              >
+                Бидний тухай
+              </Link>
             </li>
           </ul>
         </div>
 
         {/* Contact + Socials */}
         <div>
-          <h3 className="text-lg font-semibold text-gray-800 mb-3">
+          <h3 className="text-lg font-semibold text-white mb-4">
             Холбоо барих
           </h3>
-          <p className="text-sm">📞 +976 9999 0000</p>
-          <p className="text-sm">✉️ contact@edukids.mn</p>
+          <div className="space-y-2 text-sm">
+            <p>📞 +976 9999 0000</p>
+            <p>✉️ contact@oyun-uhaanii.mn</p>
+          </div>
 
           <div className="mt-4 flex gap-4">
             <a
               href="https://facebook.com"
               target="_blank"
               rel="noopener noreferrer"
-              className="hover:text-blue-600 transition"
+              className="hover:text-blue-400 transition-colors duration-200"
             >
               Facebook
             </a>
@@ -63,7 +85,7 @@ const Footer = () => {
               href="https://instagram.com"
               target="_blank"
               rel="noopener noreferrer"
-              className="hover:text-pink-500 transition"
+              className="hover:text-pink-400 transition-colors duration-200"
             >
               Instagram
             </a>
@@ -72,8 +94,9 @@ const Footer = () => {
       </div>
 
       {/* Bottom line */}
-      <div className="mt-10 border-t border-gray-300 pt-4 text-center text-sm text-gray-500">
-        © {new Date().getFullYear()} Монголын оюун ухааны академи.
+      <div className="mt-10 border-t border-gray-700 pt-6 text-center text-sm text-gray-400">
+        © {new Date().getFullYear()} Монголын оюун ухааны академи. Бүх эрх
+        хуулиар хамгаалагдсан.
       </div>
     </footer>
   );

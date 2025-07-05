@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
   output   = "../src/generated/prisma"
@@ -13,16 +7,293 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
-model Product {
-  id          String   @id @default(cuid())
+
+model User {
+  id          String       @id @default(uuid())
+  email       String       @unique
+  password    String
   name        String
-  price       Float
-  currency    String
-  imageUrl    String
+  role        String       @default("user")
+  phone       String?
+  address     String?
+  avatar      String?
+  bio         String?
+  isActive    Boolean      @default(true)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  
+  // Relations
+  enrollments Enrollment[]
+  orders      Order[]
+  reviews     Review[]
+  comments    Comment[]
+  payments    Payment[]
+  notifications Notification[]
+  tournamentParticipants TournamentParticipant[]
+  player1Matches TournamentMatch[] @relation("Player1")
+  player2Matches TournamentMatch[] @relation("Player2")
+  winnerMatches TournamentMatch[] @relation("Winner")
+  newsArticles News[]
+}
+
+model Course {
+  id          String       @id @default(uuid())
+  title       String
   description String
+  content     String
+  imageUrl    String
+  price       Float
+  currency    String       @default("MNT")
+  duration    Int          // in hours
+  level       String       // beginner, intermediate, advanced
   category    String
-  stock       Int
-  materials   String[]
-  dimensions  Json
+  instructor  String
+  maxStudents Int?
+  isActive    Boolean      @default(true)
+  startDate   DateTime?
+  endDate     DateTime?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  
+  // Relations
+  enrollments Enrollment[]
+  reviews     Review[]
+  lessons     Lesson[]
+  materials   CourseMaterial[]
+}
+
+model Lesson {
+  id          String   @id @default(uuid())
+  title       String
+  description String
+  content     String
+  videoUrl    String?
+  duration    Int      // in minutes
+  order       Int      // lesson order in course
+  courseId    String
   createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  course      Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+}
+
+model CourseMaterial {
+  id          String   @id @default(uuid())
+  title       String
+  description String?
+  fileUrl     String
+  fileType    String   // pdf, video, image, etc.
+  courseId    String
+  createdAt   DateTime @default(now())
+  
+  // Relations
+  course      Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+}
+
+model Enrollment {
+  id        String   @id @default(uuid())
+  userId    String
+  courseId  String
+  status    String   @default("active") // active, completed, cancelled
+  enrolledAt DateTime @default(now())
+  completedAt DateTime?
+  
+  // Relations
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, courseId])
+}
+
+model Product {
+  id          String   @id @default(uuid())
+  name        String
+  description String
+  price       Float
+  currency    String   @default("MNT")
+  imageUrl    String
+  category    String
+  stock       Int      @default(0)
+  materials   String[]
+  dimensions  Json?
+  weight      Float?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  orderItems  OrderItem[]
+  reviews     Review[]
+}
+
+model Tournament {
+  id          String   @id @default(uuid())
+  title       String
+  description String
+  imageUrl    String
+  startDate   DateTime
+  endDate     DateTime
+  location    String?
+  maxParticipants Int?
+  entryFee    Float?
+  currency    String   @default("MNT")
+  category    String
+  status      String   @default("upcoming") // upcoming, active, completed, cancelled
+  rules       String?
+  prizes      Json?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  participants TournamentParticipant[]
+  matches      TournamentMatch[]
+}
+
+model TournamentParticipant {
+  id           String   @id @default(uuid())
+  tournamentId String
+  userId       String
+  status       String   @default("registered") // registered, confirmed, eliminated, winner
+  registeredAt DateTime @default(now())
+  
+  // Relations
+  tournament   Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([tournamentId, userId])
+}
+
+model TournamentMatch {
+  id           String   @id @default(uuid())
+  tournamentId String
+  player1Id    String
+  player2Id    String
+  winnerId     String?
+  score        String?
+  matchDate    DateTime?
+  status       String   @default("scheduled") // scheduled, in_progress, completed, cancelled
+  createdAt    DateTime @default(now())
+  
+  // Relations
+  tournament   Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  player1      User       @relation("Player1", fields: [player1Id], references: [id])
+  player2      User       @relation("Player2", fields: [player2Id], references: [id])
+  winner       User?      @relation("Winner", fields: [winnerId], references: [id])
+}
+
+model Order {
+  id          String   @id @default(uuid())
+  userId      String
+  orderNumber String   @unique
+  status      String   @default("pending") // pending, confirmed, shipped, delivered, cancelled
+  totalAmount Float
+  currency    String   @default("MNT")
+  shippingAddress String?
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items       OrderItem[]
+  payments    Payment[]
+}
+
+model OrderItem {
+  id        String   @id @default(uuid())
+  orderId   String
+  productId String
+  quantity  Int
+  price     Float
+  createdAt DateTime @default(now())
+  
+  // Relations
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product   Product @relation(fields: [productId], references: [id])
+}
+
+model Payment {
+  id          String   @id @default(uuid())
+  userId      String
+  orderId     String?
+  amount      Float
+  currency    String   @default("MNT")
+  method      String   // card, bank_transfer, cash, etc.
+  status      String   @default("pending") // pending, completed, failed, refunded
+  transactionId String?
+  paymentDate DateTime @default(now())
+  
+  // Relations
+  user        User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  order       Order?  @relation(fields: [orderId], references: [id])
+}
+
+model Review {
+  id        String   @id @default(uuid())
+  userId    String
+  courseId  String?
+  productId String?
+  rating    Int      // 1-5 stars
+  comment   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relations
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course    Course?  @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  product   Product? @relation(fields: [productId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, courseId])
+  @@unique([userId, productId])
+}
+
+model Comment {
+  id        String   @id @default(uuid())
+  userId    String
+  content   String
+  parentId  String?  // for nested comments
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relations
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parent    Comment? @relation("CommentReplies", fields: [parentId], references: [id])
+  replies   Comment[] @relation("CommentReplies")
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  title     String
+  message   String
+  type      String   // info, success, warning, error
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  
+  // Relations
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Setting {
+  id    String @id @default(uuid())
+  key   String @unique
+  value String
+  type  String @default("string") // string, number, boolean, json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model News {
+  id          String   @id @default(uuid())
+  title       String
+  content     String
+  imageUrl    String?
+  authorId    String
+  publishedAt DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  author      User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
 }
