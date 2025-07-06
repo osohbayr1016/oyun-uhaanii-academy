@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useAuth } from "@/lib/auth";
 import {
   Trophy,
   Calendar,
@@ -49,6 +50,7 @@ interface Tournament {
 }
 
 const TournamentsPage = () => {
+  const { isAdmin } = useAuth();
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -195,12 +197,14 @@ const TournamentsPage = () => {
               </p>
             </div>
             <div className="flex items-center space-x-4">
-              <Link
-                href="/admin/tournaments"
-                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                Удирдлага
-              </Link>
+              {isAdmin() && (
+                <Link
+                  href="/admin/tournaments"
+                  className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  Удирдлага
+                </Link>
+              )}
             </div>
           </div>
         </div>

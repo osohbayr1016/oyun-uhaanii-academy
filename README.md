@@ -39,29 +39,34 @@ Oyun-Uhaanii-Academy/
 - npm or yarn
 - PostgreSQL database (NeonDB recommended)
 
-### 1. Install All Dependencies
+### Installation
+
+1. **Clone the repository**
+
+```bash
+git clone <repository-url>
+cd Oyun-Uhaanii-Academy
+```
+
+2. **Install dependencies**
 
 ```bash
 npm run install:all
 ```
 
-### 2. Set Up Environment Variables
+3. **Set up environment variables**
 
-**Backend (.env in back-end/):**
-
-```env
-DATABASE_URL="postgresql://username:password@host:port/dbname?sslmode=require"
+```bash
+# Backend (.env in back-end/):
+DATABASE_URL="postgresql://user:password@localhost:5432/database"
 JWT_SECRET="your-super-secret-jwt-key"
 PORT=5001
-```
 
-**Frontend (.env in front-end/):**
-
-```env
+# Frontend (.env.local in front-end/):
 NEXT_PUBLIC_API_URL="http://localhost:5001"
 ```
 
-### 3. Set Up Database
+4. **Set up database**
 
 ```bash
 # Generate Prisma client
@@ -74,25 +79,71 @@ npm run prisma:push
 npm run prisma:migrate
 ```
 
-### 4. Start Development Servers
-
-**Start both frontend and backend:**
+5. **Start development servers**
 
 ```bash
 npm run dev
 ```
 
-**Start only backend:**
+The application will be available at:
+
+- Frontend: http://localhost:3000
+- Backend: http://localhost:5001
+
+## 🧪 Testing
+
+### Run All Tests
 
 ```bash
-npm run backend
+# Run complete test suite
+./test-runner.sh
+
+# Or use npm scripts
+npm test
 ```
 
-**Start only frontend:**
+### Individual Test Commands
 
 ```bash
-npm run frontend
+# Backend tests only
+npm run test:backend
+
+# Frontend tests only
+npm run test:frontend
+
+# Tests with coverage
+npm run test:coverage
+
+# Type checking
+npm run type-check
+
+# Linting
+npm run lint
 ```
+
+### Test Coverage
+
+- Backend: Authentication, CRUD operations, error handling
+- Frontend: Component rendering, user interactions, form validation
+
+## 🏗️ Build & Deployment
+
+### Build Applications
+
+```bash
+npm run build
+```
+
+### Deployment Readiness
+
+Before deploying, ensure:
+
+1. All tests pass: `npm test`
+2. TypeScript compilation successful: `npm run type-check`
+3. Linting passed: `npm run lint`
+4. Build successful: `npm run build`
+
+See [DEPLOYMENT_READINESS.md](./DEPLOYMENT_READINESS.md) for detailed deployment guide.
 
 ## 🛠️ Available Scripts
 
@@ -223,8 +274,9 @@ NEXT_PUBLIC_SITE_URL="http://localhost:3000"
 1. Fork the repository
 2. Create a feature branch
 3. Make your changes
-4. Test thoroughly
-5. Submit a pull request
+4. Add tests for new features
+5. Ensure all tests pass
+6. Submit a pull request
 
 ## 📄 License
 
@@ -255,3 +307,16 @@ This project is licensed under the MIT License.
 
 - Run `npm run prisma:generate` in back-end/
 - Check import paths in your code
+
+## 📞 Support
+
+For issues and questions:
+
+1. Check the troubleshooting section
+2. Review the deployment guide
+3. Check existing GitHub issues
+4. Create a new issue with detailed information
+
+---
+
+**Happy coding! 🎮**

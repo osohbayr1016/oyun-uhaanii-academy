@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useAuth } from "@/lib/auth";
+import { useRouter } from "next/navigation";
 import {
   Trophy,
   Plus,
@@ -68,6 +70,8 @@ interface TournamentFormData {
 }
 
 const AdminTournamentsPage = () => {
+  const { isAuthenticated, isAdmin, loading: authLoading } = useAuth();
+  const router = useRouter();
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
   const [filterCategory, setFilterCategory] = useState("all");
@@ -112,8 +116,21 @@ const AdminTournamentsPage = () => {
 
   useEffect(() => {
     setMounted(true);
+
+    // Check authentication and admin status
+    if (!authLoading) {
+      if (!isAuthenticated()) {
+        router.push("/login");
+        return;
+      }
+      if (!isAdmin()) {
+        router.push("/");
+        return;
+      }
+    }
+
     fetchTournaments();
-  }, []);
+  }, [authLoading, isAuthenticated, isAdmin, router]);
 
   const fetchTournaments = async () => {
     try {
@@ -380,15 +397,25 @@ const AdminTournamentsPage = () => {
     });
   };
 
-  if (loading) {
+  // Show loading while checking authentication
+  if (authLoading || loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Тэмцээнуудыг ачаалж байна...</p>
+          <p className="mt-4 text-gray-600">
+            {authLoading
+              ? "Нэвтрэх эрхийг шалгаж байна..."
+              : "Тэмцээнуудыг ачаалж байна..."}
+          </p>
         </div>
       </div>
     );
+  }
+
+  // Redirect if not authenticated or not admin
+  if (!isAuthenticated() || !isAdmin()) {
+    return null; // Will redirect in useEffect
   }
 
   return (

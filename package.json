@@ -15,7 +15,20 @@
     "prisma:generate": "cd back-end && npm run prisma:generate",
     "prisma:migrate": "cd back-end && npm run prisma:migrate",
     "prisma:push": "cd back-end && npm run prisma:push",
-    "prisma:studio": "cd back-end && npm run prisma:studio"
+    "prisma:studio": "cd back-end && npm run prisma:studio",
+    "test": "npm run test:backend && npm run test:frontend",
+    "test:backend": "cd back-end && npm test",
+    "test:frontend": "cd front-end && npm test",
+    "test:coverage": "npm run test:backend:coverage && npm run test:frontend:coverage",
+    "test:backend:coverage": "cd back-end && npm run test:coverage",
+    "test:frontend:coverage": "cd front-end && npm run test:coverage",
+    "lint": "npm run lint:backend && npm run lint:frontend",
+    "lint:backend": "cd back-end && npm run lint",
+    "lint:frontend": "cd front-end && npm run lint",
+    "type-check": "npm run type-check:backend && npm run type-check:frontend",
+    "type-check:backend": "cd back-end && npx tsc --noEmit",
+    "type-check:frontend": "cd front-end && npx tsc --noEmit",
+    "predeploy": "npm run install:all && npm run build && npm run test"
   },
   "keywords": [
     "academy",

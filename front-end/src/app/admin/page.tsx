@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import AdminLayout from "./_components/AdminLayout";
 import {
   Users,
   BookOpen,
@@ -106,78 +105,76 @@ const AdminDashboard = () => {
   ];
 
   return (
-    <AdminLayout>
-      <div className="space-y-8">
-        {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {stats.map((stat, index) => (
-            <div key={index} className="bg-white rounded-lg shadow p-6">
-              <div className="flex items-center">
-                <div className={`p-3 rounded-lg ${stat.color}`}>
-                  <stat.icon className="h-6 w-6 text-white" />
-                </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">
-                    {stat.title}
-                  </p>
-                  <p className="text-2xl font-semibold text-gray-900">
-                    {stat.value}
-                  </p>
-                </div>
+    <div className="space-y-8">
+      {/* Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {stats.map((stat, index) => (
+          <div key={index} className="bg-white rounded-lg shadow p-6">
+            <div className="flex items-center">
+              <div className={`p-3 rounded-lg ${stat.color}`}>
+                <stat.icon className="h-6 w-6 text-white" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600">
+                  {stat.title}
+                </p>
+                <p className="text-2xl font-semibold text-gray-900">
+                  {stat.value}
+                </p>
               </div>
             </div>
-          ))}
-        </div>
-
-        {/* Admin Sections */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {adminSections.map((section, index) => (
-            <Link
-              key={index}
-              href={section.href}
-              className="bg-white rounded-lg shadow p-6 hover:shadow-lg transition-shadow duration-200"
-            >
-              <div className="flex items-center mb-4">
-                <div className={`p-3 rounded-lg ${section.color}`}>
-                  <section.icon className="h-6 w-6 text-white" />
-                </div>
-                <h3 className="ml-3 text-lg font-semibold text-gray-900">
-                  {section.title}
-                </h3>
-              </div>
-              <p className="text-gray-600">{section.description}</p>
-            </Link>
-          ))}
-        </div>
-
-        {/* Recent Activities */}
-        <div className="bg-white rounded-lg shadow">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-900">
-              Сүүлийн үйл ажиллагаа
-            </h3>
           </div>
-          <div className="p-6">
-            <div className="space-y-4">
-              {recentActivities.map((activity, index) => (
-                <div
-                  key={index}
-                  className="flex items-center justify-between py-2"
-                >
-                  <div>
-                    <p className="text-sm font-medium text-gray-900">
-                      {activity.action}
-                    </p>
-                    <p className="text-sm text-gray-500">{activity.user}</p>
-                  </div>
-                  <span className="text-sm text-gray-400">{activity.time}</span>
-                </div>
-              ))}
+        ))}
+      </div>
+
+      {/* Admin Sections */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {adminSections.map((section, index) => (
+          <Link
+            key={index}
+            href={section.href}
+            className="bg-white rounded-lg shadow p-6 hover:shadow-lg transition-shadow duration-200"
+          >
+            <div className="flex items-center mb-4">
+              <div className={`p-3 rounded-lg ${section.color}`}>
+                <section.icon className="h-6 w-6 text-white" />
+              </div>
+              <h3 className="ml-3 text-lg font-semibold text-gray-900">
+                {section.title}
+              </h3>
             </div>
+            <p className="text-gray-600">{section.description}</p>
+          </Link>
+        ))}
+      </div>
+
+      {/* Recent Activities */}
+      <div className="bg-white rounded-lg shadow">
+        <div className="px-6 py-4 border-b border-gray-200">
+          <h3 className="text-lg font-semibold text-gray-900">
+            Сүүлийн үйл ажиллагаа
+          </h3>
+        </div>
+        <div className="p-6">
+          <div className="space-y-4">
+            {recentActivities.map((activity, index) => (
+              <div
+                key={index}
+                className="flex items-center justify-between py-2"
+              >
+                <div>
+                  <p className="text-sm font-medium text-gray-900">
+                    {activity.action}
+                  </p>
+                  <p className="text-sm text-gray-500">{activity.user}</p>
+                </div>
+                <span className="text-sm text-gray-400">{activity.time}</span>
+              </div>
+            ))}
           </div>
         </div>
       </div>
-    </AdminLayout>
+    </div>
   );
 };
 

@@ -18,7 +18,7 @@ interface NewsArticle {
 }
 
 export default function AdminNewsPage() {
-  const { user } = useAuth();
+  const { user, isAuthenticated, isAdmin } = useAuth();
   const [news, setNews] = useState<NewsArticle[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -30,11 +30,9 @@ export default function AdminNewsPage() {
   });
 
   useEffect(() => {
-    if (user?.role !== "admin") {
-      window.location.href = "/login";
-      return;
+    if (isAuthenticated() && isAdmin()) {
+      fetchNews();
     }
-    fetchNews();
   }, [user]);
 
   const fetchNews = async () => {
@@ -130,7 +128,7 @@ export default function AdminNewsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 pt-20">
+      <div className="min-h-screen bg-gray-50">
         <div className="container mx-auto px-4 py-8">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
@@ -142,7 +140,7 @@ export default function AdminNewsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 pt-20">
+    <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="flex justify-between items-center mb-8">

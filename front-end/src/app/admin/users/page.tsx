@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import AdminLayout from "../_components/AdminLayout";
 import {
   Users,
   Plus,
@@ -87,7 +86,7 @@ const AdminUsersPage = () => {
   };
 
   return (
-    <AdminLayout>
+    <>
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Хэрэглэгчид</h1>
@@ -364,7 +363,7 @@ const AdminUsersPage = () => {
           </div>
         </div>
       )}
-    </AdminLayout>
+    </>
   );
 };
 

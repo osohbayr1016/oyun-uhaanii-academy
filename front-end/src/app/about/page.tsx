@@ -1,12 +1,7 @@
-import Header from "../_components/Header";
-import Footer from "../_components/Footer";
-
 const AboutPage = () => {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-      <Header />
-
-      <main className="container mx-auto px-4 py-12 mt-16">
+    <div className="bg-gradient-to-br from-blue-50 to-indigo-100">
+      <main className="container mx-auto px-4 py-12">
         <section className="mb-16">
           <h1 className="text-4xl font-bold text-center mb-8 text-gray-800">
             Бидний тухай
@@ -123,8 +118,6 @@ const AboutPage = () => {
           </div>
         </section>
       </main>
-
-      <Footer />
     </div>
   );
 };

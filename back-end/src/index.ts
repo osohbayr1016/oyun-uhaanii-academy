@@ -51,17 +51,22 @@ app.use(
 // Optional: Global Error Handler (put this at the very end of your middleware chain)
 // app.use(errorHandler);
 
-// Start the server
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-  console.log(
-    `Database URL: ${
-      process.env.DATABASE_URL ? "Configured" : "NOT CONFIGURED!"
-    }`
-  );
-});
+// Start the server only if not in test environment
+if (process.env.NODE_ENV !== "test") {
+  app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+    console.log(
+      `Database URL: ${
+        process.env.DATABASE_URL ? "Configured" : "NOT CONFIGURED!"
+      }`
+    );
+  });
+}
 
 // Handle graceful shutdown
 process.on("beforeExit", async () => {
   await prisma.$disconnect();
 });
+
+// Export for testing
+export { app, prisma };

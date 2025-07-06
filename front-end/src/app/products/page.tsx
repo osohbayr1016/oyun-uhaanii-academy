@@ -2,8 +2,6 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import Header from "../_components/Header";
-import Footer from "../_components/Footer";
 
 interface Product {
   id: string;
@@ -50,7 +48,7 @@ export default function ProductsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="bg-gray-50 flex items-center justify-center min-h-screen">
         <div className="text-center">
           <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto"></div>
           <p className="mt-4 text-gray-600">Loading products...</p>
@@ -61,7 +59,7 @@ export default function ProductsPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="bg-gray-50 flex items-center justify-center min-h-screen">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-900 mb-4">Error</h1>
           <p className="text-gray-600 mb-6">{error}</p>
@@ -77,9 +75,7 @@ export default function ProductsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Header />
-
+    <div className="bg-gray-50">
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <section className="text-center mb-12">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
@@ -145,8 +141,6 @@ export default function ProductsPage() {
           </section>
         )}
       </main>
-
-      <Footer />
     </div>
   );
 }

@@ -1,52 +1,100 @@
+"use client";
+
 import React from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useAuth } from "@/lib/auth";
 
-const HeroSection = () => {
-  return (
-    <section className="w-full bg-gradient-to-br from-blue-50 to-indigo-100 text-black py-20 px-6 md:px-12 mt-16">
-      <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-10 items-center">
-        {/* Left side - Text */}
-        <div className="space-y-6">
-          <h1 className="text-4xl md:text-5xl font-bold leading-tight">
-            Монголын оюун ухааны академи <br className="hidden md:block" />
-            <span className="text-blue-600">Офицер салбар</span>
-          </h1>
-          <p className="text-lg text-gray-600">
-            Боловсрол, бүтээлч байдал, хөгжил дэвшлийг дэмжсэн сургалтууд болон
-            бүтээгдэхүүнүүдийг нэг дороос.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4">
-            <Link
-              href="/courses"
-              className="bg-blue-600 text-white px-6 py-3 rounded-xl text-base font-medium hover:bg-blue-700 transition-colors duration-200 text-center"
-            >
-              Сургалтуудыг үзэх
-            </Link>
-            <Link
-              href="/products"
-              className="border border-blue-600 text-blue-600 px-6 py-3 rounded-xl text-base font-medium hover:bg-blue-50 transition-colors duration-200 text-center"
-            >
-              Бүтээгдэхүүн үзэх
-            </Link>
+export default function HeroSection() {
+  const { user, isAuthenticated, isAdmin, loading } = useAuth();
+
+  // Safe function calls with fallbacks
+  const isUserAuthenticated =
+    typeof isAuthenticated === "function" ? isAuthenticated() : false;
+  const isUserAdmin = typeof isAdmin === "function" ? isAdmin() : false;
+
+  // Don't render auth-dependent content while loading
+  if (loading) {
+    return (
+      <section className="relative bg-gradient-to-br from-blue-50 to-indigo-100 overflow-hidden">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 lg:py-24">
+          <div className="text-center">
+            <div className="animate-pulse">
+              <div className="h-8 bg-gray-300 rounded mb-4"></div>
+              <div className="h-4 bg-gray-300 rounded mb-8"></div>
+              <div className="h-12 bg-gray-300 rounded"></div>
+            </div>
           </div>
         </div>
+      </section>
+    );
+  }
 
-        {/* Right side - Image */}
-        <div className="w-full flex justify-center">
-          <div className="relative w-full max-w-md">
-            <Image
-              src="/xyno.jpg"
-              alt="Learning kids illustration"
-              width={400}
-              height={400}
-              className="w-full h-auto object-cover rounded-xl shadow-lg"
-            />
+  return (
+    <section className="relative bg-gradient-to-br from-blue-50 to-indigo-100 overflow-hidden">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 lg:py-24">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+          {/* Content */}
+          <div className="text-center lg:text-left space-y-6">
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold text-gray-900 leading-tight">
+              Монголын <span className="text-blue-600">Тоглоомын Академи</span>
+            </h1>
+            <p className="text-lg sm:text-xl text-gray-600 max-w-2xl mx-auto lg:mx-0">
+              Монголын уугуул тоглоом, урлаг, соёлыг судлан, дамжуулж, хадгалж
+              үлдэхэд хувь нэмрээ оруулъя.
+            </p>
+
+            {/* Stats */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6 pt-8 sm:pt-12">
+              <div className="text-center">
+                <div className="text-2xl sm:text-3xl font-bold text-blue-600">
+                  50+
+                </div>
+                <div className="text-sm sm:text-base text-gray-600">Курс</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl sm:text-3xl font-bold text-blue-600">
+                  1000+
+                </div>
+                <div className="text-sm sm:text-base text-gray-600">Сурагч</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl sm:text-3xl font-bold text-blue-600">
+                  20+
+                </div>
+                <div className="text-sm sm:text-base text-gray-600">Багш</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl sm:text-3xl font-bold text-blue-600">
+                  5+
+                </div>
+                <div className="text-sm sm:text-base text-gray-600">Жил</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Image */}
+          <div className="relative order-first lg:order-last">
+            <div className="relative mx-auto max-w-md lg:max-w-lg">
+              <Image
+                src="/about3.png"
+                alt="Mongolian Traditional Games"
+                width={500}
+                height={500}
+                className="w-full h-auto rounded-2xl shadow-2xl"
+                priority
+              />
+              {/* Decorative elements */}
+              <div className="absolute -top-4 -right-4 w-20 h-20 bg-yellow-400 rounded-full opacity-20 animate-pulse"></div>
+              <div className="absolute -bottom-4 -left-4 w-16 h-16 bg-red-400 rounded-full opacity-20 animate-pulse delay-1000"></div>
+            </div>
           </div>
         </div>
       </div>
+
+      {/* Background decoration */}
+      <div className="absolute top-0 right-0 w-1/3 h-full bg-gradient-to-l from-blue-200/20 to-transparent pointer-events-none"></div>
+      <div className="absolute bottom-0 left-0 w-1/4 h-1/2 bg-gradient-to-r from-indigo-200/20 to-transparent pointer-events-none"></div>
     </section>
   );
-};
-
-export default HeroSection;
+}
