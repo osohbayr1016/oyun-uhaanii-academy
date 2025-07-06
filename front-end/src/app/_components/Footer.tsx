@@ -15,7 +15,7 @@ export default function Footer() {
                 alt="Oyun Uhaanii Academy"
                 width={32}
                 height={32}
-                className="w-8 h-8"
+                className="w-25 h-15"
               />
             </div>
             <p className="text-gray-300 text-sm leading-relaxed">
