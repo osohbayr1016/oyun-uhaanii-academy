@@ -40,9 +40,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     loading: true,
   });
 
-  // Always use NEXT_PUBLIC_BASE_URL, fallback to localhost
+  // Always use NEXT_PUBLIC_API_URL, fallback to localhost
   const API_BASE_URL =
-    process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:5001";
+    process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
 
   useEffect(() => {
     const token = localStorage.getItem("token");
