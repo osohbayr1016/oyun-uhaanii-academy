@@ -43,12 +43,10 @@ export const getAllCourses = async (req: Request, res: Response) => {
   } catch (error) {
     console.error("Error fetching courses:", error);
     if (process.env.NODE_ENV === "development") {
-      res
-        .status(500)
-        .json({
-          message: "Server error",
-          error: error instanceof Error ? error.stack : error,
-        });
+      res.status(500).json({
+        message: "Server error",
+        error: error instanceof Error ? error.stack : error,
+      });
     } else {
       res.status(500).json({ message: "Server error" });
     }
@@ -141,6 +139,41 @@ export const createCourse = async (req: Request, res: Response) => {
       structure,
       enrollLink,
     } = req.body;
+
+    // Input validation
+    if (!title || !title.trim()) {
+      return res.status(400).json({ message: "Course title is required" });
+    }
+    if (!description || !description.trim()) {
+      return res
+        .status(400)
+        .json({ message: "Course description is required" });
+    }
+    if (!content || !content.trim()) {
+      return res.status(400).json({ message: "Course content is required" });
+    }
+    if (!imageUrl || !imageUrl.trim()) {
+      return res.status(400).json({ message: "Course imageUrl is required" });
+    }
+    if (!price || isNaN(parseFloat(price))) {
+      return res
+        .status(400)
+        .json({ message: "Valid course price is required" });
+    }
+    if (!category || !category.trim()) {
+      return res.status(400).json({ message: "Course category is required" });
+    }
+    if (!instructor || !instructor.trim()) {
+      return res.status(400).json({ message: "Course instructor is required" });
+    }
+    if (!level || !level.trim()) {
+      return res.status(400).json({ message: "Course level is required" });
+    }
+    if (!duration || isNaN(parseInt(duration))) {
+      return res
+        .status(400)
+        .json({ message: "Valid course duration is required" });
+    }
 
     const course = await prisma.course.create({
       data: {

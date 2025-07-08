@@ -37,37 +37,109 @@ app.get("/", (req, res) => {
   res.send("Backend API is running!");
 });
 
-// Global Error Handler
-app.use(
-  (
-    err: any,
-    req: express.Request,
-    res: express.Response,
-    next: express.NextFunction
-  ) => {
-    console.error(err.stack);
-    res.status(500).json({ message: "Something went wrong!" });
+// Health check endpoint
+app.get("/health", async (req, res) => {
+  try {
+    // Test database connection
+    await prisma.$queryRaw`SELECT 1`;
+    res.json({
+      status: "healthy",
+      database: "connected",
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error) {
+    console.error("Health check failed:", error);
+    res.status(503).json({
+      status: "unhealthy",
+      database: "disconnected",
+      error: error instanceof Error ? error.message : "Unknown error",
+      timestamp: new Date().toISOString(),
+    });
   }
-);
+});
+
+// Global Error Handler
+app.use((err: any, req: any, res: any, next: any) => {
+  console.error("Global error handler caught:", {
+    error: err.message,
+    stack: err.stack,
+    url: req.url,
+    method: req.method,
+    timestamp: new Date().toISOString(),
+  });
+
+  // Handle specific error types
+  if (err.name === "PrismaClientKnownRequestError") {
+    return res.status(400).json({
+      message: "Database operation failed",
+      error: "Invalid request to database",
+    });
+  }
+
+  if (err.name === "PrismaClientUnknownRequestError") {
+    return res.status(500).json({
+      message: "Database error",
+      error: "Unknown database error occurred",
+    });
+  }
+
+  if (err.name === "ValidationError") {
+    return res.status(400).json({
+      message: "Validation error",
+      error: err.message,
+    });
+  }
+
+  // Default error response
+  res.status(500).json({
+    message: "Internal server error",
+    error:
+      process.env.NODE_ENV === "production"
+        ? "Something went wrong"
+        : err.message,
+  });
+});
 
 // Optional: Global Error Handler (put this at the very end of your middleware chain)
 // app.use(errorHandler);
 
 // Start the server only if not in test environment
 if (process.env.NODE_ENV !== "test") {
-  app.listen(PORT, () => {
+  app.listen(PORT, async () => {
     console.log(`Server is running on port ${PORT}`);
+    console.log(`Environment: ${process.env.NODE_ENV || "development"}`);
     console.log(
       `Database URL: ${
         process.env.DATABASE_URL ? "Configured" : "NOT CONFIGURED!"
       }`
     );
+
+    // Test database connection on startup
+    try {
+      await prisma.$queryRaw`SELECT 1`;
+      console.log("✅ Database connection successful");
+    } catch (error) {
+      console.error("❌ Database connection failed:", error);
+      console.error("Please check your DATABASE_URL environment variable");
+    }
   });
 }
 
 // Handle graceful shutdown
 process.on("beforeExit", async () => {
   await prisma.$disconnect();
+});
+
+// Handle uncaught exceptions
+process.on("uncaughtException", (error) => {
+  console.error("Uncaught Exception:", error);
+  process.exit(1);
+});
+
+// Handle unhandled promise rejections
+process.on("unhandledRejection", (reason, promise) => {
+  console.error("Unhandled Rejection at:", promise, "reason:", reason);
+  process.exit(1);
 });
 
 // Export for testing

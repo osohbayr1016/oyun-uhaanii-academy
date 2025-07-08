@@ -6,7 +6,7 @@ const prisma = new PrismaClient();
 
 describe("Auth Controller", () => {
   beforeAll(async () => {
-    // Clean up database before tests
+    // Clean up database before all tests
     await prisma.user.deleteMany();
   });
 
@@ -15,6 +15,11 @@ describe("Auth Controller", () => {
   });
 
   describe("POST /api/auth/register", () => {
+    beforeEach(async () => {
+      // Clean up users before each test in this suite
+      await prisma.user.deleteMany();
+    });
+
     it("should register a new user successfully", async () => {
       const userData = {
         name: "Test User",

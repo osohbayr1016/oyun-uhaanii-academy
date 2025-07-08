@@ -25,13 +25,14 @@ describe("Courses Controller", () => {
           title: "Test Course",
           description: "Test Description",
           instructor: "Test Instructor",
-          duration: "10 hours",
+          duration: 10,
           level: "Beginner",
           price: 50000,
           currency: "MNT",
           imageUrl: "https://example.com/course.jpg",
           category: "Programming",
           isActive: true,
+          content: "Test Content",
         },
       });
 
@@ -50,13 +51,14 @@ describe("Courses Controller", () => {
         title: "New Course",
         description: "New Description",
         instructor: "New Instructor",
-        duration: "20 hours",
+        duration: 20,
         level: "Intermediate",
         price: 75000,
         currency: "MNT",
         imageUrl: "https://example.com/new-course.jpg",
         category: "Gaming",
         isActive: true,
+        content: "New Content",
       };
 
       const response = await request(app)
@@ -91,13 +93,14 @@ describe("Courses Controller", () => {
           title: "Specific Course",
           description: "Specific Description",
           instructor: "Specific Instructor",
-          duration: "15 hours",
+          duration: 15,
           level: "Advanced",
           price: 100000,
           currency: "MNT",
           imageUrl: "https://example.com/specific-course.jpg",
           category: "Advanced Gaming",
           isActive: true,
+          content: "Specific Content",
         },
       });
 

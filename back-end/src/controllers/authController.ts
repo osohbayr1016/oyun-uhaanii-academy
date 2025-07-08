@@ -63,7 +63,7 @@ export const register = async (req: Request, res: Response) => {
     // Generate token
     const token = generateToken(user.id);
 
-    res.status(201).json({
+    return res.status(201).json({
       message: "User created successfully",
       token,
       user: {
@@ -73,9 +73,15 @@ export const register = async (req: Request, res: Response) => {
         role: user.role,
       },
     });
-  } catch (error) {
+  } catch (error: any) {
+    // Handle unique constraint error (duplicate email) from Prisma
+    if (error.code === "P2002" && error.meta?.target?.includes("email")) {
+      return res.status(400).json({ message: "User already exists" });
+    }
     console.error("Registration error:", error, "Request body:", req.body);
-    res.status(500).json({ message: "Server error during registration" });
+    return res
+      .status(500)
+      .json({ message: "Server error during registration" });
   }
 };
 
@@ -98,15 +104,13 @@ export const login = async (req: Request, res: Response) => {
       where: { email },
     });
     if (!user) {
-      res.status(400).json({ message: "Invalid credentials" });
-      return;
+      return res.status(404).json({ message: "User not found" });
     }
 
     // Check password
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
-      res.status(400).json({ message: "Invalid credentials" });
-      return;
+      return res.status(401).json({ message: "Invalid credentials" });
     }
 
     // Generate token
