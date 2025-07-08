@@ -3,7 +3,7 @@ services:
     name: oyun-uhaanii-academy-backend
     env: node
     plan: free
-    buildCommand: cd back-end && npm install && npm run build
+    buildCommand: cd back-end && npm run build
     startCommand: cd back-end && npm start
     envVars:
       - key: NODE_ENV

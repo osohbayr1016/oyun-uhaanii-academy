@@ -12,6 +12,7 @@ echo "🔧 Generating Prisma client..."
 npx prisma generate
 
 echo "🏗️ Compiling TypeScript..."
+npx tsc --version
 npx tsc
 
 echo "✅ Build completed successfully!" 
