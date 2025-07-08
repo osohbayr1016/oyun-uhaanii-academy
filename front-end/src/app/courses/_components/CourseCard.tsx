@@ -93,10 +93,7 @@ export default function CourseCard({ course }: CourseCardProps) {
         </div>
 
         {/* Price and CTA */}
-        <div className="flex items-center justify-between">
-          <div className="text-lg sm:text-xl font-bold text-blue-600">
-            {course.price.toLocaleString()} {course.currency}
-          </div>
+        <div className="flex items-center justify-end">
           <Link
             href={`/courses/${course.id}`}
             className="btn-responsive bg-blue-600 text-white hover:bg-blue-700"

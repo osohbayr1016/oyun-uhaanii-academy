@@ -21,6 +21,7 @@ import authRoutes from "./routes/authRoutes";
 import newsRoutes from "./routes/newsRoutes";
 import courseRoutes from "./routes/courseRoutes";
 import tournamentRoutes from "./routes/tournamentRoutes";
+import adminRoutes from "./routes/adminRoutes";
 // import errorHandler from './middleware/errorHandler'; // Optional: for centralized error handling
 
 // Route Middlewares
@@ -29,6 +30,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/news", newsRoutes);
 app.use("/api/courses", courseRoutes);
 app.use("/api/tournaments", tournamentRoutes);
+app.use("/api/admin", adminRoutes);
 
 // Basic test route
 app.get("/", (req, res) => {

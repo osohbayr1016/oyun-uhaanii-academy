@@ -41,19 +41,30 @@ model Course {
   description String
   content     String
   imageUrl    String
-  price       Float
-  currency    String       @default("MNT")
-  duration    Int          // in hours
-  level       String       // beginner, intermediate, advanced
-  category    String
-  instructor  String
+  price       Float?      // made optional
+  currency    String?     // made optional
+  duration    Int?        // made optional
+  level       String?     // made optional
+  category    String?     // made optional
+  instructor  String?     // made optional
   maxStudents Int?
   isActive    Boolean      @default(true)
   startDate   DateTime?
   endDate     DateTime?
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
-  
+
+  // New fields for dynamic design and frontend
+  youtubeUrl      String?
+  heroImage       String?
+  backgroundImage String?
+  sectionImage    String?
+  sectionText     String?
+  goal            String?
+  target          String?
+  structure       String?
+  enrollLink      String?
+
   // Relations
   enrollments Enrollment[]
   reviews     Review[]
@@ -295,4 +306,16 @@ model News {
 
   // Relations
   author      User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+}
+
+model Activity {
+  id        String   @id @default(uuid())
+  type      String   // user, course, product, tournament, news, etc.
+  action    String   // created, updated, deleted, etc.
+  entityId  String?
+  entityName String?
+  userId    String?
+  userName  String?
+  message   String
+  createdAt DateTime @default(now())
 }

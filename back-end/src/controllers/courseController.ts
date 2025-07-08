@@ -42,7 +42,16 @@ export const getAllCourses = async (req: Request, res: Response) => {
     res.json(transformedCourses);
   } catch (error) {
     console.error("Error fetching courses:", error);
-    res.status(500).json({ message: "Server error" });
+    if (process.env.NODE_ENV === "development") {
+      res
+        .status(500)
+        .json({
+          message: "Server error",
+          error: error instanceof Error ? error.stack : error,
+        });
+    } else {
+      res.status(500).json({ message: "Server error" });
+    }
   }
 };
 
@@ -88,7 +97,17 @@ export const getCourseById = async (req: Request, res: Response) => {
       return res.status(404).json({ message: "Course not found" });
     }
 
-    res.json(course);
+    // Add extra fields for design (backgroundImage, youtubeUrl, subtitle)
+    // If not present in DB, fallback to null or empty string
+    const courseWithDesign = {
+      ...course,
+      backgroundImage:
+        "backgroundImage" in course ? (course as any).backgroundImage : null,
+      youtubeUrl: "youtubeUrl" in course ? (course as any).youtubeUrl : null,
+      subtitle: "subtitle" in course ? (course as any).subtitle : "",
+    };
+
+    res.json(courseWithDesign);
   } catch (error) {
     console.error("Error fetching course:", error);
     res.status(500).json({ message: "Server error" });
@@ -112,6 +131,15 @@ export const createCourse = async (req: Request, res: Response) => {
       maxStudents,
       startDate,
       endDate,
+      youtubeUrl,
+      heroImage,
+      backgroundImage,
+      sectionImage,
+      sectionText,
+      goal,
+      target,
+      structure,
+      enrollLink,
     } = req.body;
 
     const course = await prisma.course.create({
@@ -120,15 +148,24 @@ export const createCourse = async (req: Request, res: Response) => {
         description,
         content,
         imageUrl,
-        price: parseFloat(price),
+        price: price ? parseFloat(price) : undefined,
         currency,
-        duration: parseInt(duration),
+        duration: duration ? parseInt(duration) : undefined,
         level,
         category,
         instructor,
         maxStudents: maxStudents ? parseInt(maxStudents) : null,
         startDate: startDate ? new Date(startDate) : null,
         endDate: endDate ? new Date(endDate) : null,
+        youtubeUrl,
+        heroImage,
+        backgroundImage,
+        sectionImage,
+        sectionText,
+        goal,
+        target,
+        structure,
+        enrollLink,
       },
     });
 
@@ -158,6 +195,15 @@ export const updateCourse = async (req: Request, res: Response) => {
       startDate,
       endDate,
       isActive,
+      backgroundImage,
+      sectionImage,
+      sectionText,
+      youtubeUrl,
+      heroImage,
+      goal,
+      target,
+      structure,
+      enrollLink,
     } = req.body;
 
     const existingCourse = await prisma.course.findUnique({
@@ -185,6 +231,15 @@ export const updateCourse = async (req: Request, res: Response) => {
         startDate: startDate ? new Date(startDate) : undefined,
         endDate: endDate ? new Date(endDate) : undefined,
         isActive: isActive !== undefined ? isActive : undefined,
+        backgroundImage,
+        sectionImage,
+        sectionText,
+        youtubeUrl,
+        heroImage,
+        goal,
+        target,
+        structure,
+        enrollLink,
       },
     });
 

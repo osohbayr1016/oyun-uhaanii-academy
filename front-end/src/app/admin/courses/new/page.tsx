@@ -7,6 +7,12 @@ const AddCourse = () => {
     title: "",
     description: "",
     image: "",
+    youtubeUrl: "",
+    heroImage: "",
+    goal: "",
+    target: "",
+    structure: "",
+    enrollLink: "",
   });
 
   const handleChange = (
@@ -24,6 +30,12 @@ const AddCourse = () => {
         title: form.title,
         description: form.description,
         image: form.image,
+        youtubeUrl: form.youtubeUrl,
+        heroImage: form.heroImage,
+        goal: form.goal,
+        target: form.target,
+        structure: form.structure,
+        enrollLink: form.enrollLink,
       }),
     });
 
@@ -58,6 +70,63 @@ const AddCourse = () => {
         name="image"
         placeholder="Зургийн URL"
         value={form.image}
+        onChange={handleChange}
+        className="w-full border p-2 rounded"
+        required
+      />
+
+      <input
+        type="text"
+        name="youtubeUrl"
+        placeholder="Youtube видео URL"
+        value={form.youtubeUrl}
+        onChange={handleChange}
+        className="w-full border p-2 rounded"
+        required
+      />
+
+      <input
+        type="text"
+        name="heroImage"
+        placeholder="Hero section зураг URL"
+        value={form.heroImage}
+        onChange={handleChange}
+        className="w-full border p-2 rounded"
+        required
+      />
+
+      <textarea
+        name="goal"
+        placeholder="Сургалтын зорилго"
+        value={form.goal}
+        onChange={handleChange}
+        className="w-full border p-2 rounded"
+        required
+      />
+
+      <textarea
+        name="target"
+        placeholder="Хэнд зориулагдсан бэ?"
+        value={form.target}
+        onChange={handleChange}
+        className="w-full border p-2 rounded"
+        required
+      />
+
+      <textarea
+        name="structure"
+        placeholder="Сургалтын бүтэц"
+        value={form.structure}
+        onChange={handleChange}
+        className="w-full border p-2 rounded"
+        required
+      />
+
+      <input
+        type="text"
+        name="enrollLink"
+        placeholder="Сургалтанд бүртгүүлэх Google Form линк"
+        value={form.enrollLink}
         onChange={handleChange}
         className="w-full border p-2 rounded"
         required

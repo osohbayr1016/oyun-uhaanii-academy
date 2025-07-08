@@ -111,7 +111,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   };
 
   const isAuthenticated = () => !!authState.user && !!authState.token;
-  const isAdmin = () => authState.user?.role === "admin";
+  const isAdmin = () => authState.user?.role?.toLowerCase() === "admin";
 
   return (
     <AuthContext.Provider

@@ -24,7 +24,16 @@ export const getAllNews = async (req: Request, res: Response) => {
     res.json(news);
   } catch (error) {
     console.error("Error fetching news:", error);
-    res.status(500).json({ message: "Server error" });
+    if (process.env.NODE_ENV === "development") {
+      res
+        .status(500)
+        .json({
+          message: "Server error",
+          error: error instanceof Error ? error.stack : error,
+        });
+    } else {
+      res.status(500).json({ message: "Server error" });
+    }
   }
 };
 

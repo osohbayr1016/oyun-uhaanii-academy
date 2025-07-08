@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   BookOpen,
   Plus,
@@ -22,12 +23,12 @@ interface Course {
   description: string;
   content: string;
   imageUrl: string;
-  price: number;
-  currency: string;
-  duration: number;
-  level: string;
-  category: string;
-  instructor: string;
+  price?: number | null;
+  currency?: string | null;
+  duration?: number | null;
+  level?: string | null;
+  category?: string | null;
+  instructor?: string | null;
   maxStudents?: number;
   isActive: boolean;
   startDate?: string;
@@ -36,6 +37,12 @@ interface Course {
   updatedAt: string;
   studentCount?: number;
   averageRating?: number;
+  youtubeUrl?: string | null;
+  heroImage?: string | null;
+  goal?: string | null;
+  target?: string | null;
+  structure?: string | null;
+  enrollLink?: string | null;
 }
 
 interface CourseFormData {
@@ -62,22 +69,27 @@ const AdminCoursesPage = () => {
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
-  const [formData, setFormData] = useState<CourseFormData>({
+  const [formData, setFormData] = useState({
     title: "",
     description: "",
     content: "",
     imageUrl: "",
-    price: "",
+    youtubeUrl: "",
+    heroImage: "",
+    goal: "",
+    target: "",
+    structure: "",
+    enrollLink: "",
+    price: 0,
     currency: "MNT",
-    duration: "",
+    duration: 0,
     level: "Эхлэгч",
     category: "",
     instructor: "",
-    maxStudents: "",
-    startDate: "",
-    endDate: "",
   });
   const [submitting, setSubmitting] = useState(false);
+
+  const router = useRouter();
 
   // Fetch courses on component mount
   useEffect(() => {
@@ -121,7 +133,16 @@ const AdminCoursesPage = () => {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          ...formData,
+          content: formData.description || "",
+          price: formData.price || 0,
+          currency: formData.currency || "MNT",
+          duration: formData.duration || 0,
+          level: formData.level || "Эхлэгч",
+          category: formData.category || "",
+          instructor: formData.instructor || "",
+        }),
       });
 
       if (!response.ok) {
@@ -136,15 +157,18 @@ const AdminCoursesPage = () => {
         description: "",
         content: "",
         imageUrl: "",
-        price: "",
+        youtubeUrl: "",
+        heroImage: "",
+        goal: "",
+        target: "",
+        structure: "",
+        enrollLink: "",
+        price: 0,
         currency: "MNT",
-        duration: "",
+        duration: 0,
         level: "Эхлэгч",
         category: "",
         instructor: "",
-        maxStudents: "",
-        startDate: "",
-        endDate: "",
       });
     } catch (error) {
       console.error("Error creating course:", error);
@@ -334,7 +358,7 @@ const AdminCoursesPage = () => {
                 </div>
                 <div className="p-6">
                   <div className="flex items-center justify-between mb-2">
-                    {getLevelBadge(course.level)}
+                    {getLevelBadge(course.level ?? "Эхлэгч")}
                     {getStatusBadge(course.isActive)}
                   </div>
                   <h3 className="text-xl font-semibold text-gray-900 mb-2">
@@ -347,15 +371,15 @@ const AdminCoursesPage = () => {
                   <div className="space-y-2 mb-4">
                     <div className="flex items-center text-sm text-gray-500">
                       <Clock className="w-4 h-4 mr-2" />
-                      {course.duration} цаг
+                      {course.duration ?? 0} цаг
                     </div>
                     <div className="flex items-center text-sm text-gray-500">
                       <User className="w-4 h-4 mr-2" />
-                      {course.instructor}
+                      {course.instructor ?? "Багш"}
                     </div>
                     <div className="flex items-center text-sm text-gray-500">
                       <DollarSign className="w-4 h-4 mr-2" />
-                      {course.price.toLocaleString()} {course.currency}
+                      {course.price ?? 0} {course.currency ?? "MNT"}
                     </div>
                     <div className="text-sm text-gray-500">
                       Сурагч: {course.studentCount || 0}
@@ -373,7 +397,10 @@ const AdminCoursesPage = () => {
                       >
                         <Edit className="w-4 h-4" />
                       </button>
-                      <button className="text-green-600 hover:text-green-900 p-2">
+                      <button
+                        onClick={() => router.push(`/courses/${course.id}`)}
+                        className="text-green-600 hover:text-green-900 p-2"
+                      >
                         <Eye className="w-4 h-4" />
                       </button>
                       <button
@@ -431,19 +458,6 @@ const AdminCoursesPage = () => {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
-                    Агуулга
-                  </label>
-                  <textarea
-                    rows={3}
-                    name="content"
-                    value={formData.content}
-                    onChange={handleInputChange}
-                    required
-                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
                     Зургийн URL
                   </label>
                   <input
@@ -455,117 +469,83 @@ const AdminCoursesPage = () => {
                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">
-                      Үргэлжлэх хугацаа (цаг)
-                    </label>
-                    <input
-                      type="number"
-                      name="duration"
-                      value={formData.duration}
-                      onChange={handleInputChange}
-                      required
-                      placeholder="8"
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">
-                      Түвшин
-                    </label>
-                    <select
-                      name="level"
-                      value={formData.level}
-                      onChange={handleInputChange}
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                    >
-                      <option value="Эхлэгч">Эхлэгч</option>
-                      <option value="Дунд">Дунд</option>
-                      <option value="Дээд">Дээд</option>
-                    </select>
-                  </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Youtube видео URL
+                  </label>
+                  <input
+                    type="url"
+                    name="youtubeUrl"
+                    value={formData.youtubeUrl}
+                    onChange={handleInputChange}
+                    required
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  />
                 </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">
-                      Үнэ
-                    </label>
-                    <input
-                      type="number"
-                      name="price"
-                      value={formData.price}
-                      onChange={handleInputChange}
-                      required
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">
-                      Багш
-                    </label>
-                    <input
-                      type="text"
-                      name="instructor"
-                      value={formData.instructor}
-                      onChange={handleInputChange}
-                      required
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                    />
-                  </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Hero section зураг URL
+                  </label>
+                  <input
+                    type="url"
+                    name="heroImage"
+                    value={formData.heroImage}
+                    onChange={handleInputChange}
+                    required
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  />
                 </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">
-                      Ангилал
-                    </label>
-                    <input
-                      type="text"
-                      name="category"
-                      value={formData.category}
-                      onChange={handleInputChange}
-                      required
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">
-                      Хамгийн их сурагч
-                    </label>
-                    <input
-                      type="number"
-                      name="maxStudents"
-                      value={formData.maxStudents}
-                      onChange={handleInputChange}
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                    />
-                  </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Сургалтын зорилго
+                  </label>
+                  <textarea
+                    rows={2}
+                    name="goal"
+                    value={formData.goal}
+                    onChange={handleInputChange}
+                    required
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  />
                 </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">
-                      Эхлэх огноо
-                    </label>
-                    <input
-                      type="date"
-                      name="startDate"
-                      value={formData.startDate}
-                      onChange={handleInputChange}
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">
-                      Дуусах огноо
-                    </label>
-                    <input
-                      type="date"
-                      name="endDate"
-                      value={formData.endDate}
-                      onChange={handleInputChange}
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                    />
-                  </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Хэнд зориулагдсан бэ?
+                  </label>
+                  <textarea
+                    rows={2}
+                    name="target"
+                    value={formData.target}
+                    onChange={handleInputChange}
+                    required
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Сургалтын бүтэц
+                  </label>
+                  <textarea
+                    rows={2}
+                    name="structure"
+                    value={formData.structure}
+                    onChange={handleInputChange}
+                    required
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Сургалтанд бүртгүүлэх Google Form линк
+                  </label>
+                  <input
+                    type="url"
+                    name="enrollLink"
+                    value={formData.enrollLink}
+                    onChange={handleInputChange}
+                    required
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  />
                 </div>
                 <div className="flex justify-end space-x-3">
                   <button
@@ -618,52 +598,75 @@ const AdminCoursesPage = () => {
                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">
-                      Үргэлжлэх хугацаа
-                    </label>
-                    <input
-                      type="text"
-                      defaultValue={selectedCourse.duration}
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">
-                      Түвшин
-                    </label>
-                    <select
-                      defaultValue={selectedCourse.level}
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                    >
-                      <option value="Эхлэгч">Эхлэгч</option>
-                      <option value="Дунд">Дунд</option>
-                      <option value="Дээд">Дээд</option>
-                    </select>
-                  </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Зургийн URL
+                  </label>
+                  <input
+                    type="url"
+                    defaultValue={selectedCourse.imageUrl}
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  />
                 </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">
-                      Үнэ
-                    </label>
-                    <input
-                      type="number"
-                      defaultValue={selectedCourse.price}
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">
-                      Багш
-                    </label>
-                    <input
-                      type="text"
-                      defaultValue={selectedCourse.instructor}
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                    />
-                  </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Youtube видео URL
+                  </label>
+                  <input
+                    type="url"
+                    defaultValue={selectedCourse.youtubeUrl ?? ""}
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Hero section зураг URL
+                  </label>
+                  <input
+                    type="url"
+                    defaultValue={selectedCourse.heroImage ?? ""}
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Сургалтын зорилго
+                  </label>
+                  <textarea
+                    rows={2}
+                    defaultValue={selectedCourse.goal ?? ""}
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Хэнд зориулагдсан бэ?
+                  </label>
+                  <textarea
+                    rows={2}
+                    defaultValue={selectedCourse.target ?? ""}
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Сургалтын бүтэц
+                  </label>
+                  <textarea
+                    rows={2}
+                    defaultValue={selectedCourse.structure ?? ""}
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Сургалтанд бүртгүүлэх Google Form линк
+                  </label>
+                  <input
+                    type="url"
+                    defaultValue={selectedCourse.enrollLink ?? ""}
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  />
                 </div>
                 <div className="flex justify-end space-x-3">
                   <button

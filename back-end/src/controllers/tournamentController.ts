@@ -25,7 +25,16 @@ export const getAllTournaments = async (req: Request, res: Response) => {
     res.json(tournaments);
   } catch (error) {
     console.error("Get all tournaments error:", error);
-    res.status(500).json({ message: "Failed to fetch tournaments" });
+    if (process.env.NODE_ENV === "development") {
+      res
+        .status(500)
+        .json({
+          message: "Failed to fetch tournaments",
+          error: error instanceof Error ? error.stack : error,
+        });
+    } else {
+      res.status(500).json({ message: "Failed to fetch tournaments" });
+    }
   }
 };
 

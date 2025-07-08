@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import {
   Users,
@@ -16,31 +16,76 @@ import {
 
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState("overview");
+  const [stats, setStats] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [activities, setActivities] = useState<any[]>([]);
 
-  const stats = [
+  useEffect(() => {
+    const fetchStats = async () => {
+      setLoading(true);
+      setError("");
+      try {
+        const token = localStorage.getItem("token");
+        const res = await fetch("/api/admin/stats", {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
+        if (!res.ok) throw new Error("Failed to fetch stats");
+        const data = await res.json();
+        setStats(data);
+      } catch (err: any) {
+        setError(err.message || "Unknown error");
+      } finally {
+        setLoading(false);
+      }
+    };
+    const fetchActivities = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const res = await fetch("/api/admin/activities", {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
+        if (!res.ok) throw new Error("Failed to fetch activities");
+        const data = await res.json();
+        setActivities(data);
+      } catch (err: any) {
+        // Optionally handle error
+      }
+    };
+    fetchStats();
+    fetchActivities();
+  }, []);
+
+  const statCards = [
     {
       title: "Нийт хэрэглэгч",
-      value: "1,234",
+      value: stats?.totalUsers ?? "-",
       icon: Users,
       color: "bg-blue-500",
     },
     {
       title: "Нийт сургалт",
-      value: "45",
+      value: stats?.totalCourses ?? "-",
       icon: BookOpen,
       color: "bg-green-500",
     },
     {
       title: "Нийт бүтээгдэхүүн",
-      value: "89",
+      value: stats?.totalProducts ?? "-",
       icon: ShoppingBag,
       color: "bg-purple-500",
     },
     {
-      title: "Идэвхтэй тэмцээн",
-      value: "12",
+      title: "Нийт тэмцээн",
+      value: stats?.totalTournaments ?? "-",
       icon: Trophy,
       color: "bg-orange-500",
+    },
+    {
+      title: "Нийт мэдээ",
+      value: stats?.totalNews ?? "-",
+      icon: BarChart3,
+      color: "bg-red-500",
     },
   ];
 
@@ -108,23 +153,29 @@ const AdminDashboard = () => {
     <div className="space-y-8">
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {stats.map((stat, index) => (
-          <div key={index} className="bg-white rounded-lg shadow p-6">
-            <div className="flex items-center">
-              <div className={`p-3 rounded-lg ${stat.color}`}>
-                <stat.icon className="h-6 w-6 text-white" />
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">
-                  {stat.title}
-                </p>
-                <p className="text-2xl font-semibold text-gray-900">
-                  {stat.value}
-                </p>
+        {loading ? (
+          <div className="col-span-4 text-center py-8">Уншиж байна...</div>
+        ) : error ? (
+          <div className="col-span-4 text-center text-red-500">{error}</div>
+        ) : (
+          statCards.map((stat, index) => (
+            <div key={index} className="bg-white rounded-lg shadow p-6">
+              <div className="flex items-center">
+                <div className={`p-3 rounded-lg ${stat.color}`}>
+                  <stat.icon className="h-6 w-6 text-white" />
+                </div>
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-600">
+                    {stat.title}
+                  </p>
+                  <p className="text-2xl font-semibold text-gray-900">
+                    {stat.value}
+                  </p>
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          ))
+        )}
       </div>
 
       {/* Admin Sections */}
@@ -157,20 +208,32 @@ const AdminDashboard = () => {
         </div>
         <div className="p-6">
           <div className="space-y-4">
-            {recentActivities.map((activity, index) => (
-              <div
-                key={index}
-                className="flex items-center justify-between py-2"
-              >
-                <div>
-                  <p className="text-sm font-medium text-gray-900">
-                    {activity.action}
-                  </p>
-                  <p className="text-sm text-gray-500">{activity.user}</p>
-                </div>
-                <span className="text-sm text-gray-400">{activity.time}</span>
+            {activities.length === 0 ? (
+              <div className="text-gray-400 text-center">
+                Одоогоор үйл ажиллагаа алга
               </div>
-            ))}
+            ) : (
+              activities.map((activity, index) => (
+                <div
+                  key={activity.id || index}
+                  className="flex items-center justify-between py-2"
+                >
+                  <div>
+                    <p className="text-sm font-medium text-gray-900">
+                      {activity.message}
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      {activity.userName || "Систем"}
+                    </p>
+                  </div>
+                  <span className="text-sm text-gray-400">
+                    {new Date(activity.createdAt).toLocaleString("mn-MN", {
+                      hour12: false,
+                    })}
+                  </span>
+                </div>
+              ))
+            )}
           </div>
         </div>
       </div>

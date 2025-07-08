@@ -133,7 +133,7 @@ const HomePage = () => {
               href="/courses"
               className="inline-flex items-center justify-center px-6 py-3 sm:px-8 sm:py-4 text-base sm:text-lg font-medium text-blue-600 bg-white rounded-lg hover:bg-gray-50 transition-colors duration-200 shadow-lg hover:shadow-xl"
             >
-              Курсуудаас эхлэх
+              Сургалтын мэдээллүүд
             </Link>
             <Link
               href="/contact"

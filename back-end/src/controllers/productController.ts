@@ -11,7 +11,16 @@ export const getAllProducts = async (req: Request, res: Response) => {
     res.json(products);
   } catch (error) {
     console.error("Get all products error:", error);
-    res.status(500).json({ message: "Failed to fetch products" });
+    if (process.env.NODE_ENV === "development") {
+      res
+        .status(500)
+        .json({
+          message: "Failed to fetch products",
+          error: error instanceof Error ? error.stack : error,
+        });
+    } else {
+      res.status(500).json({ message: "Failed to fetch products" });
+    }
   }
 };
 

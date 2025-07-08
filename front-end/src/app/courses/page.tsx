@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import CourseCard from "./_components/CourseCard";
+import axios from "axios";
 
 interface Course {
   id: string;
@@ -28,16 +29,24 @@ export default function CoursesPage() {
 
   const fetchCourses = async () => {
     try {
-      const response = await fetch("/api/courses");
-      if (!response.ok) {
-        throw new Error("Failed to fetch courses");
-      }
-      const data = await response.json();
-      setCourses(data);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "An error occurred");
+      const response = await axios.get("/api/courses");
+      setCourses(response.data);
+    } catch (err: any) {
+      setError(err?.message || "An error occurred");
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Example POST request using Axios
+  const postCourse = async (newCourse: Omit<Course, "id">) => {
+    try {
+      const response = await axios.post("/api/courses", newCourse);
+      // Optionally update state or refetch courses
+      return response.data;
+    } catch (err: any) {
+      // Handle error
+      throw err;
     }
   };
 

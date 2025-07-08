@@ -66,7 +66,9 @@ interface TournamentFormData {
   category: string;
   status: string;
   rules: string;
-  prizes: string;
+  prize1: string;
+  prize2: string;
+  prize3: string;
 }
 
 const AdminTournamentsPage = () => {
@@ -95,7 +97,9 @@ const AdminTournamentsPage = () => {
     category: "Шатар",
     status: "upcoming",
     rules: "",
-    prizes: "",
+    prize1: "",
+    prize2: "",
+    prize3: "",
   });
   const [editFormData, setEditFormData] = useState<TournamentFormData>({
     title: "",
@@ -110,7 +114,9 @@ const AdminTournamentsPage = () => {
     category: "Шатар",
     status: "upcoming",
     rules: "",
-    prizes: "",
+    prize1: "",
+    prize2: "",
+    prize3: "",
   });
   const [submitting, setSubmitting] = useState(false);
 
@@ -193,7 +199,11 @@ const AdminTournamentsPage = () => {
     try {
       const tournamentData = {
         ...formData,
-        prizes: formData.prizes ? JSON.parse(formData.prizes) : null,
+        prizes: {
+          "1-р байр": formData.prize1,
+          "2-р байр": formData.prize2,
+          "3-р байр": formData.prize3,
+        },
       };
 
       console.log("Sending tournament data:", tournamentData);
@@ -233,7 +243,9 @@ const AdminTournamentsPage = () => {
         category: "Шатар",
         status: "upcoming",
         rules: "",
-        prizes: "",
+        prize1: "",
+        prize2: "",
+        prize3: "",
       });
     } catch (error) {
       console.error("Error creating tournament:", error);
@@ -256,7 +268,11 @@ const AdminTournamentsPage = () => {
     try {
       const tournamentData = {
         ...editFormData,
-        prizes: editFormData.prizes ? JSON.parse(editFormData.prizes) : null,
+        prizes: {
+          "1-р байр": editFormData.prize1,
+          "2-р байр": editFormData.prize2,
+          "3-р байр": editFormData.prize3,
+        },
       };
 
       const response = await fetch(
@@ -480,9 +496,12 @@ const AdminTournamentsPage = () => {
                 className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
                 <option value="all">Бүх ангилал</option>
-                <option value="Шатар">Шатар</option>
-                <option value="Го">Го</option>
-                <option value="Покер">Покер</option>
+                <option value="Рубикийн шоо">Рубикийн шоо</option>
+                <option value="Хуруундай">Хуруундай</option>
+                <option value="Спорт өрөлт">Спорт өрөлт</option>
+                <option value="Түргэн бодолт">Түргэн бодолт</option>
+                <option value="Хурдан уншлага">Хурдан уншлага</option>
+                <option value="Ой тогтоолт">Ой тогтоолт</option>
               </select>
             </div>
           </div>
@@ -562,9 +581,9 @@ const AdminTournamentsPage = () => {
                           category: tournament.category,
                           status: tournament.status,
                           rules: tournament.rules || "",
-                          prizes: tournament.prizes
-                            ? JSON.stringify(tournament.prizes)
-                            : "",
+                          prize1: tournament.prizes?.["1-р байр"] || "",
+                          prize2: tournament.prizes?.["2-р байр"] || "",
+                          prize3: tournament.prizes?.["3-р байр"] || "",
                         });
                         setShowEditModal(true);
                       }}
@@ -720,9 +739,12 @@ const AdminTournamentsPage = () => {
                     required
                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                   >
-                    <option value="Шатар">Шатар</option>
-                    <option value="Го">Го</option>
-                    <option value="Покер">Покер</option>
+                    <option value="Рубикийн шоо">Рубикийн шоо</option>
+                    <option value="Хуруундай">Хуруундай</option>
+                    <option value="Спорт өрөлт">Спорт өрөлт</option>
+                    <option value="Түргэн бодолт">Түргэн бодолт</option>
+                    <option value="Хурдан уншлага">Хурдан уншлага</option>
+                    <option value="Ой тогтоолт">Ой тогтоолт</option>
                   </select>
                 </div>
                 <div>
@@ -768,14 +790,37 @@ const AdminTournamentsPage = () => {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
-                    Шагнал (JSON)
+                    1-р байр
                   </label>
-                  <textarea
-                    rows={3}
-                    name="prizes"
-                    value={formData.prizes}
+                  <input
+                    type="text"
+                    name="prize1"
+                    value={formData.prize1}
                     onChange={handleInputChange}
-                    placeholder='{"1st": "1000000", "2nd": "500000"}'
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    2-р байр
+                  </label>
+                  <input
+                    type="text"
+                    name="prize2"
+                    value={formData.prize2}
+                    onChange={handleInputChange}
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    3-р байр
+                  </label>
+                  <input
+                    type="text"
+                    name="prize3"
+                    value={formData.prize3}
+                    onChange={handleInputChange}
                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
@@ -953,9 +998,12 @@ const AdminTournamentsPage = () => {
                     required
                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                   >
-                    <option value="Шатар">Шатар</option>
-                    <option value="Го">Го</option>
-                    <option value="Покер">Покер</option>
+                    <option value="Рубикийн шоо">Рубикийн шоо</option>
+                    <option value="Хуруундай">Хуруундай</option>
+                    <option value="Спорт өрөлт">Спорт өрөлт</option>
+                    <option value="Түргэн бодолт">Түргэн бодолт</option>
+                    <option value="Хурдан уншлага">Хурдан уншлага</option>
+                    <option value="Ой тогтоолт">Ой тогтоолт</option>
                   </select>
                 </div>
                 <div>
@@ -1010,16 +1058,43 @@ const AdminTournamentsPage = () => {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
-                    Шагнал (JSON)
+                    1-р байр
                   </label>
-                  <textarea
-                    rows={3}
-                    name="prizes"
-                    value={editFormData.prizes}
+                  <input
+                    type="text"
+                    name="prize1"
+                    value={editFormData.prize1}
                     onChange={(e) =>
-                      setEditFormData((f) => ({ ...f, prizes: e.target.value }))
+                      setEditFormData((f) => ({ ...f, prize1: e.target.value }))
                     }
-                    placeholder='{"1st": "1000000", "2nd": "500000"}'
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    2-р байр
+                  </label>
+                  <input
+                    type="text"
+                    name="prize2"
+                    value={editFormData.prize2}
+                    onChange={(e) =>
+                      setEditFormData((f) => ({ ...f, prize2: e.target.value }))
+                    }
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    3-р байр
+                  </label>
+                  <input
+                    type="text"
+                    name="prize3"
+                    value={editFormData.prize3}
+                    onChange={(e) =>
+                      setEditFormData((f) => ({ ...f, prize3: e.target.value }))
+                    }
                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>

@@ -308,6 +308,28 @@ This project is licensed under the MIT License.
 - Run `npm run prisma:generate` in back-end/
 - Check import paths in your code
 
+## Troubleshooting
+
+### Backend Port Already in Use (EADDRINUSE)
+
+If you see an error like:
+
+```
+Error: listen EADDRINUSE: address already in use :::5001
+```
+
+This means something is already running on port 5001. The backend now automatically kills any process on port 5001 before starting, so you should not see this error. If you do, you can manually run:
+
+```
+fuser -k 5001/tcp || true
+```
+
+Then start the backend again:
+
+```
+npm run start
+```
+
 ## 📞 Support
 
 For issues and questions:

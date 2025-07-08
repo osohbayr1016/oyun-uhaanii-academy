@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import {
   BarChart3,
@@ -20,34 +20,35 @@ import {
 const AdminReportsPage = () => {
   const [selectedPeriod, setSelectedPeriod] = useState("month");
   const [selectedReport, setSelectedReport] = useState("overview");
+  const [stats, setStats] = useState({
+    totalUsers: 0,
+    totalCourses: 0,
+    totalProducts: 0,
+    totalTournaments: 0,
+    totalNews: 0,
+  });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  const stats = {
-    totalUsers: 1234,
-    totalCourses: 45,
-    totalProducts: 89,
-    totalTournaments: 12,
-    activeUsers: 856,
-    completedCourses: 234,
-    totalRevenue: 15000000,
-    monthlyGrowth: 12.5,
-  };
-
-  const monthlyData = [
-    { month: "1-р сар", users: 120, courses: 5, revenue: 1200000 },
-    { month: "2-р сар", users: 180, courses: 8, revenue: 1500000 },
-    { month: "3-р сар", users: 220, courses: 12, revenue: 1800000 },
-    { month: "4-р сар", users: 280, courses: 15, revenue: 2200000 },
-    { month: "5-р сар", users: 320, courses: 18, revenue: 2500000 },
-    { month: "6-р сар", users: 380, courses: 22, revenue: 2800000 },
-  ];
-
-  const topCourses = [
-    { name: "Монголын түүх", students: 156, revenue: 2340000 },
-    { name: "Уран зохиол", students: 134, revenue: 2010000 },
-    { name: "География", students: 98, revenue: 1470000 },
-    { name: "Математик", students: 87, revenue: 1305000 },
-    { name: "Физик", students: 76, revenue: 1140000 },
-  ];
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const token =
+          typeof window !== "undefined" ? localStorage.getItem("token") : null;
+        const headers: Record<string, string> = {};
+        if (token) headers["Authorization"] = `Bearer ${token}`;
+        const res = await fetch("/api/admin/stats", { headers });
+        if (!res.ok) throw new Error("Failed to fetch stats");
+        const data = await res.json();
+        setStats(data);
+      } catch (err: any) {
+        setError(err.message || "Failed to load stats");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchStats();
+  }, []);
 
   const recentActivities = [
     {
@@ -85,6 +86,9 @@ const AdminReportsPage = () => {
       <TrendingDown className="w-4 h-4 text-red-500" />
     );
   };
+
+  if (loading) return <div className="p-8">Уншиж байна...</div>;
+  if (error) return <div className="p-8 text-red-500">{error}</div>;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -136,14 +140,8 @@ const AdminReportsPage = () => {
                   Нийт хэрэглэгч
                 </p>
                 <p className="text-2xl font-semibold text-gray-900">
-                  {stats.totalUsers.toLocaleString()}
+                  {stats.totalUsers?.toLocaleString?.() ?? ""}
                 </p>
-                <div className="flex items-center mt-1">
-                  {getGrowthIcon(stats.monthlyGrowth)}
-                  <span className="text-sm text-green-600 ml-1">
-                    +{stats.monthlyGrowth}%
-                  </span>
-                </div>
               </div>
             </div>
           </div>
@@ -158,12 +156,8 @@ const AdminReportsPage = () => {
                   Нийт сургалт
                 </p>
                 <p className="text-2xl font-semibold text-gray-900">
-                  {stats.totalCourses}
+                  {stats.totalCourses ?? ""}
                 </p>
-                <div className="flex items-center mt-1">
-                  <TrendingUp className="w-4 h-4 text-green-500" />
-                  <span className="text-sm text-green-600 ml-1">+8.2%</span>
-                </div>
               </div>
             </div>
           </div>
@@ -178,97 +172,25 @@ const AdminReportsPage = () => {
                   Нийт бүтээгдэхүүн
                 </p>
                 <p className="text-2xl font-semibold text-gray-900">
-                  {stats.totalProducts}
+                  {stats.totalProducts ?? ""}
                 </p>
-                <div className="flex items-center mt-1">
-                  <TrendingUp className="w-4 h-4 text-green-500" />
-                  <span className="text-sm text-green-600 ml-1">+5.7%</span>
-                </div>
               </div>
             </div>
           </div>
 
           <div className="bg-white rounded-lg shadow p-6">
             <div className="flex items-center">
-              <div className="p-3 rounded-lg bg-orange-500">
-                <DollarSign className="h-6 w-6 text-white" />
+              <div className="p-3 rounded-lg bg-yellow-500">
+                <Trophy className="h-6 w-6 text-white" />
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Нийт орлого</p>
-                <p className="text-2xl font-semibold text-gray-900">
-                  {(stats.totalRevenue / 1000000).toFixed(1)}M ₮
+                <p className="text-sm font-medium text-gray-600">
+                  Нийт тэмцээн
                 </p>
-                <div className="flex items-center mt-1">
-                  <TrendingUp className="w-4 h-4 text-green-500" />
-                  <span className="text-sm text-green-600 ml-1">+15.3%</span>
-                </div>
+                <p className="text-2xl font-semibold text-gray-900">
+                  {stats.totalTournaments ?? ""}
+                </p>
               </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Monthly Chart */}
-          <div className="lg:col-span-2 bg-white rounded-lg shadow p-6">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-semibold text-gray-900">
-                Сарын статистик
-              </h3>
-              <select className="px-3 py-1 border border-gray-300 rounded text-sm">
-                <option>Хэрэглэгч</option>
-                <option>Сургалт</option>
-                <option>Орлого</option>
-              </select>
-            </div>
-            <div className="space-y-4">
-              {monthlyData.map((data, index) => (
-                <div
-                  key={index}
-                  className="flex items-center justify-between p-3 bg-gray-50 rounded"
-                >
-                  <span className="text-sm font-medium text-gray-700">
-                    {data.month}
-                  </span>
-                  <div className="flex items-center space-x-6">
-                    <span className="text-sm text-gray-600">
-                      {data.users} хэрэглэгч
-                    </span>
-                    <span className="text-sm text-gray-600">
-                      {data.courses} сургалт
-                    </span>
-                    <span className="text-sm font-medium text-gray-900">
-                      {(data.revenue / 1000000).toFixed(1)}M ₮
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Top Courses */}
-          <div className="bg-white rounded-lg shadow p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-6">
-              Топ сургалтууд
-            </h3>
-            <div className="space-y-4">
-              {topCourses.map((course, index) => (
-                <div
-                  key={index}
-                  className="flex items-center justify-between p-3 bg-gray-50 rounded"
-                >
-                  <div>
-                    <p className="text-sm font-medium text-gray-900">
-                      {course.name}
-                    </p>
-                    <p className="text-xs text-gray-500">
-                      {course.students} сурагч
-                    </p>
-                  </div>
-                  <span className="text-sm font-medium text-gray-900">
-                    {(course.revenue / 1000000).toFixed(1)}M ₮
-                  </span>
-                </div>
-              ))}
             </div>
           </div>
         </div>
@@ -313,17 +235,15 @@ const AdminReportsPage = () => {
                 <span className="text-sm text-gray-600">
                   Идэвхтэй хэрэглэгч
                 </span>
-                <span className="text-sm font-medium">{stats.activeUsers}</span>
+                <span className="text-sm font-medium">-</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-sm text-gray-600">Шинэ бүртгэл</span>
-                <span className="text-sm font-medium text-green-600">
-                  +{stats.monthlyGrowth}%
-                </span>
+                <span className="text-sm font-medium text-green-600">-</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-sm text-gray-600">Дундаж идэвх</span>
-                <span className="text-sm font-medium">68%</span>
+                <span className="text-sm font-medium">-</span>
               </div>
             </div>
           </div>
@@ -335,17 +255,15 @@ const AdminReportsPage = () => {
             <div className="space-y-3">
               <div className="flex justify-between">
                 <span className="text-sm text-gray-600">Дууссан сургалт</span>
-                <span className="text-sm font-medium">
-                  {stats.completedCourses}
-                </span>
+                <span className="text-sm font-medium">-</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-sm text-gray-600">Дундаж үнэлгээ</span>
-                <span className="text-sm font-medium">4.8/5</span>
+                <span className="text-sm font-medium">-</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-sm text-gray-600">Төлбөр төлөлт</span>
-                <span className="text-sm font-medium text-green-600">95%</span>
+                <span className="text-sm font-medium text-green-600">-</span>
               </div>
             </div>
           </div>

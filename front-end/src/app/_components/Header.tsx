@@ -74,6 +74,15 @@ const Header = () => {
                 {link.name}
               </Link>
             ))}
+            {user && user.role && user.role.toLowerCase() === "admin" && (
+              <Link
+                href="/admin"
+                className="ml-4 px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold shadow hover:bg-blue-700 transition-colors duration-200"
+                style={{ marginLeft: "1rem" }}
+              >
+                Go to Admin Page
+              </Link>
+            )}
           </nav>
 
           {/* Desktop User Section */}
@@ -95,7 +104,7 @@ const Header = () => {
                       <div className="font-medium">{user.name}</div>
                       <div className="text-gray-500">{user.email}</div>
                     </div>
-                    {user.role === "admin" && (
+                    {user.role && user.role.toLowerCase() === "admin" && (
                       <Link
                         href="/admin"
                         className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
@@ -184,13 +193,13 @@ const Header = () => {
                     <User size={16} />
                     <span className="font-medium">{user.name}</span>
                   </div>
-                  {user.role === "admin" && (
+                  {user.role && user.role.toLowerCase() === "admin" && (
                     <Link
                       href="/admin"
                       className="block px-3 py-2 text-base font-medium bg-blue-600 text-white hover:bg-blue-700 rounded-md transition-colors"
                       onClick={closeMenu}
                     >
-                      Админ
+                      Админ удирдлага
                     </Link>
                   )}
                   <button

@@ -4,7 +4,18 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
 const prisma = new PrismaClient();
-const JWT_SECRET = process.env.JWT_SECRET || "supersecret";
+const JWT_SECRET = process.env.JWT_SECRET;
+
+if (!JWT_SECRET) {
+  console.error("FATAL: JWT_SECRET is not set in environment variables.");
+  process.exit(1);
+}
+
+const validateEmail = (email: string) => /.+@.+\..+/.test(email);
+const validatePassword = (password: string) =>
+  typeof password === "string" && password.length >= 6;
+const validateName = (name: string) =>
+  typeof name === "string" && name.trim().length > 0;
 
 const generateToken = (userId: string): string => {
   return jwt.sign({ userId }, JWT_SECRET, { expiresIn: "1h" });
@@ -14,11 +25,23 @@ export const register = async (req: Request, res: Response) => {
   try {
     const { email, password, name } = req.body;
 
+    // Input validation
+    if (!email || !validateEmail(email)) {
+      return res.status(400).json({ message: "Valid email is required" });
+    }
+    if (!password || !validatePassword(password)) {
+      return res
+        .status(400)
+        .json({ message: "Password must be at least 6 characters" });
+    }
+    if (!name || !validateName(name)) {
+      return res.status(400).json({ message: "Name is required" });
+    }
+
     // Check if user already exists
     const existingUser = await prisma.user.findUnique({
       where: { email },
     });
-
     if (existingUser) {
       return res.status(400).json({ message: "User already exists" });
     }
@@ -33,7 +56,7 @@ export const register = async (req: Request, res: Response) => {
         email,
         password: hashedPassword,
         name,
-        role: "user", // Default role
+        role: "user",
       },
     });
 
@@ -51,8 +74,8 @@ export const register = async (req: Request, res: Response) => {
       },
     });
   } catch (error) {
-    console.error("Registration error:", error);
-    res.status(500).json({ message: "Server error" });
+    console.error("Registration error:", error, "Request body:", req.body);
+    res.status(500).json({ message: "Server error during registration" });
   }
 };
 
@@ -60,20 +83,30 @@ export const login = async (req: Request, res: Response) => {
   try {
     const { email, password } = req.body;
 
+    // Input validation
+    if (!email || !validateEmail(email)) {
+      return res.status(400).json({ message: "Valid email is required" });
+    }
+    if (!password || !validatePassword(password)) {
+      return res
+        .status(400)
+        .json({ message: "Password must be at least 6 characters" });
+    }
+
     // Find user
     const user = await prisma.user.findUnique({
       where: { email },
     });
-
     if (!user) {
-      return res.status(400).json({ message: "Invalid credentials" });
+      res.status(400).json({ message: "Invalid credentials" });
+      return;
     }
 
     // Check password
     const isPasswordValid = await bcrypt.compare(password, user.password);
-
     if (!isPasswordValid) {
-      return res.status(400).json({ message: "Invalid credentials" });
+      res.status(400).json({ message: "Invalid credentials" });
+      return;
     }
 
     // Generate token
@@ -90,7 +123,7 @@ export const login = async (req: Request, res: Response) => {
       },
     });
   } catch (error) {
-    console.error("Login error:", error);
-    res.status(500).json({ message: "Server error" });
+    console.error("Login error:", error, "Request body:", req.body);
+    res.status(500).json({ message: "Server error during login" });
   }
 };
