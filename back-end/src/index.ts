@@ -1,4 +1,4 @@
-import express from "express";
+import express, { Request, Response, NextFunction } from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import { PrismaClient } from "@prisma/client";
@@ -33,12 +33,12 @@ app.use("/api/tournaments", tournamentRoutes);
 app.use("/api/admin", adminRoutes);
 
 // Basic test route
-app.get("/", (req, res) => {
+app.get("/", (req: Request, res: Response) => {
   res.send("Backend API is running!");
 });
 
 // Health check endpoint
-app.get("/health", async (req, res) => {
+app.get("/health", async (req: Request, res: Response) => {
   try {
     // Test database connection
     await prisma.$queryRaw`SELECT 1`;
@@ -59,7 +59,7 @@ app.get("/health", async (req, res) => {
 });
 
 // Global Error Handler
-app.use((err: any, req: any, res: any, next: any) => {
+app.use((err: any, req: Request, res: Response, next: NextFunction) => {
   console.error("Global error handler caught:", {
     error: err.message,
     stack: err.stack,
@@ -131,13 +131,13 @@ process.on("beforeExit", async () => {
 });
 
 // Handle uncaught exceptions
-process.on("uncaughtException", (error) => {
+process.on("uncaughtException", (error: Error) => {
   console.error("Uncaught Exception:", error);
   process.exit(1);
 });
 
 // Handle unhandled promise rejections
-process.on("unhandledRejection", (reason, promise) => {
+process.on("unhandledRejection", (reason: any, promise: Promise<any>) => {
   console.error("Unhandled Rejection at:", promise, "reason:", reason);
   process.exit(1);
 });
