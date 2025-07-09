@@ -13,18 +13,17 @@ export default function Footer() {
               <Image
                 src="/about3.png"
                 alt="Oyun Uhaanii Academy"
-                width={32}
-                height={32}
-                className="w-25 h-15"
+                width={120}
+                height={40}
+                className="w-32 h-10 sm:w-36 sm:h-12 md:w-44 md:h-15 lg:w-48 lg:h-17"
               />
             </div>
             <p className="text-gray-300 text-sm leading-relaxed">
-              Монголын уугуул тоглоом, урлаг, соёлыг судлан, дамжуулж, хадгалж
-              үлдэхэд хувь нэмрээ оруулъя.
+              Сэтгэхүйн хурдыг танд эзэмшүүлж оюуны хүрдийг дэлхийд таниулна
             </p>
             <div className="flex space-x-4">
               <a
-                href="#"
+                href="https://www.facebook.com/Academy.ulaanhuaran"
                 className="text-gray-400 hover:text-white transition-colors"
                 aria-label="Facebook"
               >
@@ -37,7 +36,7 @@ export default function Footer() {
                 </svg>
               </a>
               <a
-                href="#"
+                href=""
                 className="text-gray-400 hover:text-white transition-colors"
                 aria-label="Instagram"
               >
@@ -50,7 +49,7 @@ export default function Footer() {
                 </svg>
               </a>
               <a
-                href="#"
+                href="https://www.youtube.com/@intellectualacademy"
                 className="text-gray-400 hover:text-white transition-colors"
                 aria-label="YouTube"
               >
@@ -159,7 +158,7 @@ export default function Footer() {
                     clipRule="evenodd"
                   />
                 </svg>
-                <span>Улаанбаатар хот, Монгол</span>
+                <span>БЗД - 16-р хороо, Улаанбаатар 13321</span>
               </div>
               <div className="flex items-start space-x-2">
                 <svg
@@ -189,7 +188,7 @@ export default function Footer() {
         {/* Bottom section */}
         <div className="border-t border-gray-800 mt-8 pt-8 flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0">
           <p className="text-gray-400 text-sm">
-            © 2024 Oyun Uhaanii Academy. Бүх эрх хуулиар хамгаалагдсан.
+            © 2025 Монголын Оюун Ухааны Академ Офицер салбар
           </p>
           <div className="flex space-x-6 text-sm">
             <a

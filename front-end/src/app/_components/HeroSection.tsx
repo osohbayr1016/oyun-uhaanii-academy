@@ -37,30 +37,32 @@ export default function HeroSection() {
           {/* Content */}
           <div className="text-center lg:text-left space-y-6">
             <h1 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold text-gray-900 leading-tight">
-              Монголын <span className="text-blue-600">Тоглоомын Академи</span>
+              Монголын оюун{" "}
+              <span className="text-blue-600">ухааны академи</span>
             </h1>
             <p className="text-lg sm:text-xl text-gray-600 max-w-2xl mx-auto lg:mx-0">
-              Монголын уугуул тоглоом, урлаг, соёлыг судлан, дамжуулж, хадгалж
-              үлдэхэд хувь нэмрээ оруулъя.
+              Сэтгэхүйн хурдыг танд эзэмшүүлж оюуны хүрдийг дэлхийд таниулна
             </p>
 
             {/* Stats */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6 pt-8 sm:pt-12">
               <div className="text-center">
                 <div className="text-2xl sm:text-3xl font-bold text-blue-600">
-                  50+
+                  10+
                 </div>
-                <div className="text-sm sm:text-base text-gray-600">Курс</div>
+                <div className="text-sm sm:text-base text-gray-600">
+                  Сургалт
+                </div>
               </div>
               <div className="text-center">
                 <div className="text-2xl sm:text-3xl font-bold text-blue-600">
-                  1000+
+                  200+
                 </div>
                 <div className="text-sm sm:text-base text-gray-600">Сурагч</div>
               </div>
               <div className="text-center">
                 <div className="text-2xl sm:text-3xl font-bold text-blue-600">
-                  20+
+                  10+
                 </div>
                 <div className="text-sm sm:text-base text-gray-600">Багш</div>
               </div>

@@ -59,7 +59,7 @@ const Header = () => {
               alt="Oyun Uhaanii Academy"
               width={120}
               height={40}
-              className="w-8 h-8 sm:w-35  sm:h-18"
+              className="w-24 h-8 sm:w-28 sm:h-9 md:w-36 md:h-12 lg:w-40 lg:h-14"
             />
           </Link>
 

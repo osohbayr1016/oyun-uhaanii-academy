@@ -32,8 +32,9 @@ const HomePage = () => {
               Бидний онцлогууд
             </h2>
             <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-              Монголын уугуул тоглоом, урлаг, соёлыг орчин үеийн аргаар судлан,
-              дамжуулж, хадгалж үлдэхэд хувь нэмрээ оруулъя.
+              Эелдэг найрсаг багш хамт олон, тохилог тухтай орчин, олон жилийн
+              туршлага, хамгийн олон гишүүд болон, Монголын оюун ухааны
+              академийн шилдэг салбар юм.
             </p>
           </div>
 
@@ -56,11 +57,10 @@ const HomePage = () => {
                 </svg>
               </div>
               <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                Сургалтын курс
+                Сургалт
               </h3>
               <p className="text-gray-600">
-                Монголын уугуул тоглоом, урлаг, соёлын талаарх дэлгэрэнгүй
-                сургалтууд.
+                Монгол улсын хэмжээний тэмцээнүүдийн олон жилийн туршлага
               </p>
             </div>
 
@@ -85,8 +85,8 @@ const HomePage = () => {
                 Тэмцээнүүд
               </h3>
               <p className="text-gray-600">
-                Жил бүр зохион байгуулагддаг тоглоомын тэмцээнүүд болон арга
-                хэмжээнүүд.
+                Тогтмол клубын аварга болон улсын аварга мөн цаашлаад дэлхийн
+                аваргад оролцох боломж
               </p>
             </div>
 
@@ -108,10 +108,10 @@ const HomePage = () => {
                 </svg>
               </div>
               <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                Бүтээгдэхүүнүүд
+                Хөгжил
               </h3>
               <p className="text-gray-600">
-                Монголын уугуул тоглоомын хэрэгслүүд болон сургалтын материал.
+                Хөгжин дэвшин чин хүсэл эрмэлзэл бүхий найрсаг дотно хамт олон
               </p>
             </div>
           </div>
@@ -125,8 +125,7 @@ const HomePage = () => {
             Бидэнтэй нэгдээрэй
           </h2>
           <p className="text-lg sm:text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
-            Монголын уугуул тоглоом, урлаг, соёлыг судлан, дамжуулж, хадгалж
-            үлдэхэд хувь нэмрээ оруулъя.
+            Сэтгэхүйн хурдыг танд эзэмшүүлж оюуны хүрдийг дэлхийд таниулна
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
@@ -134,12 +133,6 @@ const HomePage = () => {
               className="inline-flex items-center justify-center px-6 py-3 sm:px-8 sm:py-4 text-base sm:text-lg font-medium text-blue-600 bg-white rounded-lg hover:bg-gray-50 transition-colors duration-200 shadow-lg hover:shadow-xl"
             >
               Сургалтын мэдээллүүд
-            </Link>
-            <Link
-              href="/contact"
-              className="inline-flex items-center justify-center px-6 py-3 sm:px-8 sm:py-4 text-base sm:text-lg font-medium text-white border-2 border-white rounded-lg hover:bg-white hover:text-blue-600 transition-colors duration-200"
-            >
-              Холбоо барих
             </Link>
           </div>
         </div>
