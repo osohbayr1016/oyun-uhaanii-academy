@@ -1,7 +1,5 @@
-import { PrismaClient } from "@prisma/client";
 import { Request, Response } from "express";
-
-const prisma = new PrismaClient();
+import { prisma } from "../utils/prisma";
 
 // Get all courses
 export const getAllCourses = async (req: Request, res: Response) => {
@@ -205,7 +203,15 @@ export const createCourse = async (req: Request, res: Response) => {
     res.status(201).json(course);
   } catch (error) {
     console.error("Error creating course:", error);
-    res.status(500).json({ message: "Server error" });
+    if (process.env.NODE_ENV === "development") {
+      res.status(500).json({
+        message: "Server error",
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+      });
+    } else {
+      res.status(500).json({ message: "Server error" });
+    }
   }
 };
 

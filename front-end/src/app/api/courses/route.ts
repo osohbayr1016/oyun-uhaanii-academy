@@ -11,7 +11,10 @@ export async function GET(request: NextRequest) {
     });
 
     if (!response.ok) {
-      throw new Error(`Backend responded with status: ${response.status}`);
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(
+        errorData.message || `Backend responded with status: ${response.status}`
+      );
     }
 
     const data = await response.json();
@@ -19,7 +22,10 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error("Error fetching courses:", error);
     return NextResponse.json(
-      { error: "Failed to fetch courses" },
+      {
+        error:
+          error instanceof Error ? error.message : "Failed to fetch courses",
+      },
       { status: 500 }
     );
   }
@@ -41,7 +47,10 @@ export async function POST(request: NextRequest) {
     });
 
     if (!response.ok) {
-      throw new Error(`Backend responded with status: ${response.status}`);
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(
+        errorData.message || `Backend responded with status: ${response.status}`
+      );
     }
 
     const data = await response.json();
@@ -49,7 +58,10 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error("Error creating course:", error);
     return NextResponse.json(
-      { error: "Failed to create course" },
+      {
+        error:
+          error instanceof Error ? error.message : "Failed to create course",
+      },
       { status: 500 }
     );
   }
