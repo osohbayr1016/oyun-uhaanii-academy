@@ -80,12 +80,6 @@ const AdminCoursesPage = () => {
     target: "",
     structure: "",
     enrollLink: "",
-    price: 0,
-    currency: "MNT",
-    duration: 0,
-    level: "Эхлэгч",
-    category: "",
-    instructor: "",
   });
   const [submitting, setSubmitting] = useState(false);
 
@@ -128,25 +122,33 @@ const AdminCoursesPage = () => {
     setSubmitting(true);
 
     try {
+      const courseData = {
+        title: formData.title,
+        description: formData.description,
+        content: formData.description, // Using description as content
+        imageUrl: formData.imageUrl,
+        price: "0", // Send as string to satisfy backend validation
+        youtubeUrl: formData.youtubeUrl || null,
+        heroImage: formData.heroImage || null,
+        goal: formData.goal || null,
+        target: formData.target || null,
+        structure: formData.structure || null,
+        enrollLink: formData.enrollLink || null,
+      };
+
       const response = await fetch("/api/courses", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          ...formData,
-          content: formData.description || "",
-          price: formData.price || 0,
-          currency: formData.currency || "MNT",
-          duration: formData.duration || 0,
-          level: formData.level || "Эхлэгч",
-          category: formData.category || "",
-          instructor: formData.instructor || "",
-        }),
+        body: JSON.stringify(courseData),
       });
 
       if (!response.ok) {
-        throw new Error("Failed to create course");
+        const errorData = await response.json().catch(() => ({}));
+        const errorMessage =
+          errorData.error || errorData.message || "Failed to create course";
+        throw new Error(errorMessage);
       }
 
       const newCourse = await response.json();
@@ -163,16 +165,12 @@ const AdminCoursesPage = () => {
         target: "",
         structure: "",
         enrollLink: "",
-        price: 0,
-        currency: "MNT",
-        duration: 0,
-        level: "Эхлэгч",
-        category: "",
-        instructor: "",
       });
     } catch (error) {
       console.error("Error creating course:", error);
-      alert("Failed to create course");
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to create course";
+      alert(`Алдаа: ${errorMessage}`);
     } finally {
       setSubmitting(false);
     }
@@ -439,7 +437,6 @@ const AdminCoursesPage = () => {
                     name="title"
                     value={formData.title}
                     onChange={handleInputChange}
-                    required
                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
@@ -452,7 +449,6 @@ const AdminCoursesPage = () => {
                     name="description"
                     value={formData.description}
                     onChange={handleInputChange}
-                    required
                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
@@ -465,7 +461,6 @@ const AdminCoursesPage = () => {
                     name="imageUrl"
                     value={formData.imageUrl}
                     onChange={handleInputChange}
-                    required
                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
@@ -478,7 +473,6 @@ const AdminCoursesPage = () => {
                     name="youtubeUrl"
                     value={formData.youtubeUrl}
                     onChange={handleInputChange}
-                    required
                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
@@ -491,7 +485,6 @@ const AdminCoursesPage = () => {
                     name="heroImage"
                     value={formData.heroImage}
                     onChange={handleInputChange}
-                    required
                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
@@ -504,7 +497,6 @@ const AdminCoursesPage = () => {
                     name="goal"
                     value={formData.goal}
                     onChange={handleInputChange}
-                    required
                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
@@ -517,7 +509,6 @@ const AdminCoursesPage = () => {
                     name="target"
                     value={formData.target}
                     onChange={handleInputChange}
-                    required
                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
@@ -530,7 +521,6 @@ const AdminCoursesPage = () => {
                     name="structure"
                     value={formData.structure}
                     onChange={handleInputChange}
-                    required
                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
@@ -543,7 +533,6 @@ const AdminCoursesPage = () => {
                     name="enrollLink"
                     value={formData.enrollLink}
                     onChange={handleInputChange}
-                    required
                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>

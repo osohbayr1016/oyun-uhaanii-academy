@@ -48,8 +48,12 @@ export async function POST(request: NextRequest) {
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      throw new Error(
-        errorData.message || `Backend responded with status: ${response.status}`
+      const errorMessage =
+        errorData.message ||
+        `Backend responded with status: ${response.status}`;
+      return NextResponse.json(
+        { error: errorMessage },
+        { status: response.status }
       );
     }
 

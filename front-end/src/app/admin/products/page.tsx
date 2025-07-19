@@ -58,7 +58,7 @@ const AdminProductsPage = () => {
     price: "",
     currency: "MNT",
     imageUrl: "",
-    category: "Ном",
+    category: "",
     stock: "",
     materials: "",
   });
@@ -170,7 +170,7 @@ const AdminProductsPage = () => {
         price: "",
         currency: "MNT",
         imageUrl: "",
-        category: "Ном",
+        category: "",
         stock: "",
         materials: "",
       });
@@ -503,17 +503,15 @@ const AdminProductsPage = () => {
                   <label className="block text-sm font-medium text-gray-700">
                     Ангилал
                   </label>
-                  <select
+                  <input
+                    type="text"
                     name="category"
                     value={formData.category}
                     onChange={handleInputChange}
+                    placeholder="Ангилал оруулна уу"
                     required
                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                  >
-                    <option value="Ном">Ном</option>
-                    <option value="Атлас">Атлас</option>
-                    <option value="Хэрэгсэл">Хэрэгсэл</option>
-                  </select>
+                  />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
@@ -641,7 +639,8 @@ const AdminProductsPage = () => {
                   <label className="block text-sm font-medium text-gray-700">
                     Ангилал
                   </label>
-                  <select
+                  <input
+                    type="text"
                     name="category"
                     value={editFormData.category}
                     onChange={(e) =>
@@ -650,12 +649,9 @@ const AdminProductsPage = () => {
                         category: e.target.value,
                       }))
                     }
+                    placeholder="Ангилал оруулна уу"
                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                  >
-                    <option value="Ном">Ном</option>
-                    <option value="Атлас">Атлас</option>
-                    <option value="Хэрэгсэл">Хэрэгсэл</option>
-                  </select>
+                  />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">

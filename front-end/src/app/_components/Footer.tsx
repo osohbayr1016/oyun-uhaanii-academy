@@ -1,8 +1,53 @@
-import React from "react";
+"use client";
+
+import React, { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 
 export default function Footer() {
+  const [email, setEmail] = useState("");
+  const [status, setStatus] = useState<
+    "idle" | "loading" | "success" | "error"
+  >("idle");
+  const [message, setMessage] = useState("");
+
+  const handleSubscribe = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!email.trim()) {
+      setStatus("error");
+      setMessage("Имэйл хаяг оруулна уу");
+      return;
+    }
+
+    setStatus("loading");
+    setMessage("");
+
+    try {
+      const response = await fetch("/api/newsletter/subscribe", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email: email.trim() }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setStatus("success");
+        setMessage(data.message);
+        setEmail("");
+      } else {
+        setStatus("error");
+        setMessage(data.message || "Алдаа гарлаа");
+      }
+    } catch (error) {
+      setStatus("error");
+      setMessage("Серверийн алдаа");
+    }
+  };
+
   return (
     <footer className="bg-gray-900 text-white">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
@@ -142,46 +187,40 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Contact Info */}
+          {/* Newsletter Subscription */}
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold">Холбоо барих</h3>
-            <div className="space-y-2 text-sm text-gray-300">
-              <div className="flex items-start space-x-2">
-                <svg
-                  className="w-4 h-4 mt-0.5 flex-shrink-0"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-                <span>БЗД - 16-р хороо, Улаанбаатар 13321</span>
+            <h3 className="text-lg font-semibold">Мэдээний жагсаалт</h3>
+            <p className="text-gray-300 text-sm">
+              Шинэ мэдээ, сургалт, тэмцээний мэдээллийг имэйлээр хүлээн авах
+            </p>
+            <form onSubmit={handleSubscribe} className="space-y-3">
+              <div>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Имэйл хаягаа оруулна уу"
+                  className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  disabled={status === "loading"}
+                />
               </div>
-              <div className="flex items-start space-x-2">
-                <svg
-                  className="w-4 h-4 mt-0.5 flex-shrink-0"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
+              <button
+                type="submit"
+                disabled={status === "loading"}
+                className="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-900 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                {status === "loading" ? "Илгээж байна..." : "Бүртгүүлэх"}
+              </button>
+              {message && (
+                <p
+                  className={`text-sm ${
+                    status === "success" ? "text-green-400" : "text-red-400"
+                  }`}
                 >
-                  <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
-                  <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
-                </svg>
-                <span>info@oyunacademy.mn</span>
-              </div>
-              <div className="flex items-start space-x-2">
-                <svg
-                  className="w-4 h-4 mt-0.5 flex-shrink-0"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
-                  <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
-                </svg>
-                <span>+976 11 123 456</span>
-              </div>
-            </div>
+                  {message}
+                </p>
+              )}
+            </form>
           </div>
         </div>
 

@@ -56,7 +56,15 @@ export async function PUT(
     });
 
     if (!response.ok) {
-      throw new Error(`Backend responded with status: ${response.status}`);
+      let errorMsg = `Backend responded with status: ${response.status}`;
+      try {
+        const errorData = await response.json();
+        errorMsg = errorData.message || errorMsg;
+      } catch {}
+      return NextResponse.json(
+        { error: errorMsg },
+        { status: response.status }
+      );
     }
 
     const data = await response.json();

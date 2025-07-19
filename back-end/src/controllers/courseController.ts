@@ -147,31 +147,10 @@ export const createCourse = async (req: Request, res: Response) => {
         .status(400)
         .json({ message: "Course description is required" });
     }
-    if (!content || !content.trim()) {
-      return res.status(400).json({ message: "Course content is required" });
-    }
     if (!imageUrl || !imageUrl.trim()) {
       return res.status(400).json({ message: "Course imageUrl is required" });
     }
-    if (!price || isNaN(parseFloat(price))) {
-      return res
-        .status(400)
-        .json({ message: "Valid course price is required" });
-    }
-    if (!category || !category.trim()) {
-      return res.status(400).json({ message: "Course category is required" });
-    }
-    if (!instructor || !instructor.trim()) {
-      return res.status(400).json({ message: "Course instructor is required" });
-    }
-    if (!level || !level.trim()) {
-      return res.status(400).json({ message: "Course level is required" });
-    }
-    if (!duration || isNaN(parseInt(duration))) {
-      return res
-        .status(400)
-        .json({ message: "Valid course duration is required" });
-    }
+    // Remove all other required field validation
 
     const course = await prisma.course.create({
       data: {

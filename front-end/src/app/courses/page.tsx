@@ -95,53 +95,8 @@ export default function CoursesPage() {
           <h1 className="text-4xl font-bold text-center mb-4 text-gray-800">
             Сургалтууд
           </h1>
-          <p className="text-lg text-center text-gray-600 max-w-3xl mx-auto">
-            Монголын соёл, түүх, уран зохиолын талаар суралцах боломжтой
-            сургалтууд
-          </p>
         </section>
-
-        <section className="bg-white border-b">
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4">
-            <div className="flex flex-col sm:flex-row gap-4 sm:gap-6">
-              <div className="flex-1">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Ангилал
-                </label>
-                <select
-                  value={selectedCategory}
-                  onChange={(e) => setSelectedCategory(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  {categories.map((category) => (
-                    <option key={category} value={category}>
-                      {category === "all" ? "Бүгд" : category}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="flex-1">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Түвшин
-                </label>
-                <select
-                  value={selectedLevel}
-                  onChange={(e) => setSelectedLevel(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  {levels.map((level) => (
-                    <option key={level} value={level}>
-                      {level === "all" ? "Бүгд" : level}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <section className="flex flex-col gap-8">
           {filteredCourses.length === 0 ? (
             <div className="text-center py-12">
               <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">

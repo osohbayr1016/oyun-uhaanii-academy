@@ -15,6 +15,9 @@ import {
   LogOut,
   User,
   FileText,
+  Home,
+  Mail,
+  Info,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import ProtectedRoute from "@/components/ProtectedRoute";
@@ -35,6 +38,12 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
   };
 
   const navigation = [
+    {
+      name: "Нүүр хуудас",
+      href: "/",
+      icon: Home,
+      current: false,
+    },
     {
       name: "Хянах самбар",
       href: "/admin",
@@ -70,6 +79,18 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
       href: "/admin/news",
       icon: FileText,
       current: pathname === "/admin/news",
+    },
+    {
+      name: "Мэдээний жагсаалт",
+      href: "/admin/newsletter",
+      icon: Mail,
+      current: pathname === "/admin/newsletter",
+    },
+    {
+      name: "About хуудас",
+      href: "/admin/about",
+      icon: Info,
+      current: pathname === "/admin/about",
     },
     {
       name: "Тохиргоо",

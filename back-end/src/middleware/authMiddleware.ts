@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
+import { prisma } from "../utils/prisma";
 
 const JWT_SECRET = process.env.JWT_SECRET || "supersecret";
 
@@ -21,7 +22,11 @@ declare global {
   }
 }
 
-const authMiddleware = (req: Request, res: Response, next: NextFunction) => {
+export const authenticateToken = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   const authHeader = req.headers.authorization;
 
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
@@ -43,4 +48,30 @@ const authMiddleware = (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
-export default authMiddleware;
+export const requireAdmin = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ message: "Authentication required" });
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: req.user.userId },
+    });
+
+    if (!user || user.role !== "admin") {
+      return res.status(403).json({ message: "Admin access required" });
+    }
+
+    next();
+  } catch (error) {
+    console.error("Admin middleware error:", error);
+    res.status(500).json({ message: "Server error during admin verification" });
+  }
+};
+
+// Keep the default export for backward compatibility
+export default authenticateToken;

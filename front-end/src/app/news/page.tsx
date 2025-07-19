@@ -22,6 +22,13 @@ export default function NewsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Newsletter subscription state
+  const [email, setEmail] = useState("");
+  const [subscribeStatus, setSubscribeStatus] = useState<
+    "idle" | "loading" | "success" | "error"
+  >("idle");
+  const [subscribeMessage, setSubscribeMessage] = useState("");
+
   useEffect(() => {
     fetchNews();
   }, []);
@@ -38,6 +45,43 @@ export default function NewsPage() {
       setError(err instanceof Error ? err.message : "An error occurred");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleSubscribe = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!email.trim()) {
+      setSubscribeStatus("error");
+      setSubscribeMessage("Имэйл хаяг оруулна уу");
+      return;
+    }
+
+    setSubscribeStatus("loading");
+    setSubscribeMessage("");
+
+    try {
+      const response = await fetch("/api/newsletter/subscribe", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email: email.trim() }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setSubscribeStatus("success");
+        setSubscribeMessage(data.message);
+        setEmail("");
+      } else {
+        setSubscribeStatus("error");
+        setSubscribeMessage(data.message || "Алдаа гарлаа");
+      }
+    } catch (error) {
+      setSubscribeStatus("error");
+      setSubscribeMessage("Серверийн алдаа");
     }
   };
 
@@ -168,16 +212,43 @@ export default function NewsPage() {
           <p className="text-gray-600 mb-6">
             Шинэ мэдээ, арга хэмжээний мэдээллийг имэйлээр хүлээн аваарай.
           </p>
-          <div className="flex max-w-md mx-auto">
-            <input
-              type="email"
-              placeholder="Имэйл хаягаа оруулна уу"
-              className="flex-1 px-4 py-3 border border-gray-300 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            <button className="bg-blue-600 text-white px-6 py-3 rounded-r-lg hover:bg-blue-700 transition-colors">
-              Бүртгүүлэх
-            </button>
-          </div>
+          <form onSubmit={handleSubscribe} className="max-w-md mx-auto">
+            <div className="flex">
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Имэйл хаягаа оруулна уу"
+                className="flex-1 px-4 py-3 border border-gray-300 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                disabled={subscribeStatus === "loading"}
+              />
+              <button
+                type="submit"
+                disabled={subscribeStatus === "loading"}
+                className="bg-blue-600 text-white px-6 py-3 rounded-r-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {subscribeStatus === "loading" ? (
+                  <div className="flex items-center">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    Илгээж байна...
+                  </div>
+                ) : (
+                  "Бүртгүүлэх"
+                )}
+              </button>
+            </div>
+            {subscribeMessage && (
+              <p
+                className={`mt-3 text-sm ${
+                  subscribeStatus === "success"
+                    ? "text-green-600"
+                    : "text-red-600"
+                }`}
+              >
+                {subscribeMessage}
+              </p>
+            )}
+          </form>
         </div>
       </div>
     </div>

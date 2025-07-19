@@ -1,27 +1,11 @@
+"use client";
+
 import Link from "next/link";
 import HeroSection from "./_components/HeroSection";
-import Image from "next/image";
 
-interface Product {
-  id: string;
-  name: string;
-  imageUrl: string;
-  price: number;
-  currency: string;
-}
-
-const HomePage = () => {
-  // const res = await fetch(
-  //   `${process.env.NEXT_PUBLIC_BASE_URL || ""}/api/products`,
-  //   {
-  //     cache: "no-store",
-  //   }
-  // );
-
-  // const products: Product[] = await res.json();
-
+export default function HomePage() {
   return (
-    <>
+    <div>
       <HeroSection />
 
       {/* Features Section */}
@@ -137,8 +121,6 @@ const HomePage = () => {
           </div>
         </div>
       </section>
-    </>
+    </div>
   );
-};
-
-export default HomePage;
+}

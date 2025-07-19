@@ -34,6 +34,7 @@ interface Tournament {
   status: string;
   rules?: string;
   prizes?: any;
+  enrollLink?: string;
   createdAt: string;
   updatedAt: string;
   participants?: Array<{
@@ -69,6 +70,7 @@ interface TournamentFormData {
   prize1: string;
   prize2: string;
   prize3: string;
+  enrollLink: string;
 }
 
 const AdminTournamentsPage = () => {
@@ -94,12 +96,13 @@ const AdminTournamentsPage = () => {
     maxParticipants: "",
     entryFee: "",
     currency: "MNT",
-    category: "Шатар",
+    category: "",
     status: "upcoming",
     rules: "",
     prize1: "",
     prize2: "",
     prize3: "",
+    enrollLink: "",
   });
   const [editFormData, setEditFormData] = useState<TournamentFormData>({
     title: "",
@@ -111,12 +114,13 @@ const AdminTournamentsPage = () => {
     maxParticipants: "",
     entryFee: "",
     currency: "MNT",
-    category: "Шатар",
+    category: "",
     status: "upcoming",
     rules: "",
     prize1: "",
     prize2: "",
     prize3: "",
+    enrollLink: "",
   });
   const [submitting, setSubmitting] = useState(false);
 
@@ -240,12 +244,13 @@ const AdminTournamentsPage = () => {
         maxParticipants: "",
         entryFee: "",
         currency: "MNT",
-        category: "Шатар",
+        category: "",
         status: "upcoming",
         rules: "",
         prize1: "",
         prize2: "",
         prize3: "",
+        enrollLink: "",
       });
     } catch (error) {
       console.error("Error creating tournament:", error);
@@ -268,6 +273,12 @@ const AdminTournamentsPage = () => {
     try {
       const tournamentData = {
         ...editFormData,
+        maxParticipants: editFormData.maxParticipants
+          ? parseInt(editFormData.maxParticipants)
+          : null,
+        entryFee: editFormData.entryFee
+          ? parseFloat(editFormData.entryFee)
+          : null,
         prizes: {
           "1-р байр": editFormData.prize1,
           "2-р байр": editFormData.prize2,
@@ -287,7 +298,12 @@ const AdminTournamentsPage = () => {
       );
 
       if (!response.ok) {
-        throw new Error("Failed to update tournament");
+        let errorMsg = "Failed to update tournament";
+        try {
+          const errorData = await response.json();
+          errorMsg = errorData.error || errorData.message || errorMsg;
+        } catch {}
+        throw new Error(errorMsg);
       }
 
       const updatedTournament = await response.json();
@@ -302,7 +318,9 @@ const AdminTournamentsPage = () => {
       setSelectedTournament(null);
     } catch (error) {
       console.error("Error updating tournament:", error);
-      alert("Failed to update tournament");
+      alert(
+        error instanceof Error ? error.message : "Failed to update tournament"
+      );
     } finally {
       setSubmitting(false);
     }
@@ -584,6 +602,7 @@ const AdminTournamentsPage = () => {
                           prize1: tournament.prizes?.["1-р байр"] || "",
                           prize2: tournament.prizes?.["2-р байр"] || "",
                           prize3: tournament.prizes?.["3-р байр"] || "",
+                          enrollLink: tournament.enrollLink || "",
                         });
                         setShowEditModal(true);
                       }}
@@ -732,20 +751,15 @@ const AdminTournamentsPage = () => {
                   <label className="block text-sm font-medium text-gray-700">
                     Ангилал
                   </label>
-                  <select
+                  <input
+                    type="text"
                     name="category"
                     value={formData.category}
                     onChange={handleInputChange}
+                    placeholder="Ангилал оруулна уу"
                     required
                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                  >
-                    <option value="Рубикийн шоо">Рубикийн шоо</option>
-                    <option value="Хуруундай">Хуруундай</option>
-                    <option value="Спорт өрөлт">Спорт өрөлт</option>
-                    <option value="Түргэн бодолт">Түргэн бодолт</option>
-                    <option value="Хурдан уншлага">Хурдан уншлага</option>
-                    <option value="Ой тогтоолт">Ой тогтоолт</option>
-                  </select>
+                  />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
@@ -821,6 +835,19 @@ const AdminTournamentsPage = () => {
                     name="prize3"
                     value={formData.prize3}
                     onChange={handleInputChange}
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Google Form линк
+                  </label>
+                  <input
+                    type="url"
+                    name="enrollLink"
+                    value={formData.enrollLink}
+                    onChange={handleInputChange}
+                    placeholder="Бүртгүүлэх Google Form линк"
                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
@@ -986,7 +1013,8 @@ const AdminTournamentsPage = () => {
                   <label className="block text-sm font-medium text-gray-700">
                     Ангилал
                   </label>
-                  <select
+                  <input
+                    type="text"
                     name="category"
                     value={editFormData.category}
                     onChange={(e) =>
@@ -995,16 +1023,10 @@ const AdminTournamentsPage = () => {
                         category: e.target.value,
                       }))
                     }
+                    placeholder="Ангилал оруулна уу"
                     required
                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                  >
-                    <option value="Рубикийн шоо">Рубикийн шоо</option>
-                    <option value="Хуруундай">Хуруундай</option>
-                    <option value="Спорт өрөлт">Спорт өрөлт</option>
-                    <option value="Түргэн бодолт">Түргэн бодолт</option>
-                    <option value="Хурдан уншлага">Хурдан уншлага</option>
-                    <option value="Ой тогтоолт">Ой тогтоолт</option>
-                  </select>
+                  />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
@@ -1095,6 +1117,24 @@ const AdminTournamentsPage = () => {
                     onChange={(e) =>
                       setEditFormData((f) => ({ ...f, prize3: e.target.value }))
                     }
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Google Form линк
+                  </label>
+                  <input
+                    type="url"
+                    name="enrollLink"
+                    value={editFormData.enrollLink}
+                    onChange={(e) =>
+                      setEditFormData((f) => ({
+                        ...f,
+                        enrollLink: e.target.value,
+                      }))
+                    }
+                    placeholder="Бүртгүүлэх Google Form линк"
                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>

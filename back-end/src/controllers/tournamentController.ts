@@ -26,12 +26,10 @@ export const getAllTournaments = async (req: Request, res: Response) => {
   } catch (error) {
     console.error("Get all tournaments error:", error);
     if (process.env.NODE_ENV === "development") {
-      res
-        .status(500)
-        .json({
-          message: "Failed to fetch tournaments",
-          error: error instanceof Error ? error.stack : error,
-        });
+      res.status(500).json({
+        message: "Failed to fetch tournaments",
+        error: error instanceof Error ? error.stack : error,
+      });
     } else {
       res.status(500).json({ message: "Failed to fetch tournaments" });
     }
@@ -109,6 +107,7 @@ export const createTournament = async (req: Request, res: Response) => {
       status,
       rules,
       prizes,
+      enrollLink,
     } = req.body;
 
     // Validate required fields
@@ -150,6 +149,7 @@ export const createTournament = async (req: Request, res: Response) => {
       status: status || "upcoming",
       rules: rules || null,
       prizes: prizes || null,
+      enrollLink: enrollLink || null,
     };
 
     console.log("Backend: Creating tournament with data:", tournamentData);
@@ -186,7 +186,12 @@ export const createTournament = async (req: Request, res: Response) => {
 export const updateTournament = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const updateData = req.body;
+    const updateData = { ...req.body };
+
+    // Remove deprecated prize fields if present
+    delete updateData.prize1;
+    delete updateData.prize2;
+    delete updateData.prize3;
 
     // Convert date strings to Date objects if they exist
     if (updateData.startDate) {

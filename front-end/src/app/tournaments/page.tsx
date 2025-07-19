@@ -14,6 +14,7 @@ import {
   Search,
   Filter,
 } from "lucide-react";
+import Image from "next/image";
 
 interface Tournament {
   id: string;
@@ -270,8 +271,19 @@ const TournamentsPage = () => {
                 key={tournament.id}
                 className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-200"
               >
-                <div className="h-48 bg-gradient-to-br from-yellow-100 to-orange-100 flex items-center justify-center">
-                  <Trophy className="h-16 w-16 text-yellow-600" />
+                <div className="h-48 bg-gradient-to-br from-yellow-100 to-orange-100 flex items-center justify-center relative">
+                  {tournament.imageUrl && tournament.imageUrl.trim() !== "" ? (
+                    <Image
+                      src={tournament.imageUrl}
+                      alt={tournament.title}
+                      fill
+                      className="object-cover"
+                      style={{ objectFit: "cover" }}
+                      priority
+                    />
+                  ) : (
+                    <Trophy className="h-16 w-16 text-yellow-600" />
+                  )}
                 </div>
                 <div className="p-6">
                   <div className="flex items-center justify-between mb-2">

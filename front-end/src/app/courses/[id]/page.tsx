@@ -171,9 +171,23 @@ export default function CourseDetailsPage() {
 
       {/* Enroll Button */}
       <div className="flex justify-center my-12">
-        <button className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-12 py-5 rounded-2xl text-2xl shadow-xl transition-all duration-200">
-          Сургалтанд бүртгүүлэх
-        </button>
+        {course.enrollLink ? (
+          <a
+            href={course.enrollLink}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-12 py-5 rounded-2xl text-2xl shadow-xl transition-all duration-200 text-center"
+          >
+            Сургалтанд бүртгүүлэх
+          </a>
+        ) : (
+          <button
+            className="bg-gray-400 text-white font-bold px-12 py-5 rounded-2xl text-2xl shadow-xl cursor-not-allowed"
+            disabled
+          >
+            Сургалтанд бүртгүүлэх
+          </button>
+        )}
       </div>
 
       {/* Contact Section */}

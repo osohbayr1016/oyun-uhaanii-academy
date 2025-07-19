@@ -152,6 +152,7 @@ model Tournament {
   status      String   @default("upcoming") // upcoming, active, completed, cancelled
   rules       String?
   prizes      Json?
+  enrollLink  String?  // Google Form link for registration
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   
@@ -318,4 +319,38 @@ model Activity {
   userName  String?
   message   String
   createdAt DateTime @default(now())
+}
+
+model TextContent {
+  id        String   @id @default(uuid())
+  key       String   @unique
+  value     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model AboutPageContent {
+  id                String   @id @default(uuid())
+  section           String   @unique // hero, goals, values, history, team, contact
+  title             String?
+  content           String?
+  imageUrl          String?
+  teamMemberName    String?
+  teamMemberRole    String?
+  teamMemberImage   String?
+  contactAddress    String?
+  contactPhone      String?
+  contactEmail      String?
+  contactHours      String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model Newsletter {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  isActive  Boolean  @default(true)
+  subscribedAt DateTime @default(now())
+  lastEmailSent DateTime?
+  unsubscribeToken String @unique @default(uuid())
 }

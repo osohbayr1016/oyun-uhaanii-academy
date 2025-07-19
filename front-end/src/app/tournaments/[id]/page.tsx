@@ -12,10 +12,8 @@ import {
   ArrowLeft,
   Clock,
   Award,
-  User,
-  CheckCircle,
-  XCircle,
 } from "lucide-react";
+import Image from "next/image";
 
 interface Tournament {
   id: string;
@@ -32,6 +30,7 @@ interface Tournament {
   status: string;
   rules?: string;
   prizes?: any;
+  enrollLink?: string;
   createdAt: string;
   updatedAt: string;
   participants?: Array<{
@@ -175,41 +174,6 @@ const TournamentDetailPage = () => {
     });
   };
 
-  const getParticipantStatusBadge = (status: string) => {
-    switch (status) {
-      case "registered":
-        return (
-          <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2 py-1 rounded">
-            Бүртгүүлсэн
-          </span>
-        );
-      case "confirmed":
-        return (
-          <span className="bg-green-100 text-green-800 text-xs font-medium px-2 py-1 rounded">
-            Баталгаажсан
-          </span>
-        );
-      case "eliminated":
-        return (
-          <span className="bg-red-100 text-red-800 text-xs font-medium px-2 py-1 rounded">
-            Хасагдсан
-          </span>
-        );
-      case "winner":
-        return (
-          <span className="bg-yellow-100 text-yellow-800 text-xs font-medium px-2 py-1 rounded">
-            Ялагч
-          </span>
-        );
-      default:
-        return (
-          <span className="bg-gray-100 text-gray-800 text-xs font-medium px-2 py-1 rounded">
-            {status}
-          </span>
-        );
-    }
-  };
-
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -274,8 +238,19 @@ const TournamentDetailPage = () => {
           <div className="lg:col-span-2 space-y-8">
             {/* Tournament Image */}
             <div className="bg-white rounded-lg shadow overflow-hidden">
-              <div className="h-64 bg-gradient-to-br from-yellow-100 to-orange-100 flex items-center justify-center">
-                <Trophy className="h-24 w-24 text-yellow-600" />
+              <div className="h-64 bg-gradient-to-br from-yellow-100 to-orange-100 flex items-center justify-center relative">
+                {tournament.imageUrl && tournament.imageUrl.trim() !== "" ? (
+                  <Image
+                    src={tournament.imageUrl}
+                    alt={tournament.title}
+                    fill
+                    className="object-cover"
+                    style={{ objectFit: "cover" }}
+                    priority
+                  />
+                ) : (
+                  <Trophy className="h-24 w-24 text-yellow-600" />
+                )}
               </div>
             </div>
 
@@ -383,12 +358,7 @@ const TournamentDetailPage = () => {
                 )}
                 <div className="flex items-center text-gray-600">
                   <Users className="w-5 h-5 mr-3" />
-                  <span>
-                    {tournament.participants?.length || 0}
-                    {tournament.maxParticipants &&
-                      ` / ${tournament.maxParticipants}`}{" "}
-                    оролцогч
-                  </span>
+                  <span>{tournament.participants?.length || 0} оролцогч</span>
                 </div>
                 {tournament.entryFee && (
                   <div className="flex items-center text-gray-600">
@@ -426,45 +396,28 @@ const TournamentDetailPage = () => {
               </div>
             )}
 
-            {/* Participants */}
-            <div className="bg-white rounded-lg shadow p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                Оролцогчид
-              </h3>
-              <div className="space-y-3">
-                {!tournament.participants ||
-                tournament.participants.length === 0 ? (
-                  <p className="text-gray-500 text-center py-4">
-                    Оролцогч байхгүй байна
-                  </p>
-                ) : (
-                  tournament.participants.map((participant) => (
-                    <div
-                      key={participant.id}
-                      className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
-                    >
-                      <div className="flex items-center">
-                        <User className="w-4 h-4 mr-2 text-gray-400" />
-                        <span className="font-medium">
-                          {participant.user.name}
-                        </span>
-                      </div>
-                      {getParticipantStatusBadge(participant.status)}
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
-
             {/* Action Buttons */}
             <div className="bg-white rounded-lg shadow p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">
                 Үйл ажиллагаа
               </h3>
               <div className="space-y-3">
-                {tournament.status === "upcoming" && (
-                  <button className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors">
+                {tournament.status === "upcoming" && tournament.enrollLink && (
+                  <a
+                    href={tournament.enrollLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block w-full text-center bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors"
+                  >
                     Бүртгүүлэх
+                  </a>
+                )}
+                {tournament.status === "upcoming" && !tournament.enrollLink && (
+                  <button
+                    disabled
+                    className="w-full bg-gray-400 text-white py-2 px-4 rounded-lg cursor-not-allowed"
+                  >
+                    Бүртгүүлэх (Google Form линк байхгүй)
                   </button>
                 )}
                 {tournament.status === "active" && (
