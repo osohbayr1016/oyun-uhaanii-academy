@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useAuth } from "@/lib/auth";
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
@@ -14,6 +15,7 @@ export default function RegisterPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const { register } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,30 +29,23 @@ export default function RegisterPage() {
     }
 
     try {
-      const response = await fetch(`/api/auth/register`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name: formData.name,
-          email: formData.email,
-          password: formData.password,
-        }),
-      });
+      const result = await register(
+        formData.name,
+        formData.email,
+        formData.password
+      );
 
-      const data = await response.json();
-
-      if (response.ok) {
-        // Store token in localStorage
-        localStorage.setItem("token", data.token);
-        localStorage.setItem("user", JSON.stringify(data.user));
-        router.push("/");
-      } else {
-        setError(data.message || "Registration failed");
+      if (result.success) {
+        if (result.needsLogin) {
+          // If auto-login failed, redirect to login page with success message
+          router.push("/login?message=Registration successful! Please login.");
+        } else {
+          // Auto-login successful, redirect to home
+          router.push("/");
+        }
       }
-    } catch (error) {
-      setError("Network error. Please try again.");
+    } catch (error: any) {
+      setError(error.message || "Registration failed. Please try again.");
     } finally {
       setLoading(false);
     }

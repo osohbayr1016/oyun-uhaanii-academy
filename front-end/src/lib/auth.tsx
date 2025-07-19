@@ -24,6 +24,7 @@ export interface AuthState {
 
 interface AuthContextType extends AuthState {
   login: (email: string, password: string) => Promise<any>;
+  register: (name: string, email: string, password: string) => Promise<any>;
   logout: () => void;
   isAuthenticated: () => boolean;
   isAdmin: () => boolean;
@@ -83,8 +84,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
 
   const register = async (name: string, email: string, password: string) => {
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
-      const response = await fetch(`${apiUrl}/api/auth/register`, {
+      const response = await fetch(`/api/auth/register`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -95,12 +95,19 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
       const data = await response.json();
 
       if (response.ok) {
-        return { success: true, data };
+        // Automatically login after successful registration
+        try {
+          await login(email, password);
+          return { success: true, data };
+        } catch (loginError) {
+          // If auto-login fails, still return success but indicate login needed
+          return { success: true, data, needsLogin: true };
+        }
       } else {
-        return { success: false, error: data.message || "Registration failed" };
+        throw new Error(data.message || "Registration failed");
       }
-    } catch (error) {
-      return { success: false, error: "Network error" };
+    } catch (error: any) {
+      throw new Error(error.message || "Network error");
     }
   };
 
@@ -122,6 +129,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
       value={{
         ...authState,
         login,
+        register,
         logout,
         isAuthenticated,
         isAdmin,

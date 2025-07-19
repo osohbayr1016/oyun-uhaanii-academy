@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/lib/auth";
 
@@ -12,7 +12,9 @@ export default function LoginPage() {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { login, isAuthenticated } = useAuth();
 
   // Redirect if already logged in (move to useEffect)
@@ -22,10 +24,19 @@ export default function LoginPage() {
     }
   }, [isAuthenticated, router]);
 
+  // Check for success message from registration
+  useEffect(() => {
+    const message = searchParams.get("message");
+    if (message) {
+      setSuccessMessage(message);
+    }
+  }, [searchParams]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError("");
+    setSuccessMessage(""); // Clear success message when attempting login
     try {
       await login(formData.email, formData.password);
       setLoading(false);
@@ -44,6 +55,13 @@ export default function LoginPage() {
             Нэвтрэх
           </h2>
         </div>
+
+        {successMessage && (
+          <div className="bg-green-50 border border-green-200 rounded-md p-4">
+            <p className="text-green-800 text-sm">{successMessage}</p>
+          </div>
+        )}
+
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="rounded-md shadow-sm -space-y-px">
             <div>
