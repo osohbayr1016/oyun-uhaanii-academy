@@ -163,7 +163,7 @@ export default function ProductDetailPage() {
             {/* Product Image */}
             <div className="md:w-1/2">
               <img
-                src={product.imageUrl || "/academy.png"}
+                src={product.imageUrl}
                 alt={product.name}
                 className="w-full h-96 object-cover"
                 onError={(e) => {

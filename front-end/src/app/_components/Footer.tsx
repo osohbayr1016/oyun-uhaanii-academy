@@ -56,7 +56,7 @@ export default function Footer() {
           <div className="space-y-4">
             <div className="flex items-center space-x-2">
               <Image
-                src="/logosalbariin.png"
+                src="https://i.imgur.com/F98ZjSL.png"
                 alt="Oyun Uhaanii Academy"
                 width={180}
                 height={60}

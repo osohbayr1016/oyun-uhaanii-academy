@@ -2,6 +2,10 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   images: {
+    domains: [
+      "i.imgur.com",
+      // add other domains as needed
+    ],
     remotePatterns: [
       {
         protocol: "https",

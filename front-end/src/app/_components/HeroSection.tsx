@@ -80,7 +80,7 @@ export default function HeroSection() {
           <div className="relative order-first lg:order-last">
             <div className="relative mx-auto max-w-md lg:max-w-lg">
               <Image
-                src="/academy.png"
+                src="https://i.imgur.com/FQu6uqC.png"
                 alt="Mongolian Traditional Games"
                 width={400}
                 height={200}
