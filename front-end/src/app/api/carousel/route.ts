@@ -1,32 +1,40 @@
 import { NextRequest, NextResponse } from "next/server";
 
-// In-memory storage for demo (replace with DB or persistent storage in production)
-let carouselImages: { id: string; imageUrl: string }[] = [];
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
 
 export async function GET() {
-  return NextResponse.json(carouselImages);
-}
-
-export async function POST(req: NextRequest) {
-  const { imageUrl } = await req.json();
-  if (!imageUrl || typeof imageUrl !== "string") {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/carousel`);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    const images = await response.json();
+    return NextResponse.json(images);
+  } catch (error) {
     return NextResponse.json(
-      { error: "imageUrl is required" },
-      { status: 400 }
+      { error: "Failed to fetch carousel images" },
+      { status: 500 }
     );
   }
-  const id = Math.random().toString(36).substr(2, 9);
-  carouselImages.push({ id, imageUrl });
-  return NextResponse.json({ id, imageUrl });
 }
 
-export async function DELETE(req: NextRequest) {
-  const url = new URL(req.url);
-  const id = url.pathname.split("/").pop();
-  const idx = carouselImages.findIndex((img) => img.id === id);
-  if (idx === -1) {
-    return NextResponse.json({ error: "Image not found" }, { status: 404 });
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const response = await fetch(`${API_BASE_URL}/api/carousel`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    const data = await response.json();
+    return NextResponse.json(data);
+  } catch (error) {
+    return NextResponse.json(
+      { error: "Failed to add carousel image" },
+      { status: 500 }
+    );
   }
-  carouselImages.splice(idx, 1);
-  return NextResponse.json({ success: true });
 }

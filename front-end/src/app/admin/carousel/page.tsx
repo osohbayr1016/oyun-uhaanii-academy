@@ -6,6 +6,11 @@ interface CarouselImage {
   imageUrl: string;
 }
 
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "";
+const API_CAROUSEL = BACKEND_URL
+  ? `${BACKEND_URL}/api/carousel`
+  : "/api/carousel";
+
 export default function AdminCarouselPage() {
   const [images, setImages] = useState<CarouselImage[]>([]);
   const [imageUrl, setImageUrl] = useState("");
@@ -13,7 +18,7 @@ export default function AdminCarouselPage() {
 
   const fetchImages = async () => {
     setLoading(true);
-    const res = await fetch("/api/carousel");
+    const res = await fetch(API_CAROUSEL);
     const data = await res.json();
     setImages(data);
     setLoading(false);
@@ -25,7 +30,7 @@ export default function AdminCarouselPage() {
 
   const handleAdd = async () => {
     if (!imageUrl.trim()) return;
-    await fetch("/api/carousel", {
+    await fetch(API_CAROUSEL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ imageUrl: imageUrl.trim() }),
@@ -35,7 +40,7 @@ export default function AdminCarouselPage() {
   };
 
   const handleDelete = async (id: string) => {
-    await fetch(`/api/carousel/${id}`, { method: "DELETE" });
+    await fetch(`${API_CAROUSEL}/${id}`, { method: "DELETE" });
     fetchImages();
   };
 
