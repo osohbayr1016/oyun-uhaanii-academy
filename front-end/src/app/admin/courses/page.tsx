@@ -74,6 +74,15 @@ const AdminCoursesPage = () => {
     description: "",
     content: "",
     imageUrl: "",
+    price: "",
+    currency: "MNT",
+    duration: "",
+    level: "",
+    category: "",
+    instructor: "",
+    maxStudents: "",
+    startDate: "",
+    endDate: "",
     youtubeUrl: "",
     heroImage: "",
     goal: "",
@@ -89,6 +98,37 @@ const AdminCoursesPage = () => {
   useEffect(() => {
     fetchCourses();
   }, []);
+
+  // When a course is selected for editing, populate the edit form data
+  useEffect(() => {
+    if (showEditModal && selectedCourse) {
+      setFormData({
+        title: selectedCourse.title || "",
+        description: selectedCourse.description || "",
+        content: selectedCourse.content || "",
+        imageUrl: selectedCourse.imageUrl || "",
+        price: selectedCourse.price ? String(selectedCourse.price) : "",
+        currency: selectedCourse.currency || "MNT",
+        duration: selectedCourse.duration
+          ? String(selectedCourse.duration)
+          : "",
+        level: selectedCourse.level || "",
+        category: selectedCourse.category || "",
+        instructor: selectedCourse.instructor || "",
+        maxStudents: selectedCourse.maxStudents
+          ? String(selectedCourse.maxStudents)
+          : "",
+        startDate: selectedCourse.startDate || "",
+        endDate: selectedCourse.endDate || "",
+        youtubeUrl: selectedCourse.youtubeUrl || "",
+        heroImage: selectedCourse.heroImage || "",
+        goal: selectedCourse.goal || "",
+        target: selectedCourse.target || "",
+        structure: selectedCourse.structure || "",
+        enrollLink: selectedCourse.enrollLink || "",
+      });
+    }
+  }, [showEditModal, selectedCourse]);
 
   const fetchCourses = async () => {
     try {
@@ -159,6 +199,15 @@ const AdminCoursesPage = () => {
         description: "",
         content: "",
         imageUrl: "",
+        price: "",
+        currency: "MNT",
+        duration: "",
+        level: "",
+        category: "",
+        instructor: "",
+        maxStudents: "",
+        startDate: "",
+        endDate: "",
         youtubeUrl: "",
         heroImage: "",
         goal: "",
@@ -183,12 +232,40 @@ const AdminCoursesPage = () => {
     setSubmitting(true);
 
     try {
+      // Prepare the data to match backend expectations
+      const courseData = {
+        title: formData.title,
+        description: formData.description,
+        content: formData.content,
+        imageUrl: formData.imageUrl,
+        price: formData.price ? parseFloat(formData.price) : null,
+        currency: formData.currency || "MNT",
+        duration: formData.duration ? parseInt(formData.duration) : null,
+        level: formData.level || null,
+        category: formData.category || null,
+        instructor: formData.instructor || null,
+        maxStudents: formData.maxStudents
+          ? parseInt(formData.maxStudents)
+          : null,
+        startDate: formData.startDate || null,
+        endDate: formData.endDate || null,
+        youtubeUrl: formData.youtubeUrl || null,
+        heroImage: formData.heroImage || null,
+        goal: formData.goal || null,
+        target: formData.target || null,
+        structure: formData.structure || null,
+        enrollLink: formData.enrollLink || null,
+      };
+
+      const token =
+        typeof window !== "undefined" ? localStorage.getItem("token") : null;
       const response = await fetch(`/api/courses/${selectedCourse.id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(courseData),
       });
 
       if (!response.ok) {
@@ -566,14 +643,16 @@ const AdminCoursesPage = () => {
               <h3 className="text-lg font-medium text-gray-900 mb-4">
                 Сургалт засах
               </h3>
-              <form className="space-y-4">
+              <form className="space-y-4" onSubmit={handleEdit}>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
                     Гарчиг
                   </label>
                   <input
                     type="text"
-                    defaultValue={selectedCourse.title}
+                    name="title"
+                    value={formData.title}
+                    onChange={handleInputChange}
                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
@@ -583,7 +662,9 @@ const AdminCoursesPage = () => {
                   </label>
                   <textarea
                     rows={3}
-                    defaultValue={selectedCourse.description}
+                    name="description"
+                    value={formData.description}
+                    onChange={handleInputChange}
                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
@@ -593,7 +674,9 @@ const AdminCoursesPage = () => {
                   </label>
                   <input
                     type="url"
-                    defaultValue={selectedCourse.imageUrl}
+                    name="imageUrl"
+                    value={formData.imageUrl}
+                    onChange={handleInputChange}
                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
@@ -603,7 +686,9 @@ const AdminCoursesPage = () => {
                   </label>
                   <input
                     type="url"
-                    defaultValue={selectedCourse.youtubeUrl ?? ""}
+                    name="youtubeUrl"
+                    value={formData.youtubeUrl}
+                    onChange={handleInputChange}
                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
@@ -613,7 +698,9 @@ const AdminCoursesPage = () => {
                   </label>
                   <input
                     type="url"
-                    defaultValue={selectedCourse.heroImage ?? ""}
+                    name="heroImage"
+                    value={formData.heroImage}
+                    onChange={handleInputChange}
                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
@@ -623,7 +710,9 @@ const AdminCoursesPage = () => {
                   </label>
                   <textarea
                     rows={2}
-                    defaultValue={selectedCourse.goal ?? ""}
+                    name="goal"
+                    value={formData.goal}
+                    onChange={handleInputChange}
                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
@@ -633,7 +722,9 @@ const AdminCoursesPage = () => {
                   </label>
                   <textarea
                     rows={2}
-                    defaultValue={selectedCourse.target ?? ""}
+                    name="target"
+                    value={formData.target}
+                    onChange={handleInputChange}
                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
@@ -643,7 +734,9 @@ const AdminCoursesPage = () => {
                   </label>
                   <textarea
                     rows={2}
-                    defaultValue={selectedCourse.structure ?? ""}
+                    name="structure"
+                    value={formData.structure}
+                    onChange={handleInputChange}
                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
@@ -653,7 +746,9 @@ const AdminCoursesPage = () => {
                   </label>
                   <input
                     type="url"
-                    defaultValue={selectedCourse.enrollLink ?? ""}
+                    name="enrollLink"
+                    value={formData.enrollLink}
+                    onChange={handleInputChange}
                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>

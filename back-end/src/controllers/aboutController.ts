@@ -12,19 +12,26 @@ export const getAboutPageContent = async (req: Request, res: Response) => {
     // Transform the data into a more usable format
     const formattedContent: any = {};
     content.forEach((item) => {
-      formattedContent[item.section] = {
-        id: item.id,
-        title: item.title,
-        content: item.content,
-        imageUrl: item.imageUrl,
-        teamMemberName: item.teamMemberName,
-        teamMemberRole: item.teamMemberRole,
-        teamMemberImage: item.teamMemberImage,
-        contactAddress: item.contactAddress,
-        contactPhone: item.contactPhone,
-        contactEmail: item.contactEmail,
-        contactHours: item.contactHours,
-      };
+      if (item.section === "team") {
+        formattedContent[item.section] = {
+          id: item.id,
+          teamMembers: item.teamMembers || [],
+        };
+      } else {
+        formattedContent[item.section] = {
+          id: item.id,
+          title: item.title,
+          content: item.content,
+          imageUrl: item.imageUrl,
+          teamMemberName: item.teamMemberName,
+          teamMemberRole: item.teamMemberRole,
+          teamMemberImage: item.teamMemberImage,
+          contactAddress: item.contactAddress,
+          contactPhone: item.contactPhone,
+          contactEmail: item.contactEmail,
+          contactHours: item.contactHours,
+        };
+      }
     });
 
     res.json(formattedContent);
@@ -41,6 +48,7 @@ export const updateAboutPageContent = async (req: Request, res: Response) => {
       title,
       content,
       imageUrl,
+      teamMembers,
       teamMemberName,
       teamMemberRole,
       teamMemberImage,
@@ -64,35 +72,41 @@ export const updateAboutPageContent = async (req: Request, res: Response) => {
       // Update existing content
       result = await prisma.aboutPageContent.update({
         where: { section },
-        data: {
-          title,
-          content,
-          imageUrl,
-          teamMemberName,
-          teamMemberRole,
-          teamMemberImage,
-          contactAddress,
-          contactPhone,
-          contactEmail,
-          contactHours,
-        },
+        data:
+          section === "team"
+            ? { teamMembers }
+            : {
+                title,
+                content,
+                imageUrl,
+                teamMemberName,
+                teamMemberRole,
+                teamMemberImage,
+                contactAddress,
+                contactPhone,
+                contactEmail,
+                contactHours,
+              },
       });
     } else {
       // Create new content
       result = await prisma.aboutPageContent.create({
-        data: {
-          section,
-          title,
-          content,
-          imageUrl,
-          teamMemberName,
-          teamMemberRole,
-          teamMemberImage,
-          contactAddress,
-          contactPhone,
-          contactEmail,
-          contactHours,
-        },
+        data:
+          section === "team"
+            ? { section, teamMembers }
+            : {
+                section,
+                title,
+                content,
+                imageUrl,
+                teamMemberName,
+                teamMemberRole,
+                teamMemberImage,
+                contactAddress,
+                contactPhone,
+                contactEmail,
+                contactHours,
+              },
       });
     }
 

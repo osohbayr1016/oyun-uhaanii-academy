@@ -362,7 +362,7 @@ const TournamentDetailPage = () => {
                 </div>
                 {tournament.entryFee && (
                   <div className="flex items-center text-gray-600">
-                    <DollarSign className="w-5 h-5 mr-3" />
+                    <Trophy className="w-5 h-5 mr-3 text-yellow-600" />
                     <span>
                       {tournament.entryFee} {tournament.currency}
                     </span>
@@ -388,7 +388,7 @@ const TournamentDetailPage = () => {
                         <span className="font-medium">{place}</span>
                       </div>
                       <span className="text-green-600 font-semibold">
-                        {String(amount)} {tournament.currency}
+                        {String(amount)}
                       </span>
                     </div>
                   ))}
@@ -420,11 +420,7 @@ const TournamentDetailPage = () => {
                     Бүртгүүлэх (Google Form линк байхгүй)
                   </button>
                 )}
-                {tournament.status === "active" && (
-                  <button className="w-full bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition-colors">
-                    Тоглолтыг харах
-                  </button>
-                )}
+                {tournament.status === "active" && <></>}
                 <Link
                   href="/tournaments"
                   className="block w-full text-center bg-gray-100 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-200 transition-colors"

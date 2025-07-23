@@ -66,7 +66,7 @@ export default function CoursesPage() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Курсуудыг уншиж байна...</p>
+          <p className="text-gray-600">уншиж байна...</p>
         </div>
       </div>
     );
@@ -93,7 +93,7 @@ export default function CoursesPage() {
       <main className="container mx-auto px-4 py-12">
         <section className="mb-12">
           <h1 className="text-4xl font-bold text-center mb-4 text-gray-800">
-            Сургалтууд
+            СУРГАЛТУУД
           </h1>
         </section>
         <section className="flex flex-col gap-8">

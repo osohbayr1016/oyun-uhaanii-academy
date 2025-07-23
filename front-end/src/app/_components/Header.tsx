@@ -156,7 +156,7 @@ const Header = () => {
             <Link
               key={link.name}
               href={link.href}
-              className="text-gray-700 hover:text-gray-900 px-3 py-2 text-sm font-medium transition-colors"
+              className="text-gray-700 hover:text-gray-900 px-3 py-2 text-[17px] font-extrabold transition-colors"
             >
               {link.name}
             </Link>
@@ -164,7 +164,7 @@ const Header = () => {
           {user && user.role && user.role.toLowerCase() === "admin" && (
             <Link
               href="/admin"
-              className="ml-4 px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold shadow hover:bg-blue-700 transition-colors duration-200"
+              className="ml-4 px-4 py-2 bg-[#550080] text-white rounded-lg font-semibold shadow hover:bg-blue-700 transition-colors duration-200"
               style={{ marginLeft: "1rem" }}
             >
               Admin
@@ -258,40 +258,6 @@ const Header = () => {
             )}
           </svg>
         </button>
-
-        {/* Cart and Wishlist buttons */}
-        <div className="flex items-center gap-4">
-          <button
-            className="relative p-2 hover:bg-gray-100 rounded-full"
-            onClick={() => {
-              setActiveTab("cart");
-              setDrawerOpen(true);
-            }}
-            aria-label="Cart"
-          >
-            <ShoppingCart className="w-6 h-6 text-blue-600" />
-            {cart.length > 0 && (
-              <span className="absolute -top-1 -right-1 bg-blue-600 text-white text-xs rounded-full px-1.5 py-0.5">
-                {cart.length}
-              </span>
-            )}
-          </button>
-          <button
-            className="relative p-2 hover:bg-gray-100 rounded-full"
-            onClick={() => {
-              setActiveTab("wishlist");
-              setDrawerOpen(true);
-            }}
-            aria-label="Wishlist"
-          >
-            <Heart className="w-6 h-6 text-pink-500" />
-            {wishlist.length > 0 && (
-              <span className="absolute -top-1 -right-1 bg-pink-500 text-white text-xs rounded-full px-1.5 py-0.5">
-                {wishlist.length}
-              </span>
-            )}
-          </button>
-        </div>
       </div>
 
       {/* Mobile Navigation */}

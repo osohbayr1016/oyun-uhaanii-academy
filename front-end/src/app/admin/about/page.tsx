@@ -13,7 +13,15 @@ import {
   Phone,
   Mail,
   Clock,
+  Plus,
+  Trash2,
 } from "lucide-react";
+
+interface TeamMember {
+  name: string;
+  role: string;
+  imageUrl: string;
+}
 
 interface AboutContent {
   [key: string]: {
@@ -24,6 +32,7 @@ interface AboutContent {
     teamMemberName?: string;
     teamMemberRole?: string;
     teamMemberImage?: string;
+    teamMembers?: TeamMember[];
     contactAddress?: string;
     contactPhone?: string;
     contactEmail?: string;
@@ -90,9 +99,24 @@ const AdminAboutPage = () => {
         throw new Error("No authentication token");
       }
 
-      // Save each section
-      const promises = Object.entries(content).map(([section, data]) =>
-        fetch("/api/about", {
+      // Save each section, including team
+      const promises = Object.entries(content).map(([section, data]) => {
+        // For team section, only send teamMembers
+        if (section === "team") {
+          return fetch("/api/about", {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+              section,
+              teamMembers: data.teamMembers || [],
+            }),
+          });
+        }
+        // For other sections, send all data as before
+        return fetch("/api/about", {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
@@ -102,8 +126,8 @@ const AdminAboutPage = () => {
             section,
             ...data,
           }),
-        })
-      );
+        });
+      });
 
       await Promise.all(promises);
       alert("Амжилттай хадгалагдлаа!");
@@ -459,6 +483,108 @@ const AdminAboutPage = () => {
                   className="w-full border border-gray-300 rounded-md px-3 py-2"
                 />
               </div>
+            </div>
+          </div>
+
+          {/* Team Members Section */}
+          <div className="bg-white rounded-lg shadow p-6 lg:col-span-2">
+            <h2 className="text-xl font-semibold mb-4 flex items-center">
+              <Users className="w-5 h-5 mr-2" />
+              Бидний баг
+            </h2>
+            <div className="space-y-4">
+              {(content.team?.teamMembers || []).map(
+                (member: any, idx: number) => (
+                  <div
+                    key={idx}
+                    className="flex flex-col md:flex-row items-center gap-4 border-b pb-4 mb-4"
+                  >
+                    <input
+                      type="text"
+                      placeholder="Нэр"
+                      value={member.name || ""}
+                      onChange={(e) => {
+                        const updated = [...(content.team?.teamMembers || [])];
+                        updated[idx] = {
+                          ...updated[idx],
+                          name: e.target.value,
+                        };
+                        setContent((prev) => ({
+                          ...prev,
+                          team: { ...prev.team, teamMembers: updated },
+                        }));
+                      }}
+                      className="w-full md:w-1/4 border border-gray-300 rounded-md px-3 py-2"
+                    />
+                    <input
+                      type="text"
+                      placeholder="Албан тушаал"
+                      value={member.role || ""}
+                      onChange={(e) => {
+                        const updated = [...(content.team?.teamMembers || [])];
+                        updated[idx] = {
+                          ...updated[idx],
+                          role: e.target.value,
+                        };
+                        setContent((prev) => ({
+                          ...prev,
+                          team: { ...prev.team, teamMembers: updated },
+                        }));
+                      }}
+                      className="w-full md:w-1/4 border border-gray-300 rounded-md px-3 py-2"
+                    />
+                    <input
+                      type="url"
+                      placeholder="Зургийн URL"
+                      value={member.imageUrl || ""}
+                      onChange={(e) => {
+                        const updated = [...(content.team?.teamMembers || [])];
+                        updated[idx] = {
+                          ...updated[idx],
+                          imageUrl: e.target.value,
+                        };
+                        setContent((prev) => ({
+                          ...prev,
+                          team: { ...prev.team, teamMembers: updated },
+                        }));
+                      }}
+                      className="w-full md:w-1/3 border border-gray-300 rounded-md px-3 py-2"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const updated = [...(content.team?.teamMembers || [])];
+                        updated.splice(idx, 1);
+                        setContent((prev) => ({
+                          ...prev,
+                          team: { ...prev.team, teamMembers: updated },
+                        }));
+                      }}
+                      className="text-red-500 hover:text-red-700"
+                      title="Устгах"
+                    >
+                      <Trash2 className="w-5 h-5" />
+                    </button>
+                  </div>
+                )
+              )}
+              <button
+                type="button"
+                onClick={() => {
+                  const updated = [
+                    ...(content.team?.teamMembers || []),
+                    { name: "", role: "", imageUrl: "" },
+                  ];
+                  setContent((prev) => ({
+                    ...prev,
+                    team: { ...prev.team, teamMembers: updated },
+                  }));
+                }}
+                className="flex items-center px-4 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Гишүүн нэмэх
+              </button>
             </div>
           </div>
         </div>

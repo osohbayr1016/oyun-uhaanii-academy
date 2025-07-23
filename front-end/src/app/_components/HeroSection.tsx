@@ -38,7 +38,7 @@ export default function HeroSection() {
           <div className="text-center lg:text-left space-y-6">
             <h1 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold text-gray-900 leading-tight">
               МОНГОЛЫН ОЮУН{" "}
-              <span className="text-blue-600">УХААНЫ АКАДЕМИ</span>
+              <span className="text-[#550080]">УХААНЫ АКАДЕМИ</span>
             </h1>
             <div className="text-lg sm:text-2xl text-gray-600 max-w-2xl mx-auto lg:mx-0">
               <p>Сэтгэхүйн хурдыг танд эзэмшүүлж </p>
@@ -48,7 +48,7 @@ export default function HeroSection() {
             {/* Stats */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6 pt-8 sm:pt-12">
               <div className="text-center">
-                <div className="text-2xl sm:text-3xl font-bold text-blue-600">
+                <div className="text-2xl sm:text-3xl font-bold text-[#550080]">
                   10+
                 </div>
                 <div className="text-sm sm:text-base text-gray-600">
@@ -56,19 +56,19 @@ export default function HeroSection() {
                 </div>
               </div>
               <div className="text-center">
-                <div className="text-2xl sm:text-3xl font-bold text-blue-600">
+                <div className="text-2xl sm:text-3xl font-bold text-[#550080]">
                   700+
                 </div>
                 <div className="text-sm sm:text-base text-gray-600">Сурагч</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl sm:text-3xl font-bold text-blue-600">
+                <div className="text-2xl sm:text-3xl font-bold text-[#550080]">
                   10+
                 </div>
                 <div className="text-sm sm:text-base text-gray-600">Багш</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl sm:text-3xl font-bold text-blue-600">
+                <div className="text-2xl sm:text-3xl font-bold text-[#550080]">
                   5+
                 </div>
                 <div className="text-sm sm:text-base text-gray-600">Жил</div>

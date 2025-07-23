@@ -18,6 +18,7 @@ import {
   Home,
   Mail,
   Info,
+  Image,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import ProtectedRoute from "@/components/ProtectedRoute";
@@ -103,6 +104,12 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
       href: "/admin/reports",
       icon: BarChart3,
       current: pathname === "/admin/reports",
+    },
+    {
+      name: "Карусел",
+      href: "/admin/carousel",
+      icon: Image,
+      current: pathname === "/admin/carousel",
     },
   ];
 

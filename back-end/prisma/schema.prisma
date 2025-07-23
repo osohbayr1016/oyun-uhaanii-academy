@@ -4,7 +4,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  url      = "postgresql://neondb_owner:npg_onMG9OmIU1PN@ep-dawn-forest-a1hb51fh-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
 }
 
 model User {
@@ -131,7 +131,7 @@ model Product {
   isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-  
+  stockStatusText String? // Custom stock status text
   // Relations
   orderItems  OrderItem[]
   reviews     Review[]
@@ -338,6 +338,7 @@ model AboutPageContent {
   teamMemberName    String?
   teamMemberRole    String?
   teamMemberImage   String?
+  teamMembers       Json?    // Array of team members: [{ name, role, imageUrl }]
   contactAddress    String?
   contactPhone      String?
   contactEmail      String?
@@ -353,4 +354,10 @@ model Newsletter {
   subscribedAt DateTime @default(now())
   lastEmailSent DateTime?
   unsubscribeToken String @unique @default(uuid())
+}
+
+model CarouselImage {
+  id        String   @id @default(uuid())
+  imageUrl  String
+  createdAt DateTime @default(now())
 }

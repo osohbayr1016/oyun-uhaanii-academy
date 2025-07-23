@@ -25,6 +25,7 @@ import adminRoutes from "./routes/adminRoutes";
 import textContentRoutes from "./routes/textContentRoutes";
 import newsletterRoutes from "./routes/newsletterRoutes";
 import aboutRoutes from "./routes/aboutRoutes";
+import carouselRoutes from "./routes/carouselRoutes";
 // import errorHandler from './middleware/errorHandler'; // Optional: for centralized error handling
 
 // Route Middlewares
@@ -37,6 +38,8 @@ app.use("/api/admin", adminRoutes);
 app.use("/api/text-content", textContentRoutes);
 app.use("/api/newsletter", newsletterRoutes);
 app.use("/api/about", aboutRoutes);
+app.use("/api/carousel", carouselRoutes);
+// app.use("/api/clubs", clubRoutes);
 
 // Basic test route
 app.get("/", (req: Request, res: Response) => {

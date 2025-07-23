@@ -2,10 +2,10 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 
-const CONTACT_PHONE = "7000-2266";
-const CONTACT_EMAIL = "support@mastermind.mn";
+const CONTACT_PHONE = "+976 11302266";
+const CONTACT_EMAIL = "bilguunundarmal@gmail.com";
 const CONTACT_ADDRESS =
-  "ХУД, 15-р хороо, Зайсан гудамж, Гэгээнтэн цогцолбор, 6-603";
+  "БЗД, 16-р хороо, Дандарбаатарын гудамж, 'ХОРГО' хотхон, 2-2 байр";
 
 export default function CourseDetailsPage() {
   const { id } = useParams();
@@ -38,7 +38,10 @@ export default function CourseDetailsPage() {
       <section
         className="relative w-full min-h-[320px] md:min-h-[420px] flex items-center justify-center overflow-hidden"
         style={{
-          background: `url(https://admin.mastermind.mn/images/1733878176391.jpg) center/cover no-repeat`,
+          background: `url(${
+            course.heroImage ||
+            "https://admin.mastermind.mn/images/1733878176391.jpg"
+          }) center/cover no-repeat`,
         }}
       >
         {/* Gradient overlay */}
@@ -64,12 +67,12 @@ export default function CourseDetailsPage() {
             <h1 className="text-5xl md:text-6xl font-extrabold mb-4 drop-shadow-lg text-center text-white tracking-tight">
               {course.title}
             </h1>
-            <p className="text-xl md:text-2xl mb-8 drop-shadow text-center text-white/90 font-medium">
+            <p className="text-xl md:text-2xl mb-8 drop-shadow text-center text-white/90 font-medium whitespace-pre-line">
               {course.description}
             </p>
             <button
               onClick={() => setShowVideo(true)}
-              className="bg-white/90 hover:bg-blue-600 hover:text-white text-blue-700 font-semibold px-10 py-4 rounded-2xl text-xl shadow-lg border border-white/40 transition-all duration-200 text-center focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 animate-bounce-slow"
+              className="bg-white/90 hover:bg-[#550080] hover:text-white text-black font-semibold px-10 py-4 rounded-2xl text-xl shadow-lg border border-white/40 transition-all duration-200 text-center focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 animate-bounce-slow"
             >
               Танилцуулга Видео
             </button>
@@ -81,26 +84,26 @@ export default function CourseDetailsPage() {
       <section className="w-full bg-white py-12 px-4 flex flex-col items-center">
         <div className="max-w-3xl w-full flex flex-col gap-8">
           <div>
-            <h2 className="text-2xl font-bold mb-2 text-blue-800">
+            <h2 className="text-2xl font-bold mb-2 text-[#550080]">
               Сургалтын зорилго
             </h2>
-            <p className="text-gray-700">
+            <p className="text-gray-700 whitespace-pre-line">
               {course.goal || "Мэдээлэл байхгүй."}
             </p>
           </div>
           <div>
-            <h2 className="text-2xl font-bold mb-2 text-blue-800">
+            <h2 className="text-2xl font-bold mb-2 text-[#550080]">
               Хэнд зориулагдсан бэ?
             </h2>
-            <p className="text-gray-700">
+            <p className="text-gray-700 whitespace-pre-line">
               {course.target || "Мэдээлэл байхгүй."}
             </p>
           </div>
           <div>
-            <h2 className="text-2xl font-bold mb-2 text-blue-800">
+            <h2 className="text-2xl font-bold mb-2 text-[#550080]">
               Сургалтын бүтэц
             </h2>
-            <p className="text-gray-700">
+            <p className="text-gray-700 whitespace-pre-line">
               {course.structure || "Мэдээлэл байхгүй."}
             </p>
           </div>
@@ -121,7 +124,12 @@ export default function CourseDetailsPage() {
             <iframe
               width="100%"
               height="100%"
-              src="https://www.youtube.com/embed/sWYyDOLJ6Y8?autoplay=1"
+              src={
+                course.youtubeUrl
+                  ? course.youtubeUrl.replace("watch?v=", "embed/") +
+                    "?autoplay=1"
+                  : "https://www.youtube.com/embed/sWYyDOLJ6Y8?autoplay=1"
+              }
               title="Youtube video"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowFullScreen
@@ -147,7 +155,7 @@ export default function CourseDetailsPage() {
             )}
             {/* Right: Text */}
             {course.sectionText && (
-              <div className="flex-1 text-lg text-gray-800 leading-relaxed">
+              <div className="flex-1 text-lg text-gray-800 leading-relaxed whitespace-pre-line">
                 {course.sectionText}
               </div>
             )}
@@ -176,7 +184,7 @@ export default function CourseDetailsPage() {
             href={course.enrollLink}
             target="_blank"
             rel="noopener noreferrer"
-            className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-12 py-5 rounded-2xl text-2xl shadow-xl transition-all duration-200 text-center"
+            className="bg-[#550080] hover:bg-[#550080] text-white font-bold px-12 py-5 rounded-2xl text-2xl shadow-xl transition-all duration-200 text-center"
           >
             Сургалтанд бүртгүүлэх
           </a>
@@ -193,12 +201,14 @@ export default function CourseDetailsPage() {
       {/* Contact Section */}
       <section className="w-full bg-blue-50 py-8 px-4 flex flex-col items-center">
         <div className="max-w-3xl w-full text-center">
-          <h3 className="text-xl font-bold mb-2 text-blue-700">Холбоо барих</h3>
+          <h3 className="text-xl font-bold mb-2 text-[#550080]">
+            Холбоо барих
+          </h3>
           <div className="mb-1">
             Утас:{" "}
             <a
               href={`tel:${CONTACT_PHONE}`}
-              className="text-blue-600 hover:underline"
+              className="text-[#550080] hover:underline"
             >
               {CONTACT_PHONE}
             </a>
@@ -207,7 +217,7 @@ export default function CourseDetailsPage() {
             И-мэйл:{" "}
             <a
               href={`mailto:${CONTACT_EMAIL}`}
-              className="text-blue-600 hover:underline"
+              className="text-[#550080] hover:underline"
             >
               {CONTACT_EMAIL}
             </a>
@@ -215,11 +225,6 @@ export default function CourseDetailsPage() {
           <div className="mb-1">{CONTACT_ADDRESS}</div>
         </div>
       </section>
-
-      {/* Footer */}
-      <footer className="bg-white py-4 text-center border-t text-gray-500 text-sm">
-        © 2024 | Mastermind.mn
-      </footer>
     </div>
   );
 }

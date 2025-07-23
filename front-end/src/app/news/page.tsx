@@ -99,7 +99,7 @@ export default function NewsPage() {
         <div className="container mx-auto px-4 py-12">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-            <p className="mt-4 text-gray-600">Мэдээлэл ачаалж байна...</p>
+            <p className="mt-4 text-gray-600">уншиж байна...</p>
           </div>
         </div>
       </div>
@@ -133,11 +133,11 @@ export default function NewsPage() {
         {/* Header */}
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-gray-800 mb-4">
-            Мэдээ, мэдээлэл
+            МЭДЭЭ, МЭДЭЭЛЭЛ
           </h1>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
             Монголын оюун ухааны академийн хамгийн сүүлийн үеийн мэдээ,
-            мэдээлэл, арга хэмжээний талаар мэдэж аваарай.
+            мэдээлэл, арга хэмжээний талаарх мэдээллүүд.
           </p>
         </div>
 
@@ -181,7 +181,7 @@ export default function NewsPage() {
                   </p>
                   <Link
                     href={`/news/${article.id}`}
-                    className="inline-flex items-center text-blue-600 hover:text-blue-700 font-medium transition-colors"
+                    className="inline-flex items-center text-[#550080] hover:text-[#550080] font-medium transition-colors"
                   >
                     Дэлгэрэнгүй унших
                     <svg
@@ -225,7 +225,7 @@ export default function NewsPage() {
               <button
                 type="submit"
                 disabled={subscribeStatus === "loading"}
-                className="bg-blue-600 text-white px-6 py-3 rounded-r-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="bg-[#550080] text-white px-6 py-3 rounded-r-lg hover:bg-[#550080] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {subscribeStatus === "loading" ? (
                   <div className="flex items-center">

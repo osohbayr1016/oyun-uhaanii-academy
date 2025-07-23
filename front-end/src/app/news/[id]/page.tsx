@@ -61,7 +61,7 @@ export default function NewsArticlePage() {
         <div className="container mx-auto px-4 py-12">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-            <p className="mt-4 text-gray-600">Мэдээлэл ачаалж байна...</p>
+            <p className="mt-4 text-gray-600">уншиж байна...</p>
           </div>
         </div>
       </div>
@@ -79,7 +79,7 @@ export default function NewsArticlePage() {
             <p className="text-gray-600">{error || "Мэдээ олдсонгүй"}</p>
             <Link
               href="/news"
-              className="mt-4 inline-block bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+              className="mt-4 inline-block bg-[#550080] text-white px-6 py-2 rounded-lg hover:bg-[#550080] transition-colors"
             >
               Мэдээний жагсаалт руу буцах
             </Link>
@@ -96,7 +96,7 @@ export default function NewsArticlePage() {
         <nav className="mb-8">
           <ol className="flex items-center space-x-2 text-sm text-gray-600">
             <li>
-              <Link href="/" className="hover:text-blue-600 transition-colors">
+              <Link href="/" className="hover:text-[#550080] transition-colors">
                 Нүүр
               </Link>
             </li>
@@ -106,7 +106,7 @@ export default function NewsArticlePage() {
             <li>
               <Link
                 href="/news"
-                className="hover:text-blue-600 transition-colors"
+                className="hover:text-[#550080] transition-colors"
               >
                 Мэдээ
               </Link>

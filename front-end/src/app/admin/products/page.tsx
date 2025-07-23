@@ -27,9 +27,13 @@ interface Product {
   stock: number;
   materials: string[];
   dimensions?: any;
+  weight?: number;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
+  stockStatusText?: string;
+  youtubeUrl?: string;
+  heroImage?: string;
 }
 
 interface ProductFormData {
@@ -41,6 +45,9 @@ interface ProductFormData {
   category: string;
   stock: string;
   materials: string;
+  stockStatusText?: string;
+  youtubeUrl?: string;
+  heroImage?: string;
 }
 
 const AdminProductsPage = () => {
@@ -61,6 +68,9 @@ const AdminProductsPage = () => {
     category: "",
     stock: "",
     materials: "",
+    stockStatusText: "",
+    youtubeUrl: "",
+    heroImage: "",
   });
   const [editFormData, setEditFormData] = useState<ProductFormData>({
     name: "",
@@ -71,6 +81,9 @@ const AdminProductsPage = () => {
     category: "",
     stock: "",
     materials: "",
+    stockStatusText: "",
+    youtubeUrl: "",
+    heroImage: "",
   });
   const [submitting, setSubmitting] = useState(false);
 
@@ -78,6 +91,27 @@ const AdminProductsPage = () => {
     setMounted(true);
     fetchProducts();
   }, []);
+
+  // When a product is selected for editing, populate the edit form data
+  useEffect(() => {
+    if (selectedProduct) {
+      setEditFormData({
+        name: selectedProduct.name || "",
+        description: selectedProduct.description || "",
+        price: selectedProduct.price ? String(selectedProduct.price) : "",
+        currency: selectedProduct.currency || "MNT",
+        imageUrl: selectedProduct.imageUrl || "",
+        category: selectedProduct.category || "",
+        stock: selectedProduct.stock ? String(selectedProduct.stock) : "",
+        materials: selectedProduct.materials
+          ? selectedProduct.materials.join(", ")
+          : "",
+        stockStatusText: selectedProduct.stockStatusText || "",
+        youtubeUrl: selectedProduct.youtubeUrl || "",
+        heroImage: selectedProduct.heroImage || "",
+      });
+    }
+  }, [selectedProduct]);
 
   const fetchProducts = async () => {
     try {
@@ -173,6 +207,9 @@ const AdminProductsPage = () => {
         category: "",
         stock: "",
         materials: "",
+        stockStatusText: "",
+        youtubeUrl: "",
+        heroImage: "",
       });
     } catch (error) {
       console.error("Error creating product:", error);
@@ -537,6 +574,43 @@ const AdminProductsPage = () => {
                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Нөөцийн статусын текст ("Бэлэн байгаа" эсвэл "Дууссан" гэх
+                    мэт)
+                  </label>
+                  <input
+                    type="text"
+                    name="stockStatusText"
+                    value={formData.stockStatusText}
+                    onChange={handleInputChange}
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    YouTube URL
+                  </label>
+                  <input
+                    type="url"
+                    name="youtubeUrl"
+                    value={formData.youtubeUrl}
+                    onChange={handleInputChange}
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Hero Image URL
+                  </label>
+                  <input
+                    type="url"
+                    name="heroImage"
+                    value={formData.heroImage}
+                    onChange={handleInputChange}
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
                 <div className="flex justify-end space-x-3">
                   <button
                     type="button"
@@ -682,6 +756,58 @@ const AdminProductsPage = () => {
                       setEditFormData((f) => ({
                         ...f,
                         materials: e.target.value,
+                      }))
+                    }
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Нөөцийн статусын текст ("Бэлэн байгаа" эсвэл "Дууссан" гэх
+                    мэт)
+                  </label>
+                  <input
+                    type="text"
+                    name="stockStatusText"
+                    value={editFormData.stockStatusText}
+                    onChange={(e) =>
+                      setEditFormData((f) => ({
+                        ...f,
+                        stockStatusText: e.target.value,
+                      }))
+                    }
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    YouTube URL
+                  </label>
+                  <input
+                    type="url"
+                    name="youtubeUrl"
+                    value={editFormData.youtubeUrl}
+                    onChange={(e) =>
+                      setEditFormData((f) => ({
+                        ...f,
+                        youtubeUrl: e.target.value,
+                      }))
+                    }
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Hero Image URL
+                  </label>
+                  <input
+                    type="url"
+                    name="heroImage"
+                    value={editFormData.heroImage}
+                    onChange={(e) =>
+                      setEditFormData((f) => ({
+                        ...f,
+                        heroImage: e.target.value,
                       }))
                     }
                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"

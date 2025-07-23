@@ -12,12 +12,10 @@ export const getAllProducts = async (req: Request, res: Response) => {
   } catch (error) {
     console.error("Get all products error:", error);
     if (process.env.NODE_ENV === "development") {
-      res
-        .status(500)
-        .json({
-          message: "Failed to fetch products",
-          error: error instanceof Error ? error.stack : error,
-        });
+      res.status(500).json({
+        message: "Failed to fetch products",
+        error: error instanceof Error ? error.stack : error,
+      });
     } else {
       res.status(500).json({ message: "Failed to fetch products" });
     }
@@ -56,6 +54,7 @@ export const createProduct = async (req: Request, res: Response) => {
       stock,
       materials,
       dimensions,
+      stockStatusText,
     } = req.body;
 
     // Validate required fields
@@ -93,6 +92,7 @@ export const createProduct = async (req: Request, res: Response) => {
       stock: parseInt(stock) || 0,
       materials: materials || [],
       dimensions: dimensions || {},
+      stockStatusText: stockStatusText || null,
     };
 
     console.log("Backend: Creating product with data:", productData);
@@ -115,17 +115,50 @@ export const createProduct = async (req: Request, res: Response) => {
 export const updateProduct = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const updateData = req.body;
+    const {
+      name,
+      price,
+      currency,
+      imageUrl,
+      description,
+      category,
+      stock,
+      materials,
+      dimensions,
+      stockStatusText,
+    } = req.body;
+
+    const existingProduct = await prisma.product.findUnique({
+      where: { id },
+    });
+
+    if (!existingProduct) {
+      return res.status(404).json({ message: "Product not found" });
+    }
 
     const product = await prisma.product.update({
       where: { id },
-      data: updateData,
+      data: {
+        name: name ? name.trim() : undefined,
+        price: price ? parseFloat(price) : undefined,
+        currency,
+        imageUrl,
+        description: description ? description.trim() : undefined,
+        category: category ? category.trim() : undefined,
+        stock: stock ? parseInt(stock) : undefined,
+        materials,
+        dimensions,
+        stockStatusText: stockStatusText || null,
+      },
     });
 
     res.json(product);
   } catch (error) {
-    console.error("Update product error:", error);
-    res.status(500).json({ message: "Failed to update product" });
+    console.error("Backend: Update product error:", error);
+    res.status(500).json({
+      message: "Failed to update product",
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
   }
 };
 

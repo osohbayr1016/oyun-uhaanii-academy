@@ -179,7 +179,7 @@ const TournamentsPage = () => {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Тэмцээнуудыг ачаалж байна...</p>
+          <p className="mt-4 text-gray-600">уншиж байна...</p>
         </div>
       </div>
     );
@@ -192,10 +192,7 @@ const TournamentsPage = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-6">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Тэмцээнүүд</h1>
-              <p className="text-gray-600 mt-2">
-                Монголын тоглоомын академийн тэмцээнүүд
-              </p>
+              <h1 className="text-3xl font-bold text-gray-900">ТЭМЦЭЭНҮҮД</h1>
             </div>
             <div className="flex items-center space-x-4">
               {isAdmin() && (
@@ -272,18 +269,21 @@ const TournamentsPage = () => {
                 className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-200"
               >
                 <div className="h-48 bg-gradient-to-br from-yellow-100 to-orange-100 flex items-center justify-center relative">
-                  {tournament.imageUrl && tournament.imageUrl.trim() !== "" ? (
-                    <Image
-                      src={tournament.imageUrl}
-                      alt={tournament.title}
-                      fill
-                      className="object-cover"
-                      style={{ objectFit: "cover" }}
-                      priority
-                    />
-                  ) : (
-                    <Trophy className="h-16 w-16 text-yellow-600" />
-                  )}
+                  <div className="relative w-full aspect-video">
+                    {tournament.imageUrl &&
+                    tournament.imageUrl.trim() !== "" ? (
+                      <Image
+                        src={tournament.imageUrl}
+                        alt={tournament.title}
+                        fill
+                        className="object-cover"
+                        style={{ objectFit: "cover" }}
+                        priority
+                      />
+                    ) : (
+                      <Trophy className="h-16 w-16 text-yellow-600" />
+                    )}
+                  </div>
                 </div>
                 <div className="p-6">
                   <div className="flex items-center justify-between mb-2">
@@ -311,15 +311,6 @@ const TournamentsPage = () => {
                         <span>{tournament.location}</span>
                       </div>
                     )}
-                    <div className="flex items-center text-sm text-gray-500">
-                      <Users className="w-4 h-4 mr-2" />
-                      <span>
-                        {tournament.participants?.length || 0}
-                        {tournament.maxParticipants &&
-                          ` / ${tournament.maxParticipants}`}{" "}
-                        оролцогч
-                      </span>
-                    </div>
                     {tournament.entryFee && (
                       <div className="flex items-center text-sm text-gray-500">
                         <DollarSign className="w-4 h-4 mr-2" />

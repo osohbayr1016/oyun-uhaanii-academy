@@ -184,7 +184,9 @@ const AdminDashboard = () => {
           <Link
             key={index}
             href={section.href}
-            className="bg-white rounded-lg shadow p-6 hover:shadow-lg transition-shadow duration-200"
+            className={`bg-white rounded-lg shadow p-6 hover:shadow-lg transition-shadow duration-200 border ${
+              section.color || ""
+            } relative`}
           >
             <div className="flex items-center mb-4">
               <div className={`p-3 rounded-lg ${section.color}`}>

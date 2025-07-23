@@ -342,4 +342,35 @@ For issues and questions:
 ---
 
 **Happy coding! 🎮**
-# Deployment fix
+
+## Database Storage Management Best Practices
+
+1. **Enable Neon/Cloud DB Alerts:**
+
+   - Go to your Neon dashboard → Project → Usage/Monitoring → Set up alerts for storage thresholds (e.g., 70%, 90%).
+
+2. **Regularly Clean Up Old Data:**
+
+   - Use the provided script: `back-end/scripts/cleanupOldData.ts` to delete notifications and activities older than 90 days.
+   - Run manually: `cd back-end && npx ts-node scripts/cleanupOldData.ts`
+   - (Optional) Schedule with a cron job for automation.
+
+3. **Monitor Table Sizes:**
+
+   - Use the following SQL to check which tables use the most space:
+     ```sql
+     SELECT
+       relname AS table_name,
+       pg_size_pretty(pg_total_relation_size(relid)) AS total_size
+     FROM pg_catalog.pg_statio_user_tables
+     ORDER BY pg_total_relation_size(relid) DESC;
+     ```
+
+4. **Move Large Files to Object Storage:**
+
+   - Store only file URLs in the database, not the files themselves.
+
+5. **Prune Old Backups:**
+   - Ensure your cloud DB is set to prune old backups automatically.
+
+---

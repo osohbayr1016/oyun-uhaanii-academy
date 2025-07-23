@@ -22,7 +22,7 @@ export default function CourseCard({ course }: CourseCardProps) {
   return (
     <div className="w-full bg-white rounded-xl shadow-md flex flex-col md:flex-row overflow-hidden border border-gray-200 hover:shadow-lg transition-all duration-300">
       {/* Image */}
-      <div className="relative w-full md:w-1/3 aspect-video md:aspect-auto h-64 md:h-auto">
+      <div className="relative w-full md:w-1/3 aspect-video">
         <Image
           src={
             course.imageUrl && course.imageUrl.trim() !== ""
@@ -42,7 +42,7 @@ export default function CourseCard({ course }: CourseCardProps) {
       </div>
       <div className="flex-1 flex flex-col justify-between p-6">
         <div>
-          <h3 className="text-2xl font-bold text-gray-900 mb-4">
+          <h3 className="text-[40px] font-black text-gray-900 mb-2 leading-tight">
             {course.title}
           </h3>
           <p className="text-base text-gray-700 mb-6">{course.description}</p>

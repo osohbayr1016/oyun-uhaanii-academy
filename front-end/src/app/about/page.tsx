@@ -2,6 +2,12 @@
 
 import { useState, useEffect } from "react";
 
+interface TeamMember {
+  name: string;
+  role: string;
+  imageUrl: string;
+}
+
 interface AboutContent {
   [key: string]: {
     id: string;
@@ -11,6 +17,7 @@ interface AboutContent {
     teamMemberName?: string;
     teamMemberRole?: string;
     teamMemberImage?: string;
+    teamMembers?: TeamMember[];
     contactAddress?: string;
     contactPhone?: string;
     contactEmail?: string;
@@ -48,7 +55,7 @@ const AboutPage = () => {
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Ачаалж байна...</p>
+          <p className="mt-4 text-gray-600">уншиж байна...</p>
         </div>
       </div>
     );
@@ -272,43 +279,38 @@ const AboutPage = () => {
             Бидний баг
           </h2>
           <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
-            <div className="bg-white p-6 rounded-lg shadow-md text-center">
-              <div className="w-24 h-24 bg-gray-200 rounded-full mx-auto mb-4">
-                <img
-                  src="https://scontent.fuln10-1.fna.fbcdn.net/v/t39.30808-6/514373551_30523915777255201_8084638872900171614_n.jpg?_nc_cat=102&ccb=1-7&_nc_sid=a5f93a&_nc_ohc=3CQS-5DjHn0Q7kNvwHTrnds&_nc_oc=Adn74ZyA8pgPLL8rq00xCyn6BLCHDRTvazSZogZ0AvuSyogC94aUQTOdr4oIbtJPK-0&_nc_zt=23&_nc_ht=scontent.fuln10-1.fna&_nc_gid=08mXr5CaTiWH9BmlARriyg&oh=00_AfQ72yYVi9--7Ul-HkPeckkSwLU97q1wOUodbFnr2liDmg&oe=68739ADF"
-                  alt="profile image"
-                  className="rounded-full"
-                />
+            {(content.team?.teamMembers || []).length > 0 ? (
+              (content.team?.teamMembers || []).map(
+                (member: any, idx: number) => (
+                  <div
+                    key={idx}
+                    className="bg-white p-6 rounded-lg shadow-md text-center"
+                  >
+                    <div className="w-24 h-24 bg-gray-200 rounded-full mx-auto mb-4 overflow-hidden flex items-center justify-center">
+                      {member.imageUrl ? (
+                        <img
+                          src={member.imageUrl}
+                          alt={member.name || "profile image"}
+                          className="rounded-full w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-4xl text-gray-400">
+                          👤
+                        </div>
+                      )}
+                    </div>
+                    <h3 className="text-xl font-semibold mb-2 text-gray-800">
+                      {member.name || "-"}
+                    </h3>
+                    <p className="text-gray-600">{member.role || "-"}</p>
+                  </div>
+                )
+              )
+            ) : (
+              <div className="col-span-3 text-center text-gray-500">
+                Багийн гишүүн байхгүй байна.
               </div>
-              <h3 className="text-xl font-semibold mb-2 text-gray-800">
-                Чинзориг
-              </h3>
-              <p className="text-gray-600">Боловсролын захирал</p>
-            </div>
-
-            <div className="bg-white p-6 rounded-lg shadow-md text-center">
-              <div className="w-24 h-24 bg-gray-200 rounded-full mx-auto mb-4">
-                <img
-                  src="https://scontent.fuln10-1.fna.fbcdn.net/v/t1.6435-9/118368577_3367309096659219_1911526946808565183_n.jpg?_nc_cat=111&ccb=1-7&_nc_sid=6ee11a&_nc_ohc=QABc6GEU73MQ7kNvwG-mnX4&_nc_oc=Adl-ga-AV-iy4ias7oJQDQoLowqWJRtMpRezeflfSf_TWBknARQFx9LGbOdCuuiR9RA&_nc_zt=23&_nc_ht=scontent.fuln10-1.fna&_nc_gid=vielpwbgnkytydSmfRO3sw&oh=00_AfT8L7QsCqmQSR2t6BgW3z6PF-7xPZAJKmpTdyzGs0OH1A&oe=689548C7"
-                  alt="profile image"
-                  className="rounded-full"
-                />
-              </div>
-              <h3 className="text-xl font-semibold mb-2 text-gray-800">
-                Ариунгэрэл
-              </h3>
-              <p className="text-gray-600">Ерөнхий захирал</p>
-            </div>
-
-            <div className="bg-white p-6 rounded-lg shadow-md text-center">
-              <div className="w-24 h-24 bg-gray-200 rounded-full mx-auto mb-4">
-                <img className="rounded-full" />
-              </div>
-              <h3 className="text-xl font-semibold mb-2 text-gray-800">
-                Э.Эрдэнэмандах
-              </h3>
-              <p className="text-gray-600">Ахлах багш</p>
-            </div>
+            )}
           </div>
         </section>
 

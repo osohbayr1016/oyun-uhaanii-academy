@@ -21,6 +21,9 @@ interface Product {
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
+  stockStatusText?: string; // Added for custom text
+  heroImage?: string; // Added for hero image
+  youtubeUrl?: string; // Added for YouTube video URL
 }
 
 export default function ProductDetailPage() {
@@ -36,6 +39,7 @@ export default function ProductDetailPage() {
   const [addedToCart, setAddedToCart] = useState(false);
   const [wishlist, setWishlist] = useState<any[]>([]);
   const [wishlistMessage, setWishlistMessage] = useState<string | null>(null);
+  const [showVideo, setShowVideo] = useState(false);
 
   // Load cart from localStorage on mount
   useEffect(() => {
@@ -72,6 +76,7 @@ export default function ProductDetailPage() {
   }, [wishlist]);
 
   useEffect(() => {
+    let didCancel = false;
     const fetchProduct = async () => {
       try {
         const response = await fetch(`/api/products/${params.id}`);
@@ -79,19 +84,22 @@ export default function ProductDetailPage() {
           throw new Error("Product not found");
         }
         const data = await response.json();
-        setProduct(data);
+        if (!didCancel) setProduct(data);
       } catch (err) {
-        setError(
-          err instanceof Error ? err.message : "Failed to fetch product"
-        );
+        if (!didCancel)
+          setError(
+            err instanceof Error ? err.message : "Failed to fetch product"
+          );
       } finally {
-        setLoading(false);
+        if (!didCancel) setLoading(false);
       }
     };
-
     if (params.id) {
       fetchProduct();
     }
+    return () => {
+      didCancel = true;
+    };
   }, [params.id]);
 
   if (loading) {
@@ -155,9 +163,17 @@ export default function ProductDetailPage() {
             {/* Product Image */}
             <div className="md:w-1/2">
               <img
-                src={product.imageUrl || "/placeholder-product.jpg"}
+                src={product.imageUrl || "/academy.png"}
                 alt={product.name}
                 className="w-full h-96 object-cover"
+                onError={(e) => {
+                  const target = e.currentTarget;
+                  if (!target.src.includes("data:image/svg+xml")) {
+                    target.onerror = null;
+                    target.src =
+                      'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 400 400"><rect width="100%" height="100%" fill="%23f3f4f6"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="%239ca3af" font-size="24">No Image</text></svg>';
+                  }
+                }}
               />
             </div>
 
@@ -176,64 +192,28 @@ export default function ProductDetailPage() {
                   </span>
                   {product.stock > 0 ? (
                     <span className="ml-4 text-green-600 font-medium">
-                      In Stock ({product.stock})
+                      {product.stockStatusText || "Бэлэн байгаа"}
                     </span>
                   ) : (
-                    <span className="ml-4 text-red-600 font-medium">
-                      Out of Stock
+                    <span className="ml-4 font-medium text-red-600">
+                      {product.stockStatusText || "Дууссан"}
                     </span>
                   )}
                 </div>
-                {/* Quantity Selector */}
-                {product.stock > 0 && (
-                  <div className="flex items-center mb-4 gap-2">
-                    <span className="font-medium">Тоо:</span>
-                    <button
-                      className="px-2 py-1 bg-gray-200 rounded"
-                      onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                      disabled={quantity <= 1}
-                    >
-                      -
-                    </button>
-                    <input
-                      type="number"
-                      min={1}
-                      max={product.stock}
-                      value={quantity}
-                      onChange={(e) => {
-                        let val = parseInt(e.target.value, 10);
-                        if (isNaN(val) || val < 1) val = 1;
-                        if (val > product.stock) val = product.stock;
-                        setQuantity(val);
-                      }}
-                      className="w-16 text-center border rounded px-2 py-1"
-                    />
-                    <button
-                      className="px-2 py-1 bg-gray-200 rounded"
-                      onClick={() =>
-                        setQuantity((q) => Math.min(product.stock, q + 1))
-                      }
-                      disabled={quantity >= product.stock}
-                    >
-                      +
-                    </button>
-                  </div>
-                )}
+                {/* Quantity Selector REMOVED */}
               </div>
 
               {/* Product Information */}
               <div className="space-y-4 mb-8">
                 <div>
-                  <h3 className="text-sm font-medium text-gray-900">
-                    Category
-                  </h3>
+                  <h3 className="text-sm font-medium text-gray-900">Ангилал</h3>
                   <p className="text-sm text-gray-600">{product.category}</p>
                 </div>
 
                 {product.materials && product.materials.length > 0 && (
                   <div>
                     <h3 className="text-sm font-medium text-gray-900">
-                      Materials
+                      Материал
                     </h3>
                     <div className="flex flex-wrap gap-2 mt-1">
                       {product.materials.map((material, index) => (
@@ -250,10 +230,8 @@ export default function ProductDetailPage() {
 
                 {product.weight && (
                   <div>
-                    <h3 className="text-sm font-medium text-gray-900">
-                      Weight
-                    </h3>
-                    <p className="text-sm text-gray-600">{product.weight} kg</p>
+                    <h3 className="text-sm font-medium text-gray-900">Жин</h3>
+                    <p className="text-sm text-gray-600">{product.weight} кг</p>
                   </div>
                 )}
 
@@ -261,7 +239,7 @@ export default function ProductDetailPage() {
                   Object.keys(product.dimensions).length > 0 && (
                     <div>
                       <h3 className="text-sm font-medium text-gray-900">
-                        Dimensions
+                        Хэмжээ
                       </h3>
                       <p className="text-sm text-gray-600">
                         {Object.entries(product.dimensions)
@@ -272,123 +250,7 @@ export default function ProductDetailPage() {
                   )}
               </div>
 
-              {/* Action Buttons */}
-              <div className="flex space-x-4">
-                <button
-                  disabled={product.stock === 0}
-                  className="flex-1 bg-blue-600 text-white py-3 px-6 rounded-md font-medium hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
-                  onClick={() => {
-                    if (!auth.isAuthenticated()) {
-                      setShowLoginPrompt(true);
-                      return;
-                    }
-                    // Add to cart logic
-                    const existing = cart.find(
-                      (item) => item.id === product.id
-                    );
-                    let newCart;
-                    if (existing) {
-                      newCart = cart.map((item) =>
-                        item.id === product.id
-                          ? { ...item, quantity: item.quantity + quantity }
-                          : item
-                      );
-                    } else {
-                      newCart = [
-                        ...cart,
-                        {
-                          id: product.id,
-                          name: product.name,
-                          price: product.price,
-                          currency: product.currency,
-                          imageUrl: product.imageUrl,
-                          quantity,
-                          stock: product.stock,
-                        },
-                      ];
-                    }
-                    setCart(newCart);
-                    window.dispatchEvent(new Event("cartUpdated"));
-                    setAddedToCart(true);
-                    setTimeout(() => setAddedToCart(false), 1500);
-                  }}
-                >
-                  {product.stock > 0 ? "Add to Cart" : "Out of Stock"}
-                </button>
-                <button
-                  className={`flex-1 border border-gray-300 py-3 px-6 rounded-md font-medium hover:bg-gray-50 ${
-                    isInWishlist
-                      ? "bg-yellow-100 text-yellow-700 border-yellow-400"
-                      : "text-gray-700"
-                  }`}
-                  onClick={() => {
-                    if (!auth.isAuthenticated()) {
-                      setShowLoginPrompt(true);
-                      return;
-                    }
-                    if (isInWishlist) {
-                      setWishlist(
-                        wishlist.filter((item) => item.id !== product.id)
-                      );
-                      window.dispatchEvent(new Event("wishlistUpdated"));
-                      setWishlistMessage("Wishlist-с хасагдлаа");
-                    } else {
-                      setWishlist([
-                        ...wishlist,
-                        {
-                          id: product.id,
-                          name: product.name,
-                          price: product.price,
-                          currency: product.currency,
-                          imageUrl: product.imageUrl,
-                        },
-                      ]);
-                      window.dispatchEvent(new Event("wishlistUpdated"));
-                      setWishlistMessage("Wishlist-д нэмэгдлээ");
-                    }
-                    setTimeout(() => setWishlistMessage(null), 1500);
-                  }}
-                >
-                  {isInWishlist ? "Remove from Wishlist" : "Add to Wishlist"}
-                </button>
-              </div>
-              {/* Show added to cart message */}
-              {addedToCart && (
-                <div className="mt-4 text-green-600 font-semibold">
-                  Сагсанд нэмэгдлээ!
-                </div>
-              )}
-              {/* Login Prompt Modal */}
-              {showLoginPrompt && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-                  <div className="bg-white rounded-lg shadow-lg p-8 max-w-sm w-full text-center">
-                    <h2 className="text-xl font-bold mb-4">
-                      Нэвтрэх шаардлагатай
-                    </h2>
-                    <p className="mb-6">
-                      Үйлдэл хийхийн тулд эхлээд нэвтэрнэ үү.
-                    </p>
-                    <button
-                      className="bg-blue-600 text-white px-6 py-2 rounded-md font-medium hover:bg-blue-700 mr-2"
-                      onClick={() => router.push("/login")}
-                    >
-                      Нэвтрэх
-                    </button>
-                    <button
-                      className="bg-gray-200 text-gray-700 px-6 py-2 rounded-md font-medium hover:bg-gray-300"
-                      onClick={() => setShowLoginPrompt(false)}
-                    >
-                      Болих
-                    </button>
-                  </div>
-                </div>
-              )}
-              {/* Wishlist message */}
-              {wishlistMessage && (
-                <div className="mt-4 text-yellow-600 font-semibold">
-                  {wishlistMessage}
-                </div>
-              )}
+              {/* Action Buttons REMOVED */}
 
               {/* Back to Products */}
               <div className="mt-6">
@@ -396,7 +258,7 @@ export default function ProductDetailPage() {
                   href="/products"
                   className="text-blue-600 hover:text-blue-700 font-medium"
                 >
-                  ← Back to Products
+                  ← Бүтээгдэхүүнүүд рүү буцах
                 </Link>
               </div>
             </div>
