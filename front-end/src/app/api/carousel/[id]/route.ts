@@ -4,10 +4,10 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
     const response = await fetch(`${API_BASE_URL}/api/carousel/${id}`, {
       method: "DELETE",
     });
