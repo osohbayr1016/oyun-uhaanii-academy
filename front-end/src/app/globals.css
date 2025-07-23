@@ -1,5 +1,63 @@
 @import "tailwindcss";
 
+@import url("https://db.onlinewebfonts.com/c/a28001a286f8e6a91583693769dbf876?family=DIN+Round+Pro");
+
+/* Bold font-face */
+@font-face {
+  font-family: "DIN Round Pro";
+  src: url("https://db.onlinewebfonts.com/t/a28001a286f8e6a91583693769dbf876.eot");
+  src: url("https://db.onlinewebfonts.com/t/a28001a286f8e6a91583693769dbf876.eot?#iefix")
+      format("embedded-opentype"),
+    url("https://db.onlinewebfonts.com/t/a28001a286f8e6a91583693769dbf876.woff2")
+      format("woff2"),
+    url("https://db.onlinewebfonts.com/t/a28001a286f8e6a91583693769dbf876.woff")
+      format("woff"),
+    url("https://db.onlinewebfonts.com/t/a28001a286f8e6a91583693769dbf876.ttf")
+      format("truetype"),
+    url("https://db.onlinewebfonts.com/t/a28001a286f8e6a91583693769dbf876.svg#DIN Round Pro")
+      format("svg");
+  font-weight: 300;
+  font-style: normal;
+}
+
+/* Apply DIN Round Pro extra bold to all text elements */
+body,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+a,
+p,
+span,
+button,
+input,
+textarea,
+select,
+label,
+li,
+ul,
+ol,
+blockquote,
+pre,
+code,
+th,
+td,
+div {
+  font-family: "DIN Round Pro";
+  font-weight: 700;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  -webkit-text-stroke: 0.5px #0002;
+}
+
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -54,69 +112,70 @@
   body {
     background-color: hsl(var(--background));
     color: hsl(var(--foreground));
-    font-size: 16px;
+    font-size: 18px;
     line-height: 1.5;
+    font-family: "DIN Round Pro", Arial, sans-serif;
   }
 
   /* Mobile-first responsive typography */
   h1 {
-    font-size: 1.5rem;
+    font-size: 1.5rem + 2px; /* 24px + 2px = 26px */
     font-weight: 700;
     line-height: 1.2;
   }
 
   h2 {
-    font-size: 1.25rem;
+    font-size: 1.25rem + 2px; /* 20px + 2px = 22px */
     font-weight: 600;
     line-height: 1.2;
   }
 
   h3 {
-    font-size: 1.125rem;
+    font-size: 1.125rem + 2px; /* 18px + 2px = 20px */
     font-weight: 500;
     line-height: 1.2;
   }
 
   p {
-    font-size: 0.875rem;
+    font-size: 0.875rem + 2px; /* 14px + 2px = 16px */
     line-height: 1.6;
   }
 
   /* Tablet styles */
   @media (min-width: 768px) {
     h1 {
-      font-size: 1.875rem;
+      font-size: 1.875rem + 2px; /* 30px + 2px = 32px */
     }
 
     h2 {
-      font-size: 1.5rem;
+      font-size: 1.5rem + 2px; /* 24px + 2px = 26px */
     }
 
     h3 {
-      font-size: 1.25rem;
+      font-size: 1.25rem + 2px; /* 20px + 2px = 22px */
     }
 
     p {
-      font-size: 1rem;
+      font-size: 1rem + 2px; /* 16px + 2px = 18px */
     }
   }
 
   /* Desktop styles */
   @media (min-width: 1024px) {
     h1 {
-      font-size: 2.25rem;
+      font-size: 2.25rem + 2px; /* 36px + 2px = 38px */
     }
 
     h2 {
-      font-size: 1.875rem;
+      font-size: 1.875rem + 2px; /* 30px + 2px = 32px */
     }
 
     h3 {
-      font-size: 1.5rem;
+      font-size: 1.5rem + 2px; /* 24px + 2px = 26px */
     }
 
     p {
-      font-size: 1.125rem;
+      font-size: 1.125rem + 2px; /* 18px + 2px = 20px */
     }
   }
 }

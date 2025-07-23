@@ -76,7 +76,7 @@ front-end/
 │   └── schema.prisma            # Frontend schema
 ├── 📁 public/                   # Static Assets
 │   ├── logo.svg                 # Site logo
-│   ├── about3.png               # About image
+│   ├── academy.png               # About image
 │   └── xyno.jpg                 # Hero image
 ├── 📄 package.json              # Frontend dependencies
 ├── 📄 tsconfig.json             # TypeScript config

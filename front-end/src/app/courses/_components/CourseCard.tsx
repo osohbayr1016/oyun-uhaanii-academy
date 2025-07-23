@@ -31,6 +31,8 @@ export default function CourseCard({ course }: CourseCardProps) {
           }
           alt={course.title}
           fill
+          // width={200}
+          // height={200}
           className="object-cover bg-gray-100"
           onError={(e) => {
             const target = e.target as HTMLImageElement;
@@ -38,7 +40,6 @@ export default function CourseCard({ course }: CourseCardProps) {
           }}
         />
       </div>
-      {/* Content */}
       <div className="flex-1 flex flex-col justify-between p-6">
         <div>
           <h3 className="text-2xl font-bold text-gray-900 mb-4">

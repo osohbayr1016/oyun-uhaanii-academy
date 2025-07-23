@@ -37,12 +37,13 @@ export default function HeroSection() {
           {/* Content */}
           <div className="text-center lg:text-left space-y-6">
             <h1 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold text-gray-900 leading-tight">
-              Монголын оюун{" "}
-              <span className="text-blue-600">ухааны академи</span>
+              МОНГОЛЫН ОЮУН{" "}
+              <span className="text-blue-600">УХААНЫ АКАДЕМИ</span>
             </h1>
-            <p className="text-lg sm:text-xl text-gray-600 max-w-2xl mx-auto lg:mx-0">
-              Сэтгэхүйн хурдыг танд эзэмшүүлж оюуны хүрдийг дэлхийд таниулна
-            </p>
+            <div className="text-lg sm:text-2xl text-gray-600 max-w-2xl mx-auto lg:mx-0">
+              <p>Сэтгэхүйн хурдыг танд эзэмшүүлж </p>
+              <p>Оюуны хүрдийг дэлхийд таниулна</p>
+            </div>
 
             {/* Stats */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6 pt-8 sm:pt-12">
@@ -56,7 +57,7 @@ export default function HeroSection() {
               </div>
               <div className="text-center">
                 <div className="text-2xl sm:text-3xl font-bold text-blue-600">
-                  200+
+                  700+
                 </div>
                 <div className="text-sm sm:text-base text-gray-600">Сурагч</div>
               </div>
@@ -79,11 +80,11 @@ export default function HeroSection() {
           <div className="relative order-first lg:order-last">
             <div className="relative mx-auto max-w-md lg:max-w-lg">
               <Image
-                src="/about3.png"
+                src="/academy.png"
                 alt="Mongolian Traditional Games"
-                width={500}
-                height={500}
-                className="w-full h-auto rounded-2xl shadow-2xl"
+                width={400}
+                height={200}
+                className="mx-auto w-auto h-40 sm:h-56 md:h-64 lg:h-72 object-contain rounded-2xl shadow-2xl"
                 priority
               />
               {/* Decorative elements */}

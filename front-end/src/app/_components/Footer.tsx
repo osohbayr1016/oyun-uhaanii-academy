@@ -56,11 +56,11 @@ export default function Footer() {
           <div className="space-y-4">
             <div className="flex items-center space-x-2">
               <Image
-                src="/about3.png"
+                src="/academy.png"
                 alt="Oyun Uhaanii Academy"
                 width={120}
                 height={40}
-                className="w-32 h-10 sm:w-36 sm:h-12 md:w-44 md:h-15 lg:w-48 lg:h-17"
+                className="max-h-12 w-auto"
               />
             </div>
             <p className="text-gray-300 text-sm leading-relaxed">

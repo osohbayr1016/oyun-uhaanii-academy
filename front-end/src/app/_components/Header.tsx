@@ -142,11 +142,11 @@ const Header = () => {
           onClick={closeMenu}
         >
           <Image
-            src="/about3.png"
+            src="/academy.png"
             alt="Oyun Uhaanii Academy"
-            width={100}
+            width={120}
             height={40}
-            className="w-22 h-8 sm:w-24 sm:h-9 md:w-30 md:h-12 lg:w-36 lg:h-14"
+            className="max-h-12 w-auto"
           />
         </Link>
 
