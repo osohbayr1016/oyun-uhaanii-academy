@@ -147,6 +147,12 @@ const AdminDashboard = () => {
       href: "/admin/reports",
       color: "bg-red-500",
     },
+    {
+      title: "Клубийн мэдээлэл",
+      description: "Клубийн мэдээлэл засах",
+      icon: Settings,
+      href: "/admin/club-info",
+    },
   ];
 
   return (

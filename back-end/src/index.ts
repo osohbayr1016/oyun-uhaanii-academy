@@ -26,6 +26,7 @@ import textContentRoutes from "./routes/textContentRoutes";
 import newsletterRoutes from "./routes/newsletterRoutes";
 import aboutRoutes from "./routes/aboutRoutes";
 import carouselRoutes from "./routes/carouselRoutes";
+import clubContentRoutes from "./routes/clubContentRoutes";
 // import errorHandler from './middleware/errorHandler'; // Optional: for centralized error handling
 
 // Route Middlewares
@@ -39,6 +40,7 @@ app.use("/api/text-content", textContentRoutes);
 app.use("/api/newsletter", newsletterRoutes);
 app.use("/api/about", aboutRoutes);
 app.use("/api/carousel", carouselRoutes);
+app.use("/api/club-content", clubContentRoutes);
 // app.use("/api/clubs", clubRoutes);
 
 // Basic test route

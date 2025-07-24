@@ -120,6 +120,7 @@ const Header = () => {
     { name: "Тэмцээнүүд", href: "/tournaments" },
     { name: "Мэдээ", href: "/news" },
     { name: "Бидний тухай", href: "/about" },
+    { name: "Клуб", href: "/club" },
   ];
 
   return (

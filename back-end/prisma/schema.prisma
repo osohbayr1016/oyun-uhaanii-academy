@@ -323,8 +323,8 @@ model Activity {
 
 model TextContent {
   id        String   @id @default(uuid())
-  key       String   @unique
-  value     String
+  key       String   @unique // e.g. club_hero_title, club_hero_motto, club_hero_mission, club_hero_stats, club_hero_logo, club_hero_bg_image
+  value     String   // For complex fields (like stats), store as JSON string
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -360,4 +360,15 @@ model CarouselImage {
   id        String   @id @default(uuid())
   imageUrl  String
   createdAt DateTime @default(now())
+}
+
+model ClubContent {
+  id        String   @id @default(uuid())
+  key       String   @unique // e.g. hero_title, hero_motto, activity_1_title, type_1_title, etc.
+  value     String   // The actual content (string, image URL, etc.)
+  type      String   // text, image, number, etc.
+  section   String   // hero, activities, types, requirements, awards, etc.
+  order     Int?     // For ordering items in lists
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
