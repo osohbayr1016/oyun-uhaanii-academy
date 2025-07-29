@@ -12,6 +12,7 @@ import {
   Plus,
   Edit,
   Trash2,
+  Users2,
 } from "lucide-react";
 
 const AdminDashboard = () => {
@@ -134,6 +135,13 @@ const AdminDashboard = () => {
       color: "bg-orange-500",
     },
     {
+      title: "Клуб",
+      description: "Клуб хуудасны зураг, лого удирдлага",
+      icon: Users2,
+      href: "/admin/club",
+      color: "bg-indigo-500",
+    },
+    {
       title: "Тохиргоо",
       description: "Системийн тохиргоо, тохируулга",
       icon: Settings,
@@ -146,12 +154,6 @@ const AdminDashboard = () => {
       icon: BarChart3,
       href: "/admin/reports",
       color: "bg-red-500",
-    },
-    {
-      title: "Клубийн мэдээлэл",
-      description: "Клубийн мэдээлэл засах",
-      icon: Settings,
-      href: "/admin/club-info",
     },
   ];
 

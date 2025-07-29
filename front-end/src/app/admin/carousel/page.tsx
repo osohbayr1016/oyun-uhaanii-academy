@@ -1,4 +1,5 @@
 "use client";
+import Image from "next/image";
 import { useEffect, useState } from "react";
 
 interface CarouselImage {
@@ -72,11 +73,18 @@ export default function AdminCarouselPage() {
               key={img.id}
               className="relative group border rounded-lg overflow-hidden"
             >
-              <img
-                src={img.imageUrl}
-                alt="carousel"
-                className="w-full h-40 object-cover"
-              />
+              <div className="relative w-full h-40">
+                <Image
+                  src={img.imageUrl}
+                  alt="carousel"
+                  fill
+                  className="object-cover"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.src = "/default-carousel.png";
+                  }}
+                />
+              </div>
               <button
                 onClick={() => handleDelete(img.id)}
                 className="absolute top-2 right-2 bg-red-600 text-white rounded px-2 py-1 text-xs opacity-80 group-hover:opacity-100"

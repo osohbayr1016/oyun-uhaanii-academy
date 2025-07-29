@@ -323,8 +323,8 @@ model Activity {
 
 model TextContent {
   id        String   @id @default(uuid())
-  key       String   @unique // e.g. club_hero_title, club_hero_motto, club_hero_mission, club_hero_stats, club_hero_logo, club_hero_bg_image
-  value     String   // For complex fields (like stats), store as JSON string
+  key       String   @unique
+  value     String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -362,13 +362,35 @@ model CarouselImage {
   createdAt DateTime @default(now())
 }
 
-model ClubContent {
-  id        String   @id @default(uuid())
-  key       String   @unique // e.g. hero_title, hero_motto, activity_1_title, type_1_title, etc.
-  value     String   // The actual content (string, image URL, etc.)
-  type      String   // text, image, number, etc.
-  section   String   // hero, activities, types, requirements, awards, etc.
-  order     Int?     // For ordering items in lists
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+model Club {
+  id                String   @id @default(uuid())
+  heroBackgroundImage String?
+  clubLogo          String?
+  motto             String?
+  mission           String?
+  athletesCount     String?
+  typesCount        String?
+  coachesCount      String?
+  tournamentTitle   String?
+  tournamentDescription String?
+  tournamentName    String?
+  tournamentFrequency String?
+  tournamentParticipants String?
+  tournamentDetails String?
+  tournamentButtonText String?
+  activitiesTitle   String?
+  activities        Json?    // Array of activities: [{ imageUrl, title, description }]
+  typesTitle        String?
+  types             Json?    // Array of club types: [{ imageUrl, title, description }]
+  membershipTitle   String?
+  membershipDescription String?
+  membershipRequirements Json? // Array of requirements: [string]
+  registerButtonText String?
+  googleFormLink    String?
+  internationalAwardsTitle String?
+  internationalAwards Json? // Array of international awards: [{ imageUrl, title, description }]
+  domesticAwardsTitle String?
+  domesticAwards    Json? // Array of domestic awards: [{ imageUrl, title, description }]
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import HeroSection from "./_components/HeroSection";
 import { Book, Trophy, Users, Lightbulb, Users2, Globe } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
@@ -192,14 +193,15 @@ export default function HomePage() {
                                 width: `${100 / carouselImages.length}%`,
                               }}
                             >
-                              <div
-                                className="bg-white rounded-xl shadow-md overflow-hidden flex flex-col items-center justify-center max-w-lg w-full h-80 border mx-auto aspect-[16/9]"
-                                style={{ aspectRatio: "16/9" }}
-                              >
+                              <div className="bg-white rounded-xl shadow-md overflow-hidden flex flex-col items-center justify-center max-w-lg w-full h-80 border mx-auto">
                                 <img
                                   src={img.imageUrl}
                                   alt={`Carousel ${idx + 1}`}
                                   className="w-full h-full object-contain"
+                                  onError={(e) => {
+                                    const target = e.target as HTMLImageElement;
+                                    target.src = "/default-carousel.png";
+                                  }}
                                 />
                               </div>
                             </div>
