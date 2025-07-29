@@ -22,12 +22,9 @@ interface Award {
 }
 
 export default function AdminClubPage() {
-  const [heroBackgroundImage, setHeroBackgroundImage] = useState<File | null>(
-    null
-  );
-  const [clubLogo, setClubLogo] = useState<File | null>(null);
-  const [previewHeroBg, setPreviewHeroBg] = useState<string>("/about3.png");
-  const [previewLogo, setPreviewLogo] = useState<string>("/logosalbariin.png");
+  const [heroBackgroundImage, setHeroBackgroundImage] =
+    useState<string>("/about3.png");
+  const [clubLogo, setClubLogo] = useState<string>("/logosalbariin.png");
   const [motto, setMotto] = useState<string>("");
   const [mission, setMission] = useState<string>("");
   const [athletesCount, setAthletesCount] = useState<string>("");
@@ -151,8 +148,10 @@ export default function AdminClubPage() {
         const data = await response.json();
 
         if (data.success && data.data) {
-          setPreviewHeroBg(data.data.heroBackgroundImage || "/about3.png");
-          setPreviewLogo(data.data.clubLogo || "/logosalbariin.png");
+          setHeroBackgroundImage(
+            data.data.heroBackgroundImage || "/about3.png"
+          );
+          setClubLogo(data.data.clubLogo || "/logosalbariin.png");
           setMotto(data.data.motto || "");
           setMission(data.data.mission || "");
           setAthletesCount(data.data.athletesCount || "");
@@ -281,27 +280,11 @@ export default function AdminClubPage() {
   const handleHeroBackgroundChange = (
     e: React.ChangeEvent<HTMLInputElement>
   ) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setHeroBackgroundImage(file);
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setPreviewHeroBg(e.target?.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
+    setHeroBackgroundImage(e.target.value);
   };
 
   const handleClubLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setClubLogo(file);
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setPreviewLogo(e.target?.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
+    setClubLogo(e.target.value);
   };
 
   const handleActivityChange = (
@@ -445,14 +428,12 @@ export default function AdminClubPage() {
       // In a real implementation, you would upload the files to a storage service
       const updateData: any = {};
 
-      if (heroBackgroundImage) {
-        // In a real app, upload the file and get the URL
-        updateData.heroBackgroundImage = previewHeroBg;
+      if (heroBackgroundImage.trim()) {
+        updateData.heroBackgroundImage = heroBackgroundImage.trim();
       }
 
-      if (clubLogo) {
-        // In a real app, upload the file and get the URL
-        updateData.clubLogo = previewLogo;
+      if (clubLogo.trim()) {
+        updateData.clubLogo = clubLogo.trim();
       }
 
       if (motto.trim()) {
@@ -579,9 +560,9 @@ export default function AdminClubPage() {
 
       if (data.success) {
         alert("Клуб хуудас амжилттай шинэчлэгдлээ!");
-        // Clear the file inputs
-        setHeroBackgroundImage(null);
-        setClubLogo(null);
+        // Clear the inputs
+        setHeroBackgroundImage("/about3.png");
+        setClubLogo("/logosalbariin.png");
       } else {
         throw new Error(data.message || "Failed to update club content");
       }
@@ -634,13 +615,14 @@ export default function AdminClubPage() {
                   Шинэ зураг сонгох
                 </label>
                 <input
-                  type="file"
-                  accept="image/*"
+                  type="url"
+                  value={heroBackgroundImage}
                   onChange={handleHeroBackgroundChange}
-                  className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                  className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="https://example.com/image.jpg"
                 />
                 <p className="text-xs text-gray-500 mt-1">
-                  Зөвхөн JPG, PNG, GIF зургууд. Хамгийн их 5MB.
+                  Зургийн URL хаягийг оруулна уу
                 </p>
               </div>
 
@@ -650,7 +632,7 @@ export default function AdminClubPage() {
                 </label>
                 <div className="relative w-full h-32 bg-gray-100 rounded-lg overflow-hidden">
                   <Image
-                    src={previewHeroBg}
+                    src={heroBackgroundImage}
                     alt="Hero Background Preview"
                     fill
                     className="object-cover"
@@ -672,13 +654,14 @@ export default function AdminClubPage() {
                   Шинэ лого сонгох
                 </label>
                 <input
-                  type="file"
-                  accept="image/*"
+                  type="url"
+                  value={clubLogo}
                   onChange={handleClubLogoChange}
-                  className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                  className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="https://example.com/logo.png"
                 />
                 <p className="text-xs text-gray-500 mt-1">
-                  Зөвхөн JPG, PNG, SVG зургууд. Хамгийн их 2MB.
+                  Логоны URL хаягийг оруулна уу
                 </p>
               </div>
 
@@ -688,7 +671,7 @@ export default function AdminClubPage() {
                 </label>
                 <div className="relative w-32 h-32 bg-white rounded-lg overflow-hidden border-2 border-gray-200">
                   <Image
-                    src={previewLogo}
+                    src={clubLogo}
                     alt="Club Logo Preview"
                     fill
                     className="object-contain p-2"
@@ -1547,7 +1530,7 @@ export default function AdminClubPage() {
               {/* Hero Section Preview */}
               <div className="relative w-full h-64 bg-gradient-to-br from-blue-50 to-indigo-100 rounded-lg overflow-hidden">
                 <Image
-                  src={previewHeroBg}
+                  src={heroBackgroundImage}
                   alt="Hero Background"
                   fill
                   className="object-cover opacity-40"
@@ -1558,7 +1541,7 @@ export default function AdminClubPage() {
                   <div className="text-center">
                     <div className="relative w-24 h-24 mx-auto mb-4">
                       <Image
-                        src={previewLogo}
+                        src={clubLogo}
                         alt="Club Logo"
                         fill
                         className="object-contain"
