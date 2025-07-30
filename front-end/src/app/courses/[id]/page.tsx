@@ -7,12 +7,74 @@ const CONTACT_EMAIL = "bilguunundarmal@gmail.com";
 const CONTACT_ADDRESS =
   "БЗД, 16-р хороо, Дандарбаатарын гудамж, 'ХОРГО' хотхон, 2-2 байр";
 
+// Helper function to convert YouTube URL to embed format
+const getYouTubeEmbedUrl = (url: string): string => {
+  if (!url) return "";
+
+  try {
+    // Handle different YouTube URL formats
+    let videoId = "";
+
+    // Regular watch URLs: https://www.youtube.com/watch?v=VIDEO_ID
+    const watchMatch = url.match(
+      /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/
+    );
+    if (watchMatch) {
+      videoId = watchMatch[1];
+    }
+
+    // Short URLs: https://youtu.be/VIDEO_ID
+    const shortMatch = url.match(/youtu\.be\/([^&\n?#]+)/);
+    if (shortMatch) {
+      videoId = shortMatch[1];
+    }
+
+    // Already embed URLs: https://www.youtube.com/embed/VIDEO_ID
+    const embedMatch = url.match(/youtube\.com\/embed\/([^&\n?#]+)/);
+    if (embedMatch) {
+      videoId = embedMatch[1];
+    }
+
+    if (videoId) {
+      // Add additional parameters for better compatibility
+      const origin =
+        typeof window !== "undefined" ? window.location.origin : "";
+      return `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0&modestbranding=1&enablejsapi=1${
+        origin ? `&origin=${encodeURIComponent(origin)}` : ""
+      }`;
+    }
+
+    console.warn("Could not extract video ID from URL:", url);
+    return "";
+  } catch (error) {
+    console.error("Error parsing YouTube URL:", error);
+    return "";
+  }
+};
+
+// Helper function to validate YouTube URL
+const isValidYouTubeUrl = (url: string): boolean => {
+  if (!url) return false;
+
+  const patterns = [
+    /^(https?:\/\/)?(www\.)?(youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)/,
+    /^(https?:\/\/)?(www\.)?youtube\.com\/watch\?v=[a-zA-Z0-9_-]+/,
+    /^(https?:\/\/)?(www\.)?youtu\.be\/[a-zA-Z0-9_-]+/,
+    /^(https?:\/\/)?(www\.)?youtube\.com\/embed\/[a-zA-Z0-9_-]+/,
+  ];
+
+  return patterns.some((pattern) => pattern.test(url));
+};
+
 export default function CourseDetailsPage() {
   const { id } = useParams();
   const [course, setCourse] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [showVideo, setShowVideo] = useState(false);
+  const [videoError, setVideoError] = useState(false);
+  const [videoLoading, setVideoLoading] = useState(false);
+  const [videoTimeout, setVideoTimeout] = useState<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     if (!id) return;
@@ -23,10 +85,83 @@ export default function CourseDetailsPage() {
         if (!res.ok) throw new Error("Failed to fetch course");
         return res.json();
       })
-      .then((data) => setCourse(data))
+      .then((data) => {
+        console.log("Course data loaded:", data);
+        console.log("YouTube URL:", data.youtubeUrl);
+        setCourse(data);
+      })
       .catch((err) => setError(err.message || "Unknown error"))
       .finally(() => setLoading(false));
   }, [id]);
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (videoTimeout) {
+        clearTimeout(videoTimeout);
+      }
+    };
+  }, [videoTimeout]);
+
+  const handleVideoClick = () => {
+    console.log("Video button clicked");
+    console.log("Course YouTube URL:", course?.youtubeUrl);
+
+    if (!course?.youtubeUrl) {
+      console.log("No YouTube URL found");
+      setVideoError(true);
+      return;
+    }
+
+    if (!isValidYouTubeUrl(course.youtubeUrl)) {
+      console.log("Invalid YouTube URL format:", course.youtubeUrl);
+      setVideoError(true);
+      return;
+    }
+
+    const embedUrl = getYouTubeEmbedUrl(course.youtubeUrl);
+    console.log("Generated embed URL:", embedUrl);
+
+    if (!embedUrl) {
+      console.log("Failed to generate embed URL");
+      setVideoError(true);
+      return;
+    }
+
+    setVideoError(false);
+    setVideoLoading(true);
+    setShowVideo(true);
+
+    // Add a timeout in case the video fails to load
+    const timeout = setTimeout(() => {
+      if (videoLoading) {
+        console.log("Video loading timeout - showing error");
+        handleVideoError();
+      }
+    }, 10000); // 10 second timeout
+
+    setVideoTimeout(timeout);
+  };
+
+  const handleVideoLoad = () => {
+    console.log("Video loaded successfully");
+    setVideoLoading(false);
+    if (videoTimeout) {
+      clearTimeout(videoTimeout);
+      setVideoTimeout(null);
+    }
+  };
+
+  const handleVideoError = () => {
+    console.log("Video failed to load");
+    setVideoLoading(false);
+    setVideoError(true);
+    setShowVideo(false);
+    if (videoTimeout) {
+      clearTimeout(videoTimeout);
+      setVideoTimeout(null);
+    }
+  };
 
   if (loading) return <div className="p-8 text-center">Уншиж байна...</div>;
   if (error) return <div className="p-8 text-red-500 text-center">{error}</div>;
@@ -71,7 +206,7 @@ export default function CourseDetailsPage() {
               {course.description}
             </p>
             <button
-              onClick={() => setShowVideo(true)}
+              onClick={handleVideoClick}
               className="bg-white/90 hover:bg-[#550080] hover:text-white text-black font-semibold px-10 py-4 rounded-2xl text-xl shadow-lg border border-white/40 transition-all duration-200 text-center focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 animate-bounce-slow"
             >
               Танилцуулга Видео
@@ -85,7 +220,7 @@ export default function CourseDetailsPage() {
         <div className="max-w-3xl w-full flex flex-col gap-8">
           <div>
             <h2 className="text-2xl font-bold mb-2 text-[#550080]">
-              Сургалтын зорилго
+              Сургалтын ач холбогдол
             </h2>
             <p className="text-gray-700 whitespace-pre-line">
               {course.goal || "Мэдээлэл байхгүй."}
@@ -101,7 +236,7 @@ export default function CourseDetailsPage() {
           </div>
           <div>
             <h2 className="text-2xl font-bold mb-2 text-[#550080]">
-              Сургалтын бүтэц
+              Сургалтын хөтөлбөр
             </h2>
             <p className="text-gray-700 whitespace-pre-line">
               {course.structure || "Мэдээлэл байхгүй."}
@@ -121,20 +256,95 @@ export default function CourseDetailsPage() {
             >
               ×
             </button>
-            <iframe
-              width="100%"
-              height="100%"
-              src={
-                course.youtubeUrl
-                  ? course.youtubeUrl.replace("watch?v=", "embed/") +
-                    "?autoplay=1"
-                  : "https://www.youtube.com/embed/sWYyDOLJ6Y8?autoplay=1"
-              }
-              title="Youtube video"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-              className="w-full h-full rounded-2xl"
-            />
+            {course.youtubeUrl && !videoError ? (
+              <>
+                {videoLoading && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-2xl">
+                    <div className="flex flex-col items-center text-white">
+                      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mb-4"></div>
+                      <p>Видео уншиж байна...</p>
+                    </div>
+                  </div>
+                )}
+                <iframe
+                  width="100%"
+                  height="100%"
+                  src={getYouTubeEmbedUrl(course.youtubeUrl)}
+                  title="Youtube video"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  className="w-full h-full rounded-2xl"
+                  onLoad={handleVideoLoad}
+                  onError={handleVideoError}
+                />
+              </>
+            ) : (
+              <div className="flex flex-col items-center justify-center text-white p-8">
+                <div className="text-6xl mb-4">⚠️</div>
+                <h3 className="text-xl font-bold mb-2">Видео олдсонгүй</h3>
+                <p className="text-center text-gray-300 mb-4">
+                  Уучлаарай, энэ сургалтын танилцуулга видео одоогоор боломжгүй
+                  байна.
+                </p>
+                {course.youtubeUrl && (
+                  <a
+                    href={course.youtubeUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mb-4 bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg transition-colors"
+                  >
+                    YouTube дээр үзэх
+                  </a>
+                )}
+                <button
+                  onClick={() => setShowVideo(false)}
+                  className="bg-white text-black px-6 py-2 rounded-lg hover:bg-gray-200 transition-colors"
+                >
+                  Хаах
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Video Error Modal */}
+      {videoError && !showVideo && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80">
+          <div className="relative w-full max-w-md bg-white rounded-2xl shadow-2xl p-8 mx-4">
+            <button
+              onClick={() => setVideoError(false)}
+              className="absolute top-2 right-2 text-gray-500 hover:text-gray-700 text-2xl"
+              aria-label="Close error"
+            >
+              ×
+            </button>
+            <div className="flex flex-col items-center justify-center text-center">
+              <div className="text-6xl mb-4">⚠️</div>
+              <h3 className="text-xl font-bold mb-2 text-gray-800">
+                Видео олдсонгүй
+              </h3>
+              <p className="text-gray-600 mb-4">
+                Уучлаарай, энэ сургалтын танилцуулга видео одоогоор боломжгүй
+                байна.
+              </p>
+              {course?.youtubeUrl && (
+                <a
+                  href={course.youtubeUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mb-4 bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg transition-colors"
+                >
+                  YouTube дээр үзэх
+                </a>
+              )}
+              <button
+                onClick={() => setVideoError(false)}
+                className="bg-[#550080] text-white px-6 py-2 rounded-lg hover:bg-[#440066] transition-colors"
+              >
+                Ойлголоо
+              </button>
+            </div>
           </div>
         </div>
       )}

@@ -1,10 +1,7 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
 import "./globals.css";
 import ConditionalLayout from "./_components/ConditionalLayout";
 import { AuthProvider } from "@/lib/auth";
-
-const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "Academy Officer",
@@ -26,8 +23,19 @@ export default function RootLayout({
           name="viewport"
           content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
         />
+        <meta
+          httpEquiv="Content-Security-Policy"
+          content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.youtube.com https://s.ytimg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://db.onlinewebfonts.com; font-src 'self' https://fonts.gstatic.com https://db.onlinewebfonts.com; img-src 'self' data: https:; media-src 'self' https:; frame-src 'self' https://www.youtube.com https://youtube.com; connect-src 'self' https: http://localhost:5001;"
+        />
+        <link
+          rel="preload"
+          href="https://db.onlinewebfonts.com/t/a28001a286f8e6a91583693769dbf876.woff2"
+          as="font"
+          type="font/woff2"
+          crossOrigin="anonymous"
+        />
       </head>
-      <body className={inter.className}>
+      <body>
         <AuthProvider>
           <ConditionalLayout>{children}</ConditionalLayout>
         </AuthProvider>

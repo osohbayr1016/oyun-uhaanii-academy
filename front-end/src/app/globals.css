@@ -1,5 +1,6 @@
 @import "tailwindcss";
 
+/* Preload the font for better performance */
 @import url("https://db.onlinewebfonts.com/c/a28001a286f8e6a91583693769dbf876?family=DIN+Round+Pro");
 
 /* Bold font-face */
@@ -18,6 +19,12 @@
       format("svg");
   font-weight: 300;
   font-style: normal;
+  font-display: swap;
+}
+
+/* Ensure font is applied immediately */
+* {
+  font-family: "DIN Round Pro", "Arial", "Helvetica", sans-serif !important;
 }
 
 /* Apply DIN Round Pro extra bold to all text elements */
@@ -45,7 +52,7 @@ code,
 th,
 td,
 div {
-  font-family: "DIN Round Pro";
+  font-family: "DIN Round Pro", "Arial", "Helvetica", sans-serif !important;
   font-weight: 700;
 }
 
@@ -114,7 +121,7 @@ h6 {
     color: hsl(var(--foreground));
     font-size: 18px;
     line-height: 1.5;
-    font-family: "DIN Round Pro", Arial, sans-serif;
+    font-family: "DIN Round Pro", "Arial", "Helvetica", sans-serif !important;
   }
 
   /* Mobile-first responsive typography */
