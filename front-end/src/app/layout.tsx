@@ -7,8 +7,11 @@ import { AuthProvider } from "@/lib/auth";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Oyun Uhaanii Academy",
-  description: "Монголын тоглоомын академи",
+  title: "Academy Officer",
+  description: "Монголын оюун ухааны академи",
+  icons: {
+    icon: "/images.jpeg",
+  },
 };
 
 export default function RootLayout({
@@ -23,6 +26,7 @@ export default function RootLayout({
           name="viewport"
           content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
         />
+        <link rel="icon" href="/academy.png" />
       </head>
       <body className={inter.className}>
         <AuthProvider>
