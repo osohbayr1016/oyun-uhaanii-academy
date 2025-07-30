@@ -122,7 +122,7 @@ export default function HomePage() {
               <h3 className="text-xl font-bold text-gray-900 mb-2">
                 {homeContent.feature_1_title || "Сургалт"}
               </h3>
-              <p className="text-gray-700">
+              <p className="text-black text-[30px]">
                 {homeContent.feature_1_description ||
                   "Монгол улсын хэмжээний тэмцээнүүдийн олон жилийн туршлага"}
               </p>
@@ -135,7 +135,7 @@ export default function HomePage() {
               <h3 className="text-xl font-bold text-gray-900 mb-2">
                 {homeContent.feature_2_title || "Тэмцээнүүд"}
               </h3>
-              <p className="text-gray-700">
+              <p className="text-black text-[30px]">
                 {homeContent.feature_2_description ||
                   "Тогтмол клубын аварга болон улсын аварга мөн цаашлаад дэлхийн аваргад оролцох боломж"}
               </p>
@@ -148,7 +148,7 @@ export default function HomePage() {
               <h3 className="text-xl font-bold text-gray-900 mb-2">
                 {homeContent.feature_3_title || "Хөгжил"}
               </h3>
-              <p className="text-gray-700">
+              <p className="text-black text-[30px]">
                 {homeContent.feature_3_description ||
                   "Хөгжин дэвших чин хүсэл эрмэлзэл бүхий найрсаг дотно хамт олон"}
               </p>
@@ -161,7 +161,7 @@ export default function HomePage() {
               <h3 className="text-xl font-bold text-gray-900 mb-2">
                 {homeContent.feature_4_title || "Найрсаг багш хамт олон"}
               </h3>
-              <p className="text-gray-700">
+              <p className="text-black text-[30px]">
                 {homeContent.feature_4_description ||
                   "Элдэв найрсаг багш хамт олон"}
               </p>
@@ -174,7 +174,7 @@ export default function HomePage() {
               <h3 className="text-xl font-bold text-gray-900 mb-2">
                 {homeContent.feature_5_title || "Тухтай тайван суралцах орчин"}
               </h3>
-              <p className="text-gray-700">
+              <p className="text-black text-[30px]">
                 {homeContent.feature_5_description ||
                   "Цэвэр, тухтай, тайван суралцах орчин таныг хүлээж байна."}
               </p>
@@ -187,7 +187,7 @@ export default function HomePage() {
               <h3 className="text-xl font-bold text-gray-900 mb-2">
                 {homeContent.feature_6_title || "Олон жилийн туршлага"}
               </h3>
-              <p className="text-gray-700">
+              <p className="text-black text-[30px]">
                 {homeContent.feature_6_description ||
                   "Тохилог тухтай орчин, олон жилийн туршлага"}
               </p>
