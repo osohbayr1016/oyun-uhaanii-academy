@@ -10,7 +10,12 @@ export const metadata: Metadata = {
   title: "Academy Officer",
   description: "Монголын оюун ухааны академи",
   icons: {
-    icon: "/images.jpeg",
+    icon: [
+      { url: "/images.jpeg", type: "image/jpeg" },
+      { url: "/academy.png", type: "image/png" },
+    ],
+    shortcut: "/images.jpeg",
+    apple: "/images.jpeg",
   },
 };
 
@@ -26,7 +31,13 @@ export default function RootLayout({
           name="viewport"
           content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
         />
-        <link rel="icon" href="/images.jpeg" />
+        {/* For local file */}
+        <link rel="icon" type="image/jpeg" href="/images.jpeg" />
+        <link rel="shortcut icon" href="/images.jpeg" />
+        <link rel="apple-touch-icon" href="/images.jpeg" />
+
+        {/* Alternative: If you want to use a URL, uncomment the line below */}
+        {/* <link rel="icon" href="https://your-domain.com/images.jpeg" /> */}
       </head>
       <body className={inter.className}>
         <AuthProvider>
