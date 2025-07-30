@@ -5,6 +5,7 @@ import Image from "next/image";
 import HeroSection from "./_components/HeroSection";
 
 import { useState, useEffect, useRef } from "react";
+import { Brain, Crown, Earth, Medal, Star, Trophy } from "lucide-react";
 
 interface HomeContent {
   features_title?: string;
@@ -116,7 +117,7 @@ export default function HomePage() {
             {/* Feature 1 */}
             <div className="card-responsive text-center bg-white rounded-2xl shadow-lg p-6 flex flex-col items-center hover:shadow-2xl transition-all border border-gray-100">
               <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-4">
-                <Book className="w-8 h-8 text-blue-600" />
+                <Earth className="w-8 h-8 text-blue-600" />
               </div>
               <h3 className="text-xl font-bold text-gray-900 mb-2">
                 {homeContent.feature_1_title || "Сургалт"}
@@ -129,7 +130,7 @@ export default function HomePage() {
             {/* Feature 2 */}
             <div className="card-responsive text-center bg-white rounded-2xl shadow-lg p-6 flex flex-col items-center hover:shadow-2xl transition-all border border-gray-100">
               <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
-                <Trophy className="w-8 h-8 text-green-600" />
+                <Brain className="w-8 h-8 text-green-600" />
               </div>
               <h3 className="text-xl font-bold text-gray-900 mb-2">
                 {homeContent.feature_2_title || "Тэмцээнүүд"}
@@ -142,7 +143,7 @@ export default function HomePage() {
             {/* Feature 3 */}
             <div className="card-responsive text-center bg-white rounded-2xl shadow-lg p-6 flex flex-col items-center hover:shadow-2xl transition-all border border-gray-100">
               <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mb-4">
-                <Users className="w-8 h-8 text-purple-600" />
+                <Medal className="w-8 h-8 text-purple-600" />
               </div>
               <h3 className="text-xl font-bold text-gray-900 mb-2">
                 {homeContent.feature_3_title || "Хөгжил"}
@@ -155,7 +156,7 @@ export default function HomePage() {
             {/* Feature 4 */}
             <div className="card-responsive text-center bg-white rounded-2xl shadow-lg p-6 flex flex-col items-center hover:shadow-2xl transition-all border border-gray-100">
               <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mb-4">
-                <Lightbulb className="w-8 h-8 text-yellow-500" />
+                <Trophy className="w-8 h-8 text-yellow-500" />
               </div>
               <h3 className="text-xl font-bold text-gray-900 mb-2">
                 {homeContent.feature_4_title || "Найрсаг багш хамт олон"}
@@ -168,7 +169,7 @@ export default function HomePage() {
             {/* Feature 5 */}
             <div className="card-responsive text-center bg-white rounded-2xl shadow-lg p-6 flex flex-col items-center hover:shadow-2xl transition-all border border-gray-100">
               <div className="w-16 h-16 bg-pink-100 rounded-full flex items-center justify-center mb-4">
-                <Users2 className="w-8 h-8 text-pink-500" />
+                <Crown className="w-8 h-8 text-pink-500" />
               </div>
               <h3 className="text-xl font-bold text-gray-900 mb-2">
                 {homeContent.feature_5_title || "Тухтай тайван суралцах орчин"}
@@ -181,7 +182,7 @@ export default function HomePage() {
             {/* Feature 6 */}
             <div className="card-responsive text-center bg-white rounded-2xl shadow-lg p-6 flex flex-col items-center hover:shadow-2xl transition-all border border-gray-100">
               <div className="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mb-4">
-                <Globe className="w-8 h-8 text-indigo-500" />
+                <Star className="w-8 h-8 text-indigo-500" />
               </div>
               <h3 className="text-xl font-bold text-gray-900 mb-2">
                 {homeContent.feature_6_title || "Олон жилийн туршлага"}
