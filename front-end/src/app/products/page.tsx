@@ -104,21 +104,21 @@ export default function ProductsPage() {
       return (
         <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800 border border-red-200">
           <span className="w-1.5 h-1.5 bg-red-500 rounded-full mr-1.5"></span>
-          {product.stockStatusText || "Дууссан"}
+          Дууссан
         </span>
       );
     } else if (product.stock < 10) {
       return (
         <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 border border-yellow-200">
           <span className="w-1.5 h-1.5 bg-yellow-500 rounded-full mr-1.5"></span>
-          {product.stockStatusText || "Бага нөөц"}
+          Бага нөөц
         </span>
       );
     } else {
       return (
         <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-200">
           <span className="w-1.5 h-1.5 bg-green-500 rounded-full mr-1.5"></span>
-          {product.stockStatusText || "Бэлэн байгаа"}
+          Бэлэн байгаа
         </span>
       );
     }
