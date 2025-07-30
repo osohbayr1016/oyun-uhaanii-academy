@@ -3,13 +3,31 @@
 import Link from "next/link";
 import Image from "next/image";
 import HeroSection from "./_components/HeroSection";
-import { Book, Trophy, Users, Lightbulb, Users2, Globe } from "lucide-react";
+
 import { useState, useEffect, useRef } from "react";
+
+interface HomeContent {
+  features_title?: string;
+  features_subtitle?: string;
+  feature_1_title?: string;
+  feature_1_description?: string;
+  feature_2_title?: string;
+  feature_2_description?: string;
+  feature_3_title?: string;
+  feature_3_description?: string;
+  feature_4_title?: string;
+  feature_4_description?: string;
+  feature_5_title?: string;
+  feature_5_description?: string;
+  feature_6_title?: string;
+  feature_6_description?: string;
+}
 
 export default function HomePage() {
   const [carouselImages, setCarouselImages] = useState<
     { id: string; imageUrl: string }[]
   >([]);
+  const [homeContent, setHomeContent] = useState<HomeContent>({});
   const [current, setCurrent] = useState(0);
   const [loading, setLoading] = useState(true);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -26,6 +44,22 @@ export default function HomePage() {
       setCurrent(0);
     };
     fetchImages();
+  }, []);
+
+  // Fetch home content from API
+  useEffect(() => {
+    const fetchHomeContent = async () => {
+      try {
+        const response = await fetch("/api/home-content");
+        if (response.ok) {
+          const data = await response.json();
+          setHomeContent(data);
+        }
+      } catch (error) {
+        console.error("Error fetching home content:", error);
+      }
+    };
+    fetchHomeContent();
   }, []);
 
   const maxIndex = Math.max(0, carouselImages.length - 1);
@@ -70,12 +104,11 @@ export default function HomePage() {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12 sm:mb-16">
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
-              БИДНИЙ ОНЦЛОГУУД
+              {homeContent.features_title || "БИДНИЙ ОНЦЛОГУУД"}
             </h2>
             <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-              Эелдэг найрсаг багш хамт олон, тохилог тухтай орчин, олон жилийн
-              туршлага, хамгийн олон гишүүд болон, Монголын оюун ухааны
-              академийн шилдэг салбар юм.
+              {homeContent.features_subtitle ||
+                "Эелдэг найрсаг багш хамт олон, тохилог тухтай орчин, олон жилийн туршлага, хамгийн олон гишүүд болон, Монголын оюун ухааны академийн шилдэг салбар юм."}
             </p>
           </div>
 
@@ -85,9 +118,12 @@ export default function HomePage() {
               <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-4">
                 <Book className="w-8 h-8 text-blue-600" />
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2">Сургалт</h3>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">
+                {homeContent.feature_1_title || "Сургалт"}
+              </h3>
               <p className="text-gray-700">
-                Монгол улсын хэмжээний тэмцээнүүдийн олон жилийн туршлага
+                {homeContent.feature_1_description ||
+                  "Монгол улсын хэмжээний тэмцээнүүдийн олон жилийн туршлага"}
               </p>
             </div>
             {/* Feature 2 */}
@@ -96,11 +132,11 @@ export default function HomePage() {
                 <Trophy className="w-8 h-8 text-green-600" />
               </div>
               <h3 className="text-xl font-bold text-gray-900 mb-2">
-                Тэмцээнүүд
+                {homeContent.feature_2_title || "Тэмцээнүүд"}
               </h3>
               <p className="text-gray-700">
-                Тогтмол клубын аварга болон улсын аварга мөн цаашлаад дэлхийн
-                аваргад оролцох боломж
+                {homeContent.feature_2_description ||
+                  "Тогтмол клубын аварга болон улсын аварга мөн цаашлаад дэлхийн аваргад оролцох боломж"}
               </p>
             </div>
             {/* Feature 3 */}
@@ -108,43 +144,51 @@ export default function HomePage() {
               <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mb-4">
                 <Users className="w-8 h-8 text-purple-600" />
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2">Хөгжил</h3>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">
+                {homeContent.feature_3_title || "Хөгжил"}
+              </h3>
               <p className="text-gray-700">
-                Хөгжин дэвших чин хүсэл эрмэлзэл бүхий найрсаг дотно хамт олон
+                {homeContent.feature_3_description ||
+                  "Хөгжин дэвших чин хүсэл эрмэлзэл бүхий найрсаг дотно хамт олон"}
               </p>
             </div>
-            {/* Feature 4 - from main text */}
+            {/* Feature 4 */}
             <div className="card-responsive text-center bg-white rounded-2xl shadow-lg p-6 flex flex-col items-center hover:shadow-2xl transition-all border border-gray-100">
               <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mb-4">
                 <Lightbulb className="w-8 h-8 text-yellow-500" />
               </div>
               <h3 className="text-xl font-bold text-gray-900 mb-2">
-                Найрсаг багш хамт олон
+                {homeContent.feature_4_title || "Найрсаг багш хамт олон"}
               </h3>
-              <p className="text-gray-700">Элдэв найрсаг багш хамт олон</p>
+              <p className="text-gray-700">
+                {homeContent.feature_4_description ||
+                  "Элдэв найрсаг багш хамт олон"}
+              </p>
             </div>
-            {/* Feature 5 - from main text */}
+            {/* Feature 5 */}
             <div className="card-responsive text-center bg-white rounded-2xl shadow-lg p-6 flex flex-col items-center hover:shadow-2xl transition-all border border-gray-100">
               <div className="w-16 h-16 bg-pink-100 rounded-full flex items-center justify-center mb-4">
                 <Users2 className="w-8 h-8 text-pink-500" />
               </div>
               <h3 className="text-xl font-bold text-gray-900 mb-2">
-                Тухтай тайван суралцах орчин
+                {homeContent.feature_5_title || "Тухтай тайван суралцах орчин"}
               </h3>
               <p className="text-gray-700">
-                Цэвэр, тухтай, тайван суралцах орчин таныг хүлээж байна.
+                {homeContent.feature_5_description ||
+                  "Цэвэр, тухтай, тайван суралцах орчин таныг хүлээж байна."}
               </p>
             </div>
-            {/* Feature 6 - from main text */}
+            {/* Feature 6 */}
             <div className="card-responsive text-center bg-white rounded-2xl shadow-lg p-6 flex flex-col items-center hover:shadow-2xl transition-all border border-gray-100">
               <div className="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mb-4">
                 <Globe className="w-8 h-8 text-indigo-500" />
               </div>
               <h3 className="text-xl font-bold text-gray-900 mb-2">
-                Олон жилийн туршлага
+                {homeContent.feature_6_title || "Олон жилийн туршлага"}
               </h3>
               <p className="text-gray-700">
-                Тохилог тухтай орчин, олон жилийн туршлага
+                {homeContent.feature_6_description ||
+                  "Тохилог тухтай орчин, олон жилийн туршлага"}
               </p>
             </div>
           </div>

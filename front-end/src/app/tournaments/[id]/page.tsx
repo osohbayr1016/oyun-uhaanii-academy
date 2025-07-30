@@ -356,10 +356,6 @@ const TournamentDetailPage = () => {
                     <span>{tournament.location}</span>
                   </div>
                 )}
-                <div className="flex items-center text-gray-600">
-                  <Users className="w-5 h-5 mr-3" />
-                  <span>{tournament.participants?.length || 0} оролцогч</span>
-                </div>
                 {tournament.entryFee && (
                   <div className="flex items-center text-gray-600">
                     <Trophy className="w-5 h-5 mr-3 text-yellow-600" />
@@ -396,31 +392,39 @@ const TournamentDetailPage = () => {
               </div>
             )}
 
+            {/* Register to Tournament */}
+            {tournament.status === "upcoming" && (
+              <div className="bg-white rounded-lg shadow p-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                  Тэмцээнд бүртгүүлэх
+                </h3>
+                <div className="space-y-3">
+                  {tournament.enrollLink ? (
+                    <a
+                      href={tournament.enrollLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block w-full text-center bg-[#F7d401] text-black py-3 px-4 rounded-lg hover:bg-[#f7b501] transition-colors font-medium"
+                    >
+                      Тэмцээнд бүртгүүлэх
+                    </a>
+                  ) : (
+                    <div className="text-center py-3">
+                      <p className="text-gray-600 text-sm">
+                        Бүртгүүлэх линк хараахан нэмэгдээгүй байна
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
             {/* Action Buttons */}
             <div className="bg-white rounded-lg shadow p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">
                 Үйл ажиллагаа
               </h3>
               <div className="space-y-3">
-                {tournament.status === "upcoming" && tournament.enrollLink && (
-                  <a
-                    href={tournament.enrollLink}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="block w-full text-center bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors"
-                  >
-                    Бүртгүүлэх
-                  </a>
-                )}
-                {tournament.status === "upcoming" && !tournament.enrollLink && (
-                  <button
-                    disabled
-                    className="w-full bg-gray-400 text-white py-2 px-4 rounded-lg cursor-not-allowed"
-                  >
-                    Бүртгүүлэх (Google Form линк байхгүй)
-                  </button>
-                )}
-                {tournament.status === "active" && <></>}
                 <Link
                   href="/tournaments"
                   className="block w-full text-center bg-gray-100 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-200 transition-colors"

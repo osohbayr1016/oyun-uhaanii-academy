@@ -1,20 +1,49 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useAuth } from "@/lib/auth";
 
+interface HomeContent {
+  hero_title?: string;
+  hero_subtitle?: string;
+  hero_stats_courses?: string;
+  hero_stats_students?: string;
+  hero_stats_teachers?: string;
+  hero_stats_years?: string;
+}
+
 export default function HeroSection() {
   const { user, isAuthenticated, isAdmin, loading } = useAuth();
+  const [homeContent, setHomeContent] = useState<HomeContent>({});
+  const [contentLoading, setContentLoading] = useState(true);
 
   // Safe function calls with fallbacks
   const isUserAuthenticated =
     typeof isAuthenticated === "function" ? isAuthenticated() : false;
   const isUserAdmin = typeof isAdmin === "function" ? isAdmin() : false;
 
+  useEffect(() => {
+    fetchHomeContent();
+  }, []);
+
+  const fetchHomeContent = async () => {
+    try {
+      const response = await fetch("/api/home-content");
+      if (response.ok) {
+        const data = await response.json();
+        setHomeContent(data);
+      }
+    } catch (error) {
+      console.error("Error fetching home content:", error);
+    } finally {
+      setContentLoading(false);
+    }
+  };
+
   // Don't render auth-dependent content while loading
-  if (loading) {
+  if (loading || contentLoading) {
     return (
       <section className="relative bg-gradient-to-br from-blue-50 to-indigo-100 overflow-hidden">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 lg:py-24">
@@ -37,19 +66,20 @@ export default function HeroSection() {
           {/* Content */}
           <div className="text-center lg:text-left space-y-6">
             <h1 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold text-gray-900 leading-tight">
-              МОНГОЛЫН ОЮУН{" "}
-              <span className="text-[#550080]">УХААНЫ АКАДЕМИ</span>
+              {homeContent.hero_title || "МОНГОЛЫН ОЮУН УХААНЫ АКАДЕМИ"}
             </h1>
             <div className="text-lg sm:text-2xl text-gray-600 max-w-2xl mx-auto lg:mx-0">
-              <p>Сэтгэхүйн хурдыг танд эзэмшүүлж </p>
-              <p>Оюуны хүрдийг дэлхийд таниулна</p>
+              <p>
+                {homeContent.hero_subtitle ||
+                  "Оюуны өндөр чадамжтай дэлхийн иргэнийг бүтээлцэнэ..."}
+              </p>
             </div>
 
             {/* Stats */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6 pt-8 sm:pt-12">
               <div className="text-center">
                 <div className="text-2xl sm:text-3xl font-bold text-[#550080]">
-                  10+
+                  {homeContent.hero_stats_courses || "10+"}
                 </div>
                 <div className="text-sm sm:text-base text-gray-600">
                   Сургалт
@@ -57,19 +87,19 @@ export default function HeroSection() {
               </div>
               <div className="text-center">
                 <div className="text-2xl sm:text-3xl font-bold text-[#550080]">
-                  700+
+                  {homeContent.hero_stats_students || "3000+"}
                 </div>
                 <div className="text-sm sm:text-base text-gray-600">Сурагч</div>
               </div>
               <div className="text-center">
                 <div className="text-2xl sm:text-3xl font-bold text-[#550080]">
-                  10+
+                  {homeContent.hero_stats_teachers || "10+"}
                 </div>
                 <div className="text-sm sm:text-base text-gray-600">Багш</div>
               </div>
               <div className="text-center">
                 <div className="text-2xl sm:text-3xl font-bold text-[#550080]">
-                  5+
+                  {homeContent.hero_stats_years || "5+"}
                 </div>
                 <div className="text-sm sm:text-base text-gray-600">Жил</div>
               </div>

@@ -451,9 +451,13 @@ const AdminProductsPage = () => {
                     >
                       <Edit className="w-4 h-4" />
                     </button>
-                    <button className="text-green-600 hover:text-green-900 p-2">
+                    <Link
+                      href={`/products/${product.id}`}
+                      className="text-green-600 hover:text-green-900 p-2"
+                      title="View Product"
+                    >
                       <Eye className="w-4 h-4" />
-                    </button>
+                    </Link>
                     <button
                       onClick={() => handleDelete(product.id)}
                       className="text-red-600 hover:text-red-900 p-2"

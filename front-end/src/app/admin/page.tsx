@@ -13,6 +13,7 @@ import {
   Edit,
   Trash2,
   Users2,
+  Home,
 } from "lucide-react";
 
 const AdminDashboard = () => {
@@ -140,6 +141,13 @@ const AdminDashboard = () => {
       icon: Users2,
       href: "/admin/club",
       color: "bg-indigo-500",
+    },
+    {
+      title: "Нүүр хуудас",
+      description: "Нүүр хуудасны текст, тоонууд удирдлага",
+      icon: Home,
+      href: "/admin/home-content",
+      color: "bg-teal-500",
     },
     {
       title: "Тохиргоо",

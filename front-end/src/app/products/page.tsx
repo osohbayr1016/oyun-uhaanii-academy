@@ -20,10 +20,25 @@ interface Product {
   updatedAt: string;
 }
 
+const CATEGORIES = [
+  "Кимастер",
+  "Рубик шоо",
+  "Спорт өрөлт",
+  "Ном сурах бичиг",
+  "Бэкгамон",
+  "Бусад",
+];
+
 export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
+  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<string>("");
+  const [priceRange, setPriceRange] = useState<{ min: number; max: number }>({
+    min: 0,
+    max: 1000000,
+  });
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -34,6 +49,7 @@ export default function ProductsPage() {
         }
         const data = await response.json();
         setProducts(data);
+        setFilteredProducts(data);
       } catch (err) {
         setError(
           err instanceof Error ? err.message : "Failed to fetch products"
@@ -45,6 +61,68 @@ export default function ProductsPage() {
 
     fetchProducts();
   }, []);
+
+  useEffect(() => {
+    let filtered = products;
+
+    // Filter by category
+    if (selectedCategory) {
+      filtered = filtered.filter(
+        (product) => product.category === selectedCategory
+      );
+    }
+
+    // Filter by price range
+    filtered = filtered.filter(
+      (product) =>
+        product.price >= priceRange.min && product.price <= priceRange.max
+    );
+
+    setFilteredProducts(filtered);
+  }, [products, selectedCategory, priceRange]);
+
+  const handleCategoryChange = (category: string) => {
+    setSelectedCategory(category === selectedCategory ? "" : category);
+  };
+
+  const handlePriceRangeChange = (type: "min" | "max", value: string) => {
+    const numValue =
+      value === "" ? (type === "min" ? 0 : 1000000) : parseInt(value);
+    setPriceRange((prev) => ({
+      ...prev,
+      [type]: numValue,
+    }));
+  };
+
+  const clearFilters = () => {
+    setSelectedCategory("");
+    setPriceRange({ min: 0, max: 1000000 });
+  };
+
+  const getStatusBadge = (product: Product) => {
+    if (product.stock === 0) {
+      return (
+        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800 border border-red-200">
+          <span className="w-1.5 h-1.5 bg-red-500 rounded-full mr-1.5"></span>
+          {product.stockStatusText || "Дууссан"}
+        </span>
+      );
+    } else if (product.stock < 10) {
+      return (
+        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 border border-yellow-200">
+          <span className="w-1.5 h-1.5 bg-yellow-500 rounded-full mr-1.5"></span>
+          {product.stockStatusText || "Бага нөөц"}
+        </span>
+      );
+    } else {
+      return (
+        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-200">
+          <span className="w-1.5 h-1.5 bg-green-500 rounded-full mr-1.5"></span>
+          {product.stockStatusText || "Бэлэн байгаа"}
+        </span>
+      );
+    }
+  };
 
   if (loading) {
     return (
@@ -86,7 +164,86 @@ export default function ProductsPage() {
           </p>
         </section>
 
-        {products.length === 0 ? (
+        {/* Filters Section */}
+        <section className="mb-8 bg-white rounded-lg shadow-md p-6">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+            <div className="flex-1">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                Шүүлтүүр
+              </h3>
+
+              {/* Category Filters */}
+              <div className="mb-4">
+                <h4 className="text-sm font-medium text-gray-700 mb-2">
+                  Ангилал:
+                </h4>
+                <div className="flex flex-wrap gap-2">
+                  {CATEGORIES.map((category) => (
+                    <button
+                      key={category}
+                      onClick={() => handleCategoryChange(category)}
+                      className={`px-3 py-1 text-sm rounded-full border transition-colors ${
+                        selectedCategory === category
+                          ? "bg-blue-600 text-white border-blue-600"
+                          : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
+                      }`}
+                    >
+                      {category}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Price Range Filter */}
+              <div className="mb-4">
+                <h4 className="text-sm font-medium text-gray-700 mb-2">
+                  Үнийн хязгаар:
+                </h4>
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-2">
+                    <label className="text-sm text-gray-600">Min:</label>
+                    <input
+                      type="number"
+                      value={priceRange.min === 0 ? "" : priceRange.min}
+                      onChange={(e) =>
+                        handlePriceRangeChange("min", e.target.value)
+                      }
+                      className="w-24 px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="0"
+                    />
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <label className="text-sm text-gray-600">Max:</label>
+                    <input
+                      type="number"
+                      value={priceRange.max === 1000000 ? "" : priceRange.max}
+                      onChange={(e) =>
+                        handlePriceRangeChange("max", e.target.value)
+                      }
+                      className="w-24 px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="1000000"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Clear Filters and Results Count */}
+            <div className="flex flex-col items-end gap-2">
+              <button
+                onClick={clearFilters}
+                className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+              >
+                Шүүлтүүр цэвэрлэх
+              </button>
+              <p className="text-sm text-gray-600">
+                {filteredProducts.length} бүтээгдэхүүн олдлоо
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {filteredProducts.length === 0 ? (
           <div className="text-center py-12">
             <h2 className="text-xl font-semibold text-gray-900 mb-2">
               No Products Available
@@ -98,7 +255,7 @@ export default function ProductsPage() {
           </div>
         ) : (
           <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {products
+            {filteredProducts
               .filter(
                 (product) => product.imageUrl && product.imageUrl.trim() !== ""
               )
@@ -126,11 +283,7 @@ export default function ProductsPage() {
                       <span className="text-lg font-bold text-blue-600">
                         {product.price.toLocaleString()} {product.currency}
                       </span>
-                      <span className="text-sm text-gray-500">
-                        {product.stock > 0
-                          ? `${product.stock} in stock`
-                          : "Out of stock"}
-                      </span>
+                      {getStatusBadge(product)}
                     </div>
                     {product.category && (
                       <div className="mt-2">

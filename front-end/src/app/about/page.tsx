@@ -117,11 +117,6 @@ const AboutPage = () => {
 
         <section className="mb-12 sm:mb-16">
           <div className="max-w-6xl mx-auto">
-            <p className="text-base sm:text-lg text-gray-600 mb-6 sm:mb-8 leading-relaxed text-center px-4">
-              Бид тархины спортыг олон нийтэд түгээж, оюуны спортын олон улсын
-              стандартыг Монголд нутагшуулах зорилгоор ажилладаг.
-            </p>
-
             {/* Goals Section with Image */}
             <div className="mb-12 sm:mb-16">
               <div className="grid lg:grid-cols-2 gap-8 sm:gap-12 items-center">
