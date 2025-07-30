@@ -378,6 +378,9 @@ model Club {
   tournamentParticipants String?
   tournamentDetails String?
   tournamentButtonText String?
+  introductionTitle String?
+  introductionContent String?
+  introductionImage String?
   activitiesTitle   String?
   activities        Json?    // Array of activities: [{ imageUrl, title, description }]
   typesTitle        String?

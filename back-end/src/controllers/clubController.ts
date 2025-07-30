@@ -29,6 +29,10 @@ export const getClubContent = async (req: Request, res: Response) => {
           tournamentDetails:
             "Тэмцээний талаарх дэлгэрэнгүй мэдээллийг манай мэдээ болон үйл ажиллагааны хэсгээс авна уу.",
           tournamentButtonText: "Тэмцээний мэдээлэл үзэх",
+          introductionTitle: "КЛУБИЙН ТАНИЛЦУУЛГА",
+          introductionContent:
+            "RedS клуб нь 2020 онд байгуулагдсан бөгөөд Монголын оюуны спортын хөгжүүлэлтийг зорилгоор ажиллаж байна. Манай клуб нь сурагчдын сэтгэхүй, ой тогтоолт, логик сэтгэлгээ, багаар ажиллах чадварыг хөгжүүлэхэд чиглэсэн олон төрлийн үйл ажиллагаа явуулдаг. Бид оюуны спортын олон улсын стандартыг Монголд нутагшуулж, шилдэг тамирчдыг төлөвшүүлэхэд хувь нэмрээ оруулж байна.",
+          introductionImage: "/about3.png",
           activitiesTitle: "КЛУБИЙН ҮЙЛ АЖИЛЛАГАА",
           activities: [
             {
@@ -156,6 +160,9 @@ export const updateClubContent = async (req: Request, res: Response) => {
       tournamentParticipants,
       tournamentDetails,
       tournamentButtonText,
+      introductionTitle,
+      introductionContent,
+      introductionImage,
       activitiesTitle,
       activities,
       typesTitle,
@@ -187,6 +194,9 @@ export const updateClubContent = async (req: Request, res: Response) => {
       !tournamentParticipants &&
       !tournamentDetails &&
       !tournamentButtonText &&
+      !introductionTitle &&
+      !introductionContent &&
+      !introductionImage &&
       !activitiesTitle &&
       !activities &&
       !typesTitle &&
@@ -235,6 +245,11 @@ export const updateClubContent = async (req: Request, res: Response) => {
             "Тэмцээний талаарх дэлгэрэнгүй мэдээллийг манай мэдээ болон үйл ажиллагааны хэсгээс авна уу.",
           tournamentButtonText:
             tournamentButtonText || "Тэмцээний мэдээлэл үзэх",
+          introductionTitle: introductionTitle || "КЛУБИЙН ТАНИЛЦУУЛГА",
+          introductionContent:
+            introductionContent ||
+            "RedS клуб нь 2020 онд байгуулагдсан бөгөөд Монголын оюуны спортын хөгжүүлэлтийг зорилгоор ажиллаж байна. Манай клуб нь сурагчдын сэтгэхүй, ой тогтоолт, логик сэтгэлгээ, багаар ажиллах чадварыг хөгжүүлэхэд чиглэсэн олон төрлийн үйл ажиллагаа явуулдаг. Бид оюуны спортын олон улсын стандартыг Монголд нутагшуулж, шилдэг тамирчдыг төлөвшүүлэхэд хувь нэмрээ оруулж байна.",
+          introductionImage: introductionImage || "/about3.png",
           activitiesTitle: activitiesTitle || "КЛУБИЙН ҮЙЛ АЖИЛЛАГАА",
           activities: activities || [
             {
@@ -350,6 +365,9 @@ export const updateClubContent = async (req: Request, res: Response) => {
           ...(tournamentParticipants && { tournamentParticipants }),
           ...(tournamentDetails && { tournamentDetails }),
           ...(tournamentButtonText && { tournamentButtonText }),
+          ...(introductionTitle && { introductionTitle }),
+          ...(introductionContent && { introductionContent }),
+          ...(introductionImage && { introductionImage }),
           ...(activitiesTitle && { activitiesTitle }),
           ...(activities && { activities }),
           ...(typesTitle && { typesTitle }),

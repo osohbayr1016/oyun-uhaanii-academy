@@ -90,13 +90,57 @@ export default function CoursesPage() {
 
   return (
     <div className="bg-gray-50">
-      <main className="container mx-auto px-4 py-12">
-        <section className="mb-12">
-          <h1 className="text-4xl font-bold text-center mb-4 text-gray-800">
+      <main className="container mx-auto px-4 py-8 sm:py-12">
+        <section className="mb-8 sm:mb-12">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-center mb-4 text-gray-800">
             СУРГАЛТУУД
           </h1>
         </section>
-        <section className="flex flex-col gap-8">
+
+        {/* Filter Controls */}
+        <section className="mb-8">
+          <div className="bg-white rounded-lg shadow-md p-4 sm:p-6">
+            <h2 className="text-lg font-semibold text-gray-800 mb-4">
+              Шүүлтүүр
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Ангилал
+                </label>
+                <select
+                  value={selectedCategory}
+                  onChange={(e) => setSelectedCategory(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                >
+                  {categories.map((category) => (
+                    <option key={category} value={category}>
+                      {category === "all" ? "Бүгд" : category}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Түвшин
+                </label>
+                <select
+                  value={selectedLevel}
+                  onChange={(e) => setSelectedLevel(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                >
+                  {levels.map((level) => (
+                    <option key={level} value={level}>
+                      {level === "all" ? "Бүгд" : level}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="flex flex-col gap-6 sm:gap-8">
           {filteredCourses.length === 0 ? (
             <div className="text-center py-12">
               <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">

@@ -39,6 +39,9 @@ export default function AdminClubPage() {
     useState<string>("");
   const [tournamentDetails, setTournamentDetails] = useState<string>("");
   const [tournamentButtonText, setTournamentButtonText] = useState<string>("");
+  const [introductionTitle, setIntroductionTitle] = useState<string>("");
+  const [introductionContent, setIntroductionContent] = useState<string>("");
+  const [introductionImage, setIntroductionImage] = useState<string>("");
   const [activitiesTitle, setActivitiesTitle] = useState<string>("");
   const [activities, setActivities] = useState<Activity[]>([
     {
@@ -164,6 +167,9 @@ export default function AdminClubPage() {
           setTournamentParticipants(data.data.tournamentParticipants || "");
           setTournamentDetails(data.data.tournamentDetails || "");
           setTournamentButtonText(data.data.tournamentButtonText || "");
+          setIntroductionTitle(data.data.introductionTitle || "");
+          setIntroductionContent(data.data.introductionContent || "");
+          setIntroductionImage(data.data.introductionImage || "");
           setActivitiesTitle(data.data.activitiesTitle || "");
           setActivities(
             data.data.activities || [
@@ -484,6 +490,18 @@ export default function AdminClubPage() {
         updateData.tournamentButtonText = tournamentButtonText.trim();
       }
 
+      if (introductionTitle.trim()) {
+        updateData.introductionTitle = introductionTitle.trim();
+      }
+
+      if (introductionContent.trim()) {
+        updateData.introductionContent = introductionContent.trim();
+      }
+
+      if (introductionImage.trim()) {
+        updateData.introductionImage = introductionImage.trim();
+      }
+
       if (activitiesTitle.trim()) {
         updateData.activitiesTitle = activitiesTitle.trim();
       }
@@ -590,9 +608,9 @@ export default function AdminClubPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-4 sm:py-8">
       <div className="max-w-4xl mx-auto">
-        <h1 className="text-3xl font-bold text-gray-900 mb-8">
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-6 sm:mb-8">
           Клуб хуудасны удирдлага
         </h1>
 
@@ -602,10 +620,10 @@ export default function AdminClubPage() {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-8">
+        <form onSubmit={handleSubmit} className="space-y-6 sm:space-y-8">
           {/* Hero Background Image Section */}
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-xl font-semibold text-gray-800 mb-4">
+          <div className="bg-white rounded-lg shadow-md p-4 sm:p-6">
+            <h2 className="text-lg sm:text-xl font-semibold text-gray-800 mb-4">
               Hero хэсгийн background зураг
             </h2>
 
@@ -643,8 +661,8 @@ export default function AdminClubPage() {
           </div>
 
           {/* Club Logo Section */}
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-xl font-semibold text-gray-800 mb-4">
+          <div className="bg-white rounded-lg shadow-md p-4 sm:p-6">
+            <h2 className="text-lg sm:text-xl font-semibold text-gray-800 mb-4">
               Клубын лого
             </h2>
 
@@ -682,8 +700,8 @@ export default function AdminClubPage() {
           </div>
 
           {/* Motto Section */}
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-xl font-semibold text-gray-800 mb-4">
+          <div className="bg-white rounded-lg shadow-md p-4 sm:p-6">
+            <h2 className="text-lg sm:text-xl font-semibold text-gray-800 mb-4">
               КЛУБИЙН УРИА
             </h2>
 
@@ -703,8 +721,8 @@ export default function AdminClubPage() {
           </div>
 
           {/* Mission Section */}
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-xl font-semibold text-gray-800 mb-4">
+          <div className="bg-white rounded-lg shadow-md p-4 sm:p-6">
+            <h2 className="text-lg sm:text-xl font-semibold text-gray-800 mb-4">
               КЛУБИЙН ЗОРИЛГО
             </h2>
 
@@ -778,9 +796,69 @@ export default function AdminClubPage() {
             </div>
           </div>
 
+          {/* Introduction Section */}
+          <div className="bg-white rounded-lg shadow-md p-4 sm:p-6">
+            <h2 className="text-lg sm:text-xl font-semibold text-gray-800 mb-4">
+              КЛУБИЙН ТАНИЛЦУУЛГА
+            </h2>
+
+            <div className="space-y-6">
+              {/* Introduction Title */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Хэсгийн гарчиг
+                </label>
+                <input
+                  type="text"
+                  value={introductionTitle}
+                  onChange={(e) => setIntroductionTitle(e.target.value)}
+                  className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="КЛУБИЙН ТАНИЛЦУУЛГА"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Клубын танилцуулгын хэсгийн гарчиг
+                </p>
+              </div>
+
+              {/* Introduction Content */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Клубын танилцуулга
+                </label>
+                <textarea
+                  value={introductionContent}
+                  onChange={(e) => setIntroductionContent(e.target.value)}
+                  rows={6}
+                  className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="RedS клуб нь 2020 онд байгуулагдсан бөгөөд Монголын оюуны спортын хөгжүүлэлтийг зорилгоор ажиллаж байна..."
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Клубын танилцуулгын дэлгэрэнгүй агуулга
+                </p>
+              </div>
+
+              {/* Introduction Image */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Зургийн URL
+                </label>
+                <input
+                  type="url"
+                  value={introductionImage}
+                  onChange={(e) => setIntroductionImage(e.target.value)}
+                  className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="https://example.com/introduction-image.jpg"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Танилцуулгын хэсгийн зургийн URL хаяг
+                </p>
+              </div>
+            </div>
+          </div>
+
           {/* Tournament Section */}
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-xl font-semibold text-gray-800 mb-4">
+          <div className="bg-white rounded-lg shadow-md p-4 sm:p-6">
+            <h2 className="text-lg sm:text-xl font-semibold text-gray-800 mb-4">
               КЛУБИЙН НЭРЭМЖИТ ТЭМЦЭЭНҮҮД
             </h2>
 
@@ -964,7 +1042,7 @@ export default function AdminClubPage() {
                         )}
                       </div>
 
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">
                             Зургийн URL
@@ -1528,7 +1606,7 @@ export default function AdminClubPage() {
 
             <div className="space-y-8">
               {/* Hero Section Preview */}
-              <div className="relative w-full h-64 bg-gradient-to-br from-blue-50 to-indigo-100 rounded-lg overflow-hidden">
+              <div className="relative w-full h-48 sm:h-64 bg-gradient-to-br from-blue-50 to-indigo-100 rounded-lg overflow-hidden">
                 <Image
                   src={heroBackgroundImage}
                   alt="Hero Background"
@@ -1537,9 +1615,9 @@ export default function AdminClubPage() {
                 />
                 <div className="absolute inset-0 bg-gradient-to-b from-white/80 via-white/60 to-white/10" />
 
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="text-center">
-                    <div className="relative w-24 h-24 mx-auto mb-4">
+                <div className="absolute inset-0 flex items-center justify-center p-4">
+                  <div className="text-center w-full">
+                    <div className="relative w-16 h-16 sm:w-24 sm:h-24 mx-auto mb-2 sm:mb-4">
                       <Image
                         src={clubLogo}
                         alt="Club Logo"
@@ -1547,35 +1625,39 @@ export default function AdminClubPage() {
                         className="object-contain"
                       />
                     </div>
-                    <h1 className="text-2xl font-bold text-gray-900 drop-shadow-md">
+                    <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 drop-shadow-md">
                       RedS <span className="text-[#550080]">Клуб</span>
                     </h1>
 
                     {/* Preview Motto and Mission */}
-                    <div className="mt-4 space-y-2">
+                    <div className="mt-2 sm:mt-4 space-y-1 sm:space-y-2">
                       {motto && (
                         <div>
-                          <h3 className="text-sm font-bold text-[#550080]">
+                          <h3 className="text-xs sm:text-sm font-bold text-[#550080]">
                             КЛУБИЙН УРИА
                           </h3>
-                          <p className="text-xs text-gray-800">{motto}</p>
+                          <p className="text-xs text-gray-800 line-clamp-2">
+                            {motto}
+                          </p>
                         </div>
                       )}
                       {mission && (
                         <div>
-                          <h3 className="text-sm font-bold text-[#550080]">
+                          <h3 className="text-xs sm:text-sm font-bold text-[#550080]">
                             КЛУБИЙН ЗОРИЛГО
                           </h3>
-                          <p className="text-xs text-gray-800">{mission}</p>
+                          <p className="text-xs text-gray-800 line-clamp-2">
+                            {mission}
+                          </p>
                         </div>
                       )}
                     </div>
 
                     {/* Preview Stats */}
-                    <div className="mt-4 grid grid-cols-3 gap-4">
+                    <div className="mt-2 sm:mt-4 grid grid-cols-3 gap-2 sm:gap-4">
                       {athletesCount && (
                         <div className="text-center">
-                          <div className="text-lg font-bold text-[#550080]">
+                          <div className="text-sm sm:text-lg font-bold text-[#550080]">
                             {athletesCount}
                           </div>
                           <div className="text-xs text-gray-700">Тамирчид</div>
@@ -1583,7 +1665,7 @@ export default function AdminClubPage() {
                       )}
                       {typesCount && (
                         <div className="text-center">
-                          <div className="text-lg font-bold text-[#550080]">
+                          <div className="text-sm sm:text-lg font-bold text-[#550080]">
                             {typesCount}
                           </div>
                           <div className="text-xs text-gray-700">Төрөл</div>
@@ -1591,7 +1673,7 @@ export default function AdminClubPage() {
                       )}
                       {coachesCount && (
                         <div className="text-center">
-                          <div className="text-lg font-bold text-[#550080]">
+                          <div className="text-sm sm:text-lg font-bold text-[#550080]">
                             {coachesCount}
                           </div>
                           <div className="text-xs text-gray-700">

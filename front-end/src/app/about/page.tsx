@@ -63,16 +63,16 @@ const AboutPage = () => {
 
   return (
     <div className="bg-gradient-to-br from-blue-50 to-indigo-100">
-      <main className="container mx-auto px-4 py-12">
+      <main className="container mx-auto px-4 py-8 sm:py-12">
         {/* Hero Section with Photo */}
-        <section className="mb-16">
+        <section className="mb-12 sm:mb-16">
           <div className="max-w-6xl mx-auto">
-            <div className="grid lg:grid-cols-2 gap-12 items-center mb-12">
+            <div className="grid lg:grid-cols-2 gap-8 sm:gap-12 items-center mb-8 sm:mb-12">
               <div>
-                <h1 className="text-4xl font-bold mb-6 text-gray-800">
+                <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 sm:mb-6 text-gray-800">
                   {content.hero?.title || "Бидний тухай"}
                 </h1>
-                <p className="text-lg text-gray-600 leading-relaxed">
+                <p className="text-base sm:text-lg text-gray-600 leading-relaxed">
                   {content.hero?.content ||
                     "Монголын Оюун Ухааны Холбооны Officer салбар нь хүүхэд, өсвөр үеийнхний сэтгэн бодох чадвар, анхаарал төвлөрөл, ой тогтоолтыг хөгжүүлэхэд чиглэсэн мэргэжлийн сургалтуудыг санал болгодог."}
                 </p>
@@ -115,18 +115,18 @@ const AboutPage = () => {
           </div>
         </section>
 
-        <section className="mb-16">
+        <section className="mb-12 sm:mb-16">
           <div className="max-w-6xl mx-auto">
-            <p className="text-lg text-gray-600 mb-8 leading-relaxed text-center">
+            <p className="text-base sm:text-lg text-gray-600 mb-6 sm:mb-8 leading-relaxed text-center px-4">
               Бид тархины спортыг олон нийтэд түгээж, оюуны спортын олон улсын
               стандартыг Монголд нутагшуулах зорилгоор ажилладаг.
             </p>
 
             {/* Goals Section with Image */}
-            <div className="mb-16">
-              <div className="grid lg:grid-cols-2 gap-12 items-center">
-                <div className="bg-white p-8 rounded-lg shadow-md">
-                  <h3 className="text-2xl font-semibold mb-6 text-gray-800">
+            <div className="mb-12 sm:mb-16">
+              <div className="grid lg:grid-cols-2 gap-8 sm:gap-12 items-center">
+                <div className="bg-white p-6 sm:p-8 rounded-lg shadow-md">
+                  <h3 className="text-xl sm:text-2xl font-semibold mb-4 sm:mb-6 text-gray-800">
                     {content.goals?.title || "Бидний зорилго"}
                   </h3>
                   <p className="text-gray-600 leading-relaxed">

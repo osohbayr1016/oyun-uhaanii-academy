@@ -138,7 +138,7 @@ export default function Footer() {
             <ul className="space-y-2">
               <li>
                 <Link
-                  href="/contact"
+                  href="/about"
                   className="text-gray-300 hover:text-white transition-colors text-sm"
                 >
                   Холбоо барих
@@ -151,22 +151,6 @@ export default function Footer() {
                 >
                   Бидний тухай
                 </Link>
-              </li>
-              <li>
-                <a
-                  href="#"
-                  className="text-gray-300 hover:text-white transition-colors text-sm"
-                >
-                  Тусламж
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#"
-                  className="text-gray-300 hover:text-white transition-colors text-sm"
-                >
-                  Нөхцөл
-                </a>
               </li>
             </ul>
           </div>

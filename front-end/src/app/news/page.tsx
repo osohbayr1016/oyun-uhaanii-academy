@@ -129,13 +129,13 @@ export default function NewsPage() {
 
   return (
     <div className="bg-gradient-to-br from-blue-50 to-indigo-100">
-      <div className="container mx-auto px-4 py-12">
+      <div className="container mx-auto px-4 py-8 sm:py-12">
         {/* Header */}
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-800 mb-4">
+        <div className="text-center mb-8 sm:mb-12">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-800 mb-4">
             МЭДЭЭ, МЭДЭЭЛЭЛ
           </h1>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+          <p className="text-base sm:text-lg text-gray-600 max-w-2xl mx-auto px-4">
             Монголын оюун ухааны академийн хамгийн сүүлийн үеийн мэдээ,
             мэдээлэл, арга хэмжээний талаарх мэдээллүүд.
           </p>
@@ -151,7 +151,7 @@ export default function NewsPage() {
             <p className="text-gray-500">Удахгүй шинэ мэдээ нэмэгдэх болно.</p>
           </div>
         ) : (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
             {news.map((article) => (
               <article
                 key={article.id}
@@ -205,27 +205,27 @@ export default function NewsPage() {
         )}
 
         {/* Newsletter Signup */}
-        <div className="mt-16 bg-white rounded-xl shadow-lg p-8 text-center">
-          <h2 className="text-2xl font-bold text-gray-800 mb-4">
+        <div className="mt-12 sm:mt-16 bg-white rounded-xl shadow-lg p-6 sm:p-8 text-center">
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-4">
             Мэдээний жагсаалтад бүртгүүлэх
           </h2>
           <p className="text-gray-600 mb-6">
             Шинэ мэдээ, арга хэмжээний мэдээллийг имэйлээр хүлээн аваарай.
           </p>
           <form onSubmit={handleSubscribe} className="max-w-md mx-auto">
-            <div className="flex">
+            <div className="flex flex-col sm:flex-row">
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Имэйл хаягаа оруулна уу"
-                className="flex-1 px-4 py-3 border border-gray-300 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="flex-1 px-4 py-3 border border-gray-300 sm:rounded-l-lg sm:rounded-r-none rounded-t-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 disabled={subscribeStatus === "loading"}
               />
               <button
                 type="submit"
                 disabled={subscribeStatus === "loading"}
-                className="bg-[#550080] text-white px-6 py-3 rounded-r-lg hover:bg-[#550080] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="bg-[#550080] text-white px-6 py-3 sm:rounded-r-lg sm:rounded-l-none rounded-b-lg hover:bg-[#550080] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {subscribeStatus === "loading" ? (
                   <div className="flex items-center">

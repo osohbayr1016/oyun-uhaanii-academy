@@ -34,6 +34,10 @@ const ClubPage = () => {
     tournamentDetails:
       "Тэмцээний талаарх дэлгэрэнгүй мэдээллийг манай мэдээ болон үйл ажиллагааны хэсгээс авна уу.",
     tournamentButtonText: "Тэмцээний мэдээлэл үзэх",
+    introductionTitle: "КЛУБИЙН ТАНИЛЦУУЛГА",
+    introductionContent:
+      "RedS клуб нь 2020 онд байгуулагдсан бөгөөд Монголын оюуны спортын хөгжүүлэлтийг зорилгоор ажиллаж байна. Манай клуб нь сурагчдын сэтгэхүй, ой тогтоолт, логик сэтгэлгээ, багаар ажиллах чадварыг хөгжүүлэхэд чиглэсэн олон төрлийн үйл ажиллагаа явуулдаг. Бид оюуны спортын олон улсын стандартыг Монголд нутагшуулж, шилдэг тамирчдыг төлөвшүүлэхэд хувь нэмрээ оруулж байна.",
+    introductionImage: "/about3.png",
     activitiesTitle: "КЛУБИЙН ҮЙЛ АЖИЛЛАГАА",
     activities: [
       {
@@ -162,6 +166,12 @@ const ClubPage = () => {
                 "Тэмцээний талаарх дэлгэрэнгүй мэдээллийг манай мэдээ болон үйл ажиллагааны хэсгээс авна уу.",
               tournamentButtonText:
                 data.data.tournamentButtonText || "Тэмцээний мэдээлэл үзэх",
+              introductionTitle:
+                data.data.introductionTitle || "КЛУБИЙН ТАНИЛЦУУЛГА",
+              introductionContent:
+                data.data.introductionContent ||
+                "RedS клуб нь 2020 онд байгуулагдсан бөгөөд Монголын оюуны спортын хөгжүүлэлтийг зорилгоор ажиллаж байна. Манай клуб нь сурагчдын сэтгэхүй, ой тогтоолт, логик сэтгэлгээ, багаар ажиллах чадварыг хөгжүүлэхэд чиглэсэн олон төрлийн үйл ажиллагаа явуулдаг. Бид оюуны спортын олон улсын стандартыг Монголд нутагшуулж, шилдэг тамирчдыг төлөвшүүлэхэд хувь нэмрээ оруулж байна.",
+              introductionImage: data.data.introductionImage || "/about3.png",
               activitiesTitle:
                 data.data.activitiesTitle || "КЛУБИЙН ҮЙЛ АЖИЛЛАГАА",
               activities: data.data.activities || [
@@ -352,13 +362,13 @@ const ClubPage = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
             <div className="text-center lg:text-left space-y-8">
               <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 leading-tight drop-shadow-md mb-4">
-                RedS <span className="text-[#550080]">Клуб</span>
+                RedS <span className="text-[#550080]">КЛУБ</span>
               </h1>
               {/* Motto and Mission */}
               <div className="flex flex-col md:flex-row gap-8 items-center justify-center md:justify-start">
                 <div className="flex-1 text-center md:text-left">
                   <h3 className="text-xl font-bold text-[#550080] mb-2">
-                    КЛУБИЙН УРИА
+                    БИДНИЙ УРИА
                   </h3>
                   <p className="text-gray-800 text-lg drop-shadow-sm">
                     "{clubContent.motto}"
@@ -366,7 +376,7 @@ const ClubPage = () => {
                 </div>
                 <div className="flex-1 text-center md:text-left">
                   <h3 className="text-xl font-bold text-[#550080] mb-2">
-                    КЛУБИЙН ЗОРИЛГО
+                    БИДНИЙ ЗОРИЛГО
                   </h3>
                   <p className="text-gray-800 text-lg drop-shadow-sm">
                     {clubContent.mission}
@@ -408,15 +418,42 @@ const ClubPage = () => {
                 alt="Клубын лого"
                 width={350}
                 height={200}
-                className="mx-auto w-auto h-48 sm:h-64 object-contain rounded-2xl shadow bg-white/80 border border-gray-200"
+                className="mx-auto w-auto h-48 sm:h-64 object-contain "
                 style={{ zIndex: 2 }}
               />
             </div>
           </div>
         </div>
       </section>
+
+      {/* Club Introduction Section */}
+      <section className="container mx-auto px-4 pb-8 mt-16">
+        <div className="bg-white rounded-xl shadow-lg p-6 sm:p-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+            <div>
+              <h2 className="text-2xl sm:text-3xl font-bold text-[#550080] mb-6">
+                {clubContent.introductionTitle}
+              </h2>
+              <p className="text-gray-700 text-base sm:text-lg leading-relaxed">
+                {clubContent.introductionContent}
+              </p>
+            </div>
+            <div className="flex justify-center">
+              <div className="relative w-full max-w-md">
+                <img
+                  src={clubContent.introductionImage}
+                  alt="Клубын танилцуулга"
+                  className="w-full h-64 sm:h-80 object-cover rounded-xl shadow-lg"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent rounded-xl"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Regular Tournaments Section */}
-      <section className="container mx-auto px-4 pb-8 mt-20">
+      <section className="container mx-auto px-4 pb-8 mt-16">
         <div className="bg-white rounded-xl shadow p-8 flex flex-col items-center">
           <h2 className="text-2xl sm:text-3xl font-bold text-[#550080] mb-4 text-center">
             {clubContent.tournamentTitle}
@@ -425,10 +462,10 @@ const ClubPage = () => {
             {clubContent.tournamentDescription}
           </p>
           <div className="bg-gradient-to-r from-blue-50 to-indigo-100 border-l-4 border-[#550080] rounded-lg p-6 w-full max-w-xl mb-4">
-            <div className="font-semibold text-[#550080] text-xl mb-2">
-              "{clubContent.tournamentName}" тэмцээн
+            <div className="font-semibold text-[#550080] text-xl mb-2 text-center">
+              "{clubContent.tournamentName}"
             </div>
-            <div className="text-gray-700 mb-1">
+            <div className="text-gray-700 mb-1 ">
               Зохиогдох давтамж:{" "}
               <span className="font-medium">
                 {clubContent.tournamentFrequency}
@@ -492,7 +529,7 @@ const ClubPage = () => {
               <img
                 src={type.imageUrl}
                 alt={type.title}
-                className="w-16 h-16 mb-3"
+                className="w-28 h-28 "
               />
               <div className="font-semibold text-[#550080] text-lg mb-1">
                 {type.title}

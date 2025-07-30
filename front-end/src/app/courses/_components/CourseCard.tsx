@@ -42,7 +42,7 @@ export default function CourseCard({ course }: CourseCardProps) {
       </div>
       <div className="flex-1 flex flex-col justify-between p-6">
         <div>
-          <h3 className="text-[40px] font-black text-gray-900 mb-2 leading-tight">
+          <h3 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-black text-gray-900 mb-2 leading-tight">
             {course.title}
           </h3>
           <p className="text-base text-gray-700 mb-6">{course.description}</p>
