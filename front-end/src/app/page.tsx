@@ -38,11 +38,24 @@ export default function HomePage() {
   useEffect(() => {
     const fetchImages = async () => {
       setLoading(true);
-      const res = await fetch("/api/carousel");
-      const data = await res.json();
-      setCarouselImages(data);
-      setLoading(false);
-      setCurrent(0);
+      try {
+        const res = await fetch("/api/carousel");
+        const data = await res.json();
+        
+        // Check if data is an array, if not, set empty array
+        if (Array.isArray(data)) {
+          setCarouselImages(data);
+        } else {
+          console.error("Carousel API returned non-array data:", data);
+          setCarouselImages([]);
+        }
+      } catch (error) {
+        console.error("Error fetching carousel images:", error);
+        setCarouselImages([]);
+      } finally {
+        setLoading(false);
+        setCurrent(0);
+      }
     };
     fetchImages();
   }, []);

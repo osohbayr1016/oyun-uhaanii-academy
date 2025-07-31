@@ -223,21 +223,27 @@ async function main() {
     ],
     skipDuplicates: true,
   });
-
-  // Add sample course categories
-  await prisma.courseCategory.createMany({
-    data: [{ name: "Програмчлал" }, { name: "Дизайн" }],
-    skipDuplicates: true,
-  });
-
-  // Add sample course levels
-  await prisma.courseLevel.createMany({
-    data: [{ name: "Эхлэгч" }, { name: "Дунд" }],
+  // Add sample carousel images
+  await prisma.carouselImage.createMany({
+    data: [
+      {
+        imageUrl:
+          "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&h=600&fit=crop",
+      },
+      {
+        imageUrl:
+          "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800&h=600&fit=crop",
+      },
+      {
+        imageUrl:
+          "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=800&h=600&fit=crop",
+      },
+    ],
     skipDuplicates: true,
   });
 
   console.log(
-    "Seeded admin, users, courses, products, tournaments, news, categories, levels."
+    "Seeded admin, users, courses, products, tournaments, news, categories, levels, carousel images."
   );
 }
 
