@@ -224,7 +224,21 @@ async function main() {
     skipDuplicates: true,
   });
 
-  console.log("Seeded admin, users, courses, products, tournaments, news.");
+  // Add sample course categories
+  await prisma.courseCategory.createMany({
+    data: [{ name: "Програмчлал" }, { name: "Дизайн" }],
+    skipDuplicates: true,
+  });
+
+  // Add sample course levels
+  await prisma.courseLevel.createMany({
+    data: [{ name: "Эхлэгч" }, { name: "Дунд" }],
+    skipDuplicates: true,
+  });
+
+  console.log(
+    "Seeded admin, users, courses, products, tournaments, news, categories, levels."
+  );
 }
 
 main()

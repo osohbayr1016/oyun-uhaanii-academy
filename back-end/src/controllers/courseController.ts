@@ -135,6 +135,7 @@ export const createCourse = async (req: Request, res: Response) => {
       goal,
       target,
       structure,
+      courseMaterials,
       enrollLink,
     } = req.body;
 
@@ -175,6 +176,7 @@ export const createCourse = async (req: Request, res: Response) => {
         goal,
         target,
         structure,
+        courseMaterials,
         enrollLink,
       },
     });
@@ -221,6 +223,7 @@ export const updateCourse = async (req: Request, res: Response) => {
       goal,
       target,
       structure,
+      courseMaterials,
       enrollLink,
     } = req.body;
 
@@ -257,6 +260,7 @@ export const updateCourse = async (req: Request, res: Response) => {
         goal,
         target,
         structure,
+        courseMaterials,
         enrollLink,
       },
     });

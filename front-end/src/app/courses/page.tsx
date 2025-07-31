@@ -25,6 +25,8 @@ export default function CoursesPage() {
 
   useEffect(() => {
     fetchCourses();
+    fetchCategories();
+    fetchLevels();
   }, []);
 
   const fetchCourses = async () => {
@@ -35,6 +37,26 @@ export default function CoursesPage() {
       setError(err?.message || "An error occurred");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchCategories = async () => {
+    try {
+      const response = await axios.get("/api/course-filters/categories");
+      const categoryNames = response.data.map((cat: any) => cat.name);
+      setCategories(["all", ...categoryNames]);
+    } catch (err: any) {
+      console.error("Error fetching categories:", err);
+    }
+  };
+
+  const fetchLevels = async () => {
+    try {
+      const response = await axios.get("/api/course-filters/levels");
+      const levelNames = response.data.map((level: any) => level.name);
+      setLevels(["all", ...levelNames]);
+    } catch (err: any) {
+      console.error("Error fetching levels:", err);
     }
   };
 
@@ -50,8 +72,8 @@ export default function CoursesPage() {
     }
   };
 
-  const categories = ["all", "Тоглоом", "Урлаг", "Соёл", "Түүх"];
-  const levels = ["all", "Эхлэгч", "Дунд", "Дээд"];
+  const [categories, setCategories] = useState<string[]>(["all"]);
+  const [levels, setLevels] = useState<string[]>(["all"]);
 
   const filteredCourses = courses.filter((course) => {
     const categoryMatch =

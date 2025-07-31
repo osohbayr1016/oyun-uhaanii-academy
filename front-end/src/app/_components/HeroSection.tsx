@@ -69,7 +69,7 @@ export default function HeroSection() {
               {homeContent.hero_title || "МОНГОЛЫН ОЮУН УХААНЫ АКАДЕМИ"}
             </h1>
             <div className="text-lg sm:text-2xl text-gray-600 max-w-2xl mx-auto lg:mx-0">
-              <p>
+              <p className="whitespace-pre-line">
                 {homeContent.hero_subtitle ||
                   "Оюуны өндөр чадамжтай дэлхийн иргэнийг бүтээлцэнэ..."}
               </p>

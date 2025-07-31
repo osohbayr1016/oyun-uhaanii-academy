@@ -19,6 +19,7 @@ import {
   Mail,
   Info,
   Image,
+  Filter,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import ProtectedRoute from "@/components/ProtectedRoute";
@@ -92,6 +93,12 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
       href: "/admin/about",
       icon: Info,
       current: pathname === "/admin/about",
+    },
+    {
+      name: "Сургалтын шүүлтүүрүүд",
+      href: "/admin/course-filters",
+      icon: Filter,
+      current: pathname === "/admin/course-filters",
     },
     {
       name: "Тохиргоо",

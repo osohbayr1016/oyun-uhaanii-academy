@@ -228,6 +228,14 @@ export default function CourseDetailsPage() {
           </div>
           <div>
             <h2 className="text-2xl font-bold mb-2 text-[#550080]">
+              Сургалтад дагалдах зүйлс
+            </h2>
+            <p className="text-gray-700 whitespace-pre-line">
+              {course.courseMaterials || "Мэдээлэл байхгүй."}
+            </p>
+          </div>
+          <div>
+            <h2 className="text-2xl font-bold mb-2 text-[#550080]">
               Хэнд зориулагдсан бэ?
             </h2>
             <p className="text-gray-700 whitespace-pre-line">

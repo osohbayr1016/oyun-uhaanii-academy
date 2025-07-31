@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 const AddCourse = () => {
   const [form, setForm] = useState({
@@ -11,7 +11,7 @@ const AddCourse = () => {
     price: "",
     currency: "MNT",
     duration: "",
-    level: "Эхлэгч",
+    level: "",
     category: "",
     instructor: "",
     youtubeUrl: "",
@@ -19,8 +19,45 @@ const AddCourse = () => {
     goal: "",
     target: "",
     structure: "",
+    courseMaterials: "",
     enrollLink: "",
   });
+
+  const [categories, setCategories] = useState<string[]>([]);
+  const [levels, setLevels] = useState<string[]>([]);
+
+  useEffect(() => {
+    fetchCategories();
+    fetchLevels();
+  }, []);
+
+  const fetchCategories = async () => {
+    try {
+      const response = await fetch("/api/course-filters/categories");
+      if (response.ok) {
+        const data = await response.json();
+        const categoryNames = data.map((cat: any) => cat.name);
+        console.log("Fetched categories:", categoryNames);
+        setCategories(categoryNames);
+      }
+    } catch (error) {
+      console.error("Error fetching categories:", error);
+    }
+  };
+
+  const fetchLevels = async () => {
+    try {
+      const response = await fetch("/api/course-filters/levels");
+      if (response.ok) {
+        const data = await response.json();
+        const levelNames = data.map((level: any) => level.name);
+        console.log("Fetched levels:", levelNames);
+        setLevels(levelNames);
+      }
+    } catch (error) {
+      console.error("Error fetching levels:", error);
+    }
+  };
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -61,7 +98,7 @@ const AddCourse = () => {
         price: "",
         currency: "MNT",
         duration: "",
-        level: "Эхлэгч",
+        level: "",
         category: "",
         instructor: "",
         youtubeUrl: "",
@@ -69,6 +106,7 @@ const AddCourse = () => {
         goal: "",
         target: "",
         structure: "",
+        courseMaterials: "",
         enrollLink: "",
       });
     } catch (error) {
@@ -81,6 +119,7 @@ const AddCourse = () => {
     }
   };
 
+  console.log("Form render - categories:", categories, "levels:", levels);
   return (
     <form onSubmit={handleSubmit} className="max-w-xl mx-auto space-y-4 p-6">
       <h2 className="text-2xl font-bold">Шинэ хичээл нэмэх</h2>
@@ -152,20 +191,28 @@ const AddCourse = () => {
         className="w-full border p-2 rounded"
         required
       >
-        <option value="Эхлэгч">Эхлэгч</option>
-        <option value="Дунд">Дунд</option>
-        <option value="Дээд">Дээд</option>
+        <option value="">Түвшин сонгох</option>
+        {levels.map((level) => (
+          <option key={level} value={level}>
+            {level}
+          </option>
+        ))}
       </select>
 
-      <input
-        type="text"
+      <select
         name="category"
-        placeholder="Ангилал"
         value={form.category}
         onChange={handleChange}
         className="w-full border p-2 rounded"
         required
-      />
+      >
+        <option value="">Ангилал сонгох</option>
+        {categories.map((category) => (
+          <option key={category} value={category}>
+            {category}
+          </option>
+        ))}
+      </select>
 
       <input
         type="text"
@@ -215,6 +262,14 @@ const AddCourse = () => {
         name="structure"
         placeholder="Сургалтын бүтэц"
         value={form.structure}
+        onChange={handleChange}
+        className="w-full border p-2 rounded"
+      />
+
+      <textarea
+        name="courseMaterials"
+        placeholder="Сургалтад дагалдах зүйлс"
+        value={form.courseMaterials}
         onChange={handleChange}
         className="w-full border p-2 rounded"
       />

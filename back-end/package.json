@@ -23,7 +23,8 @@
     "newsletter:send": "ts-node scripts/sendWeeklyNewsletter.ts",
     "check-users": "ts-node scripts/checkUserRole.ts",
     "make-admin": "ts-node scripts/checkUserRole.ts make-admin",
-    "test-email": "ts-node scripts/testEmail.ts"
+    "test-email": "ts-node scripts/testEmail.ts",
+    "reset-categories": "ts-node scripts/resetCategoriesLevels.ts"
   },
   "prisma": {
     "seed": "ts-node prisma/seed.ts"

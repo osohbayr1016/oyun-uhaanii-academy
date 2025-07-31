@@ -42,6 +42,7 @@ interface Course {
   goal?: string | null;
   target?: string | null;
   structure?: string | null;
+  courseMaterials?: string | null;
   enrollLink?: string | null;
 }
 
@@ -59,11 +60,21 @@ interface CourseFormData {
   maxStudents: string;
   startDate: string;
   endDate: string;
+  youtubeUrl: string;
+  heroImage: string;
+  goal: string;
+  target: string;
+  structure: string;
+  courseMaterials: string;
+  enrollLink: string;
 }
 
 const AdminCoursesPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterLevel, setFilterLevel] = useState("all");
+  const [filterCategory, setFilterCategory] = useState("all");
+  const [categories, setCategories] = useState<string[]>(["all"]);
+  const [levels, setLevels] = useState<string[]>(["all"]);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
@@ -88,6 +99,7 @@ const AdminCoursesPage = () => {
     goal: "",
     target: "",
     structure: "",
+    courseMaterials: "",
     enrollLink: "",
   });
   const [submitting, setSubmitting] = useState(false);
@@ -97,6 +109,8 @@ const AdminCoursesPage = () => {
   // Fetch courses on component mount
   useEffect(() => {
     fetchCourses();
+    fetchCategories();
+    fetchLevels();
   }, []);
 
   // When a course is selected for editing, populate the edit form data
@@ -125,6 +139,7 @@ const AdminCoursesPage = () => {
         goal: selectedCourse.goal || "",
         target: selectedCourse.target || "",
         structure: selectedCourse.structure || "",
+        courseMaterials: selectedCourse.courseMaterials || "",
         enrollLink: selectedCourse.enrollLink || "",
       });
     }
@@ -142,6 +157,32 @@ const AdminCoursesPage = () => {
       console.error("Error fetching courses:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchCategories = async () => {
+    try {
+      const response = await fetch("/api/course-filters/categories");
+      if (response.ok) {
+        const data = await response.json();
+        const categoryNames = data.map((cat: any) => cat.name);
+        setCategories(["all", ...categoryNames]);
+      }
+    } catch (error) {
+      console.error("Error fetching categories:", error);
+    }
+  };
+
+  const fetchLevels = async () => {
+    try {
+      const response = await fetch("/api/course-filters/levels");
+      if (response.ok) {
+        const data = await response.json();
+        const levelNames = data.map((level: any) => level.name);
+        setLevels(["all", ...levelNames]);
+      }
+    } catch (error) {
+      console.error("Error fetching levels:", error);
     }
   };
 
@@ -168,11 +209,16 @@ const AdminCoursesPage = () => {
         content: formData.description, // Using description as content
         imageUrl: formData.imageUrl,
         price: "0", // Send as string to satisfy backend validation
+        level: formData.level || null,
+        category: formData.category || null,
+        instructor: formData.instructor || null,
+        duration: formData.duration ? parseInt(formData.duration) : null,
         youtubeUrl: formData.youtubeUrl || null,
         heroImage: formData.heroImage || null,
         goal: formData.goal || null,
         target: formData.target || null,
         structure: formData.structure || null,
+        courseMaterials: formData.courseMaterials || null,
         enrollLink: formData.enrollLink || null,
       };
 
@@ -213,6 +259,7 @@ const AdminCoursesPage = () => {
         goal: "",
         target: "",
         structure: "",
+        courseMaterials: "",
         enrollLink: "",
       });
     } catch (error) {
@@ -254,6 +301,7 @@ const AdminCoursesPage = () => {
         goal: formData.goal || null,
         target: formData.target || null,
         structure: formData.structure || null,
+        courseMaterials: formData.courseMaterials || null,
         enrollLink: formData.enrollLink || null,
       };
 
@@ -312,7 +360,9 @@ const AdminCoursesPage = () => {
       course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       course.description.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesLevel = filterLevel === "all" || course.level === filterLevel;
-    return matchesSearch && matchesLevel;
+    const matchesCategory =
+      filterCategory === "all" || course.category === filterCategory;
+    return matchesSearch && matchesLevel && matchesCategory;
   });
 
   const getLevelBadge = (level: string) => {
@@ -402,14 +452,26 @@ const AdminCoursesPage = () => {
             </div>
             <div className="flex gap-4">
               <select
+                value={filterCategory}
+                onChange={(e) => setFilterCategory(e.target.value)}
+                className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                {categories.map((category) => (
+                  <option key={category} value={category}>
+                    {category === "all" ? "Бүх ангилал" : category}
+                  </option>
+                ))}
+              </select>
+              <select
                 value={filterLevel}
                 onChange={(e) => setFilterLevel(e.target.value)}
                 className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
-                <option value="all">Бүх түвшин</option>
-                <option value="Эхлэгч">Эхлэгч</option>
-                <option value="Дунд">Дунд</option>
-                <option value="Дээд">Дээд</option>
+                {levels.map((level) => (
+                  <option key={level} value={level}>
+                    {level === "all" ? "Бүх түвшин" : level}
+                  </option>
+                ))}
               </select>
             </div>
           </div>
@@ -543,6 +605,46 @@ const AdminCoursesPage = () => {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
+                    Ангилал
+                  </label>
+                  <select
+                    name="category"
+                    value={formData.category}
+                    onChange={handleInputChange}
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="">Ангилал сонгох</option>
+                    {categories
+                      .filter((cat) => cat !== "all")
+                      .map((category) => (
+                        <option key={category} value={category}>
+                          {category}
+                        </option>
+                      ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Түвшин
+                  </label>
+                  <select
+                    name="level"
+                    value={formData.level}
+                    onChange={handleInputChange}
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="">Түвшин сонгох</option>
+                    {levels
+                      .filter((level) => level !== "all")
+                      .map((level) => (
+                        <option key={level} value={level}>
+                          {level}
+                        </option>
+                      ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
                     Youtube видео URL
                   </label>
                   <input
@@ -597,6 +699,18 @@ const AdminCoursesPage = () => {
                     rows={2}
                     name="structure"
                     value={formData.structure}
+                    onChange={handleInputChange}
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Сургалтад дагалдах зүйлс
+                  </label>
+                  <textarea
+                    rows={2}
+                    name="courseMaterials"
+                    value={formData.courseMaterials}
                     onChange={handleInputChange}
                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                   />
@@ -682,6 +796,86 @@ const AdminCoursesPage = () => {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
+                    Ангилал
+                  </label>
+                  <select
+                    name="category"
+                    value={formData.category}
+                    onChange={handleInputChange}
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="">Ангилал сонгох</option>
+                    {categories
+                      .filter((cat) => cat !== "all")
+                      .map((category) => (
+                        <option key={category} value={category}>
+                          {category}
+                        </option>
+                      ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Түвшин
+                  </label>
+                  <select
+                    name="level"
+                    value={formData.level}
+                    onChange={handleInputChange}
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="">Түвшин сонгох</option>
+                    {levels
+                      .filter((level) => level !== "all")
+                      .map((level) => (
+                        <option key={level} value={level}>
+                          {level}
+                        </option>
+                      ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Ангилал
+                  </label>
+                  <select
+                    name="category"
+                    value={formData.category}
+                    onChange={handleInputChange}
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="">Ангилал сонгох</option>
+                    {categories
+                      .filter((cat) => cat !== "all")
+                      .map((category) => (
+                        <option key={category} value={category}>
+                          {category}
+                        </option>
+                      ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Түвшин
+                  </label>
+                  <select
+                    name="level"
+                    value={formData.level}
+                    onChange={handleInputChange}
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="">Түвшин сонгох</option>
+                    {levels
+                      .filter((level) => level !== "all")
+                      .map((level) => (
+                        <option key={level} value={level}>
+                          {level}
+                        </option>
+                      ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
                     Youtube видео URL
                   </label>
                   <input
@@ -736,6 +930,18 @@ const AdminCoursesPage = () => {
                     rows={2}
                     name="structure"
                     value={formData.structure}
+                    onChange={handleInputChange}
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Сургалтад дагалдах зүйлс
+                  </label>
+                  <textarea
+                    rows={2}
+                    name="courseMaterials"
+                    value={formData.courseMaterials}
                     onChange={handleInputChange}
                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                   />
