@@ -223,7 +223,7 @@ async function main() {
     ],
     skipDuplicates: true,
   });
-  // Add sample carousel images
+
   await prisma.carouselImage.createMany({
     data: [
       {

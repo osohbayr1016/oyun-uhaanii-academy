@@ -1,10 +1,7 @@
-"use client";
-
 import Link from "next/link";
 import Image from "next/image";
 import HeroSection from "./_components/HeroSection";
-
-import { useState, useEffect, useRef } from "react";
+import InteractiveCarousel from "./_components/InteractiveCarousel";
 import { Brain, Crown, Earth, Medal, Star, Trophy } from "lucide-react";
 
 interface HomeContent {
@@ -24,90 +21,59 @@ interface HomeContent {
   feature_6_description?: string;
 }
 
-export default function HomePage() {
-  const [carouselImages, setCarouselImages] = useState<
-    { id: string; imageUrl: string }[]
-  >([]);
-  const [homeContent, setHomeContent] = useState<HomeContent>({});
-  const [current, setCurrent] = useState(0);
-  const [loading, setLoading] = useState(true);
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
-  // Remove slideDirection, next, isSliding
+interface CarouselImage {
+  id: string;
+  imageUrl: string;
+}
 
-  // Fetch images from API
-  useEffect(() => {
-    const fetchImages = async () => {
-      setLoading(true);
-      try {
-        const res = await fetch("/api/carousel");
-        const data = await res.json();
-        
-        // Check if data is an array, if not, set empty array
-        if (Array.isArray(data)) {
-          setCarouselImages(data);
-        } else {
-          console.error("Carousel API returned non-array data:", data);
-          setCarouselImages([]);
-        }
-      } catch (error) {
-        console.error("Error fetching carousel images:", error);
-        setCarouselImages([]);
-      } finally {
-        setLoading(false);
-        setCurrent(0);
-      }
-    };
-    fetchImages();
-  }, []);
+// Server-side data fetching
+async function getHomeContent(): Promise<HomeContent> {
+  try {
+    const API_BASE_URL =
+      process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
+    const response = await fetch(`${API_BASE_URL}/api/home-content`, {
+      next: { revalidate: 3600 }, // Cache for 1 hour
+    });
 
-  // Fetch home content from API
-  useEffect(() => {
-    const fetchHomeContent = async () => {
-      try {
-        const response = await fetch("/api/home-content");
-        if (response.ok) {
-          const data = await response.json();
-          setHomeContent(data);
-        }
-      } catch (error) {
-        console.error("Error fetching home content:", error);
-      }
-    };
-    fetchHomeContent();
-  }, []);
+    if (!response.ok) {
+      console.error("Failed to fetch home content:", response.status);
+      return {};
+    }
 
-  const maxIndex = Math.max(0, carouselImages.length - 1);
+    return await response.json();
+  } catch (error) {
+    console.error("Error fetching home content:", error);
+    return {};
+  }
+}
 
-  const handleSlide = (nextIdx: number) => {
-    if (nextIdx === current) return;
-    setCurrent(nextIdx);
-  };
+async function getCarouselImages(): Promise<CarouselImage[]> {
+  try {
+    const API_BASE_URL =
+      process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
+    const response = await fetch(`${API_BASE_URL}/api/carousel`, {
+      next: { revalidate: 1800 }, // Cache for 30 minutes
+    });
 
-  const prevBtn = () => {
-    const nextIdx = current === 0 ? carouselImages.length - 1 : current - 1;
-    handleSlide(nextIdx);
-  };
-  const nextBtn = () => {
-    const nextIdx = current === carouselImages.length - 1 ? 0 : current + 1;
-    handleSlide(nextIdx);
-  };
+    if (!response.ok) {
+      console.error("Failed to fetch carousel images:", response.status);
+      return [];
+    }
 
-  // Auto-scroll effect
-  useEffect(() => {
-    if (!carouselImages.length) return;
-    if (intervalRef.current) clearInterval(intervalRef.current);
-    intervalRef.current = setInterval(() => {
-      const nextIdx = current === carouselImages.length - 1 ? 0 : current + 1;
-      handleSlide(nextIdx);
-    }, 3000);
-    return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [carouselImages.length, current]);
+    const data = await response.json();
+    return Array.isArray(data) ? data : [];
+  } catch (error) {
+    console.error("Error fetching carousel images:", error);
+    return [];
+  }
+}
 
-  // Dots: one for each image
-  const dotCount = carouselImages.length;
+export default async function HomePage() {
+  // Fetch data server-side
+  const [homeContent, carouselImages] = await Promise.all([
+    getHomeContent(),
+    getCarouselImages(),
+  ]);
 
   return (
     <div>
@@ -214,82 +180,7 @@ export default function HomePage() {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col items-center">
             <div className="relative w-full max-w-7xl mx-auto">
-              {loading ? (
-                <div className="h-64 flex items-center justify-center text-gray-400 text-xl">
-                  Уншиж байна...
-                </div>
-              ) : carouselImages.length === 0 ? (
-                <div className="h-64 flex items-center justify-center text-gray-400 text-xl">
-                  Зураг байхгүй байна
-                </div>
-              ) : (
-                <>
-                  <button
-                    onClick={prevBtn}
-                    className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white rounded-full shadow p-2 hover:bg-gray-200"
-                    aria-label="Өмнөх"
-                  >
-                    <span className="text-2xl">&#60;</span>
-                  </button>
-                  <div className="overflow-hidden w-full flex items-center justify-center h-80">
-                    {carouselImages.length > 0 && (
-                      <div className="relative w-full h-80">
-                        <div
-                          className="flex h-80 transition-transform duration-700 ease-in-out"
-                          style={{
-                            width: `${carouselImages.length * 100}%`,
-                            transform: `translateX(-${
-                              current * (100 / carouselImages.length)
-                            }%)`,
-                          }}
-                        >
-                          {carouselImages.map((img, idx) => (
-                            <div
-                              key={img.id}
-                              className="w-full h-80 flex-shrink-0 flex-grow-0 flex items-center justify-center"
-                              style={{
-                                width: `${100 / carouselImages.length}%`,
-                              }}
-                            >
-                              <div className="bg-white rounded-xl shadow-md overflow-hidden flex flex-col items-center justify-center max-w-lg w-full h-80 border mx-auto">
-                                <img
-                                  src={img.imageUrl}
-                                  alt={`Carousel ${idx + 1}`}
-                                  className="w-full h-full object-contain"
-                                  onError={(e) => {
-                                    const target = e.target as HTMLImageElement;
-                                    target.src = "/default-carousel.png";
-                                  }}
-                                />
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                  <button
-                    onClick={nextBtn}
-                    className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white rounded-full shadow p-2 hover:bg-gray-200"
-                    aria-label="Дараах"
-                  >
-                    <span className="text-2xl">&#62;</span>
-                  </button>
-                  {/* Dots */}
-                  <div className="flex justify-center mt-4 gap-2">
-                    {carouselImages.map((_, idx) => (
-                      <button
-                        key={idx}
-                        onClick={() => handleSlide(idx)}
-                        className={`w-3 h-3 rounded-full ${
-                          idx === current ? "bg-yellow-400" : "bg-gray-300"
-                        }`}
-                        aria-label={`Slide ${idx + 1}`}
-                      />
-                    ))}
-                  </div>
-                </>
-              )}
+              <InteractiveCarousel images={carouselImages} />
             </div>
           </div>
         </div>

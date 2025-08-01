@@ -5,10 +5,21 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
 // GET /api/home-content
 export async function GET() {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/home-content`);
+    const response = await fetch(`${API_BASE_URL}/api/home-content`, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+      next: { revalidate: 3600 }, // Cache for 1 hour
+    });
 
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      console.error(
+        `Home content API error: ${response.status} ${response.statusText}`
+      );
+      return NextResponse.json(
+        { error: "Failed to fetch home content" },
+        { status: response.status }
+      );
     }
 
     const content = await response.json();
@@ -47,7 +58,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         error:
-          error instanceof Error ? error.message : "Failed to create home content",
+          error instanceof Error
+            ? error.message
+            : "Failed to create home content",
       },
       { status: 500 }
     );
@@ -79,9 +92,11 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json(
       {
         error:
-          error instanceof Error ? error.message : "Failed to update home content",
+          error instanceof Error
+            ? error.message
+            : "Failed to update home content",
       },
       { status: 500 }
     );
   }
-} 
+}

@@ -1,6 +1,17 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Enable experimental features for better performance
+  experimental: {
+    optimizeCss: true,
+    optimizePackageImports: ["lucide-react"],
+  },
+  // Compiler options for better bundle optimization
+  compiler: {
+    removeConsole: process.env.NODE_ENV === "production",
+  },
+  // Enable SWC minification
+  swcMinify: true,
   images: {
     domains: [
       "i.imgur.com",

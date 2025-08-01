@@ -4,13 +4,27 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
 
 export async function GET() {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/carousel`);
+    const response = await fetch(`${API_BASE_URL}/api/carousel`, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+      next: { revalidate: 1800 }, // Cache for 30 minutes
+    });
+
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      console.error(
+        `Carousel API error: ${response.status} ${response.statusText}`
+      );
+      return NextResponse.json(
+        { error: "Failed to fetch carousel images" },
+        { status: response.status }
+      );
     }
+
     const images = await response.json();
     return NextResponse.json(images);
   } catch (error) {
+    console.error("Carousel API fetch error:", error);
     return NextResponse.json(
       { error: "Failed to fetch carousel images" },
       { status: 500 }
