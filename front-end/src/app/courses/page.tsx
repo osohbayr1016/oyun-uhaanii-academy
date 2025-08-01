@@ -89,14 +89,6 @@ export default function CoursesPage() {
           course.level === selectedLevel
       );
 
-    // Debug logging
-    console.log("Filtering course:", course.title);
-    console.log("Selected levels:", selectedLevels);
-    console.log("Course levels:", course.levels);
-    console.log("Course level:", course.level);
-    console.log("Level match:", levelMatch);
-    console.log("Category match:", categoryMatch);
-
     return categoryMatch && levelMatch;
   });
 
@@ -161,7 +153,7 @@ export default function CoursesPage() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Нас
+                  Түвшин
                 </label>
                 <div className="space-y-2 max-h-40 overflow-y-auto">
                   {levels

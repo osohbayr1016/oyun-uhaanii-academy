@@ -3,36 +3,14 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   // Enable experimental features for better performance
   experimental: {
-    optimizeCss: true,
     optimizePackageImports: ["lucide-react"],
   },
   // Compiler options for better bundle optimization
   compiler: {
     removeConsole: process.env.NODE_ENV === "production",
   },
-  // Enable SWC minification
-  swcMinify: true,
+
   images: {
-    domains: [
-      "i.imgur.com",
-      "images.unsplash.com",
-      "images.pexels.com",
-      "picsum.photos",
-      "via.placeholder.com",
-      "admin.mastermind.mn",
-      "example.com",
-      "scontent.fuln1-1.fna.fbcdn.net",
-      "scontent.fuln1-2.fna.fbcdn.net",
-      "**.fna.fbcdn.net",
-      "**.fbcdn.net",
-      "**.cdninstagram.com",
-      "**.twimg.com",
-      "**.ytimg.com",
-      "**.cloudinary.com",
-      "**.amazonaws.com",
-      "**.digitaloceanspaces.com",
-      // add other domains as needed
-    ],
     remotePatterns: [
       {
         protocol: "https",
@@ -121,6 +99,24 @@ const nextConfig: NextConfig = {
       {
         protocol: "https",
         hostname: "**",
+        port: "",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "i.imgur.com",
+        port: "",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "**.amazonaws.com",
+        port: "",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "**.digitaloceanspaces.com",
         port: "",
         pathname: "/**",
       },
