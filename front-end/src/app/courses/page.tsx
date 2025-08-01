@@ -153,7 +153,7 @@ export default function CoursesPage() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Түвшин
+                  Нас
                 </label>
                 <div className="space-y-2 max-h-40 overflow-y-auto">
                   {levels
