@@ -44,7 +44,8 @@ model Course {
   price       Float?      // made optional
   currency    String?     // made optional
   duration    Int?        // made optional
-  level       String?     // made optional
+  level       String?     // made optional - keeping for backward compatibility
+  levels      String[]    // new field for multiple levels
   category    String?     // made optional
   instructor  String?     // made optional
   maxStudents Int?

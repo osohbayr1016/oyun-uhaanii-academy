@@ -11,7 +11,7 @@ const AddCourse = () => {
     price: "",
     currency: "MNT",
     duration: "",
-    level: "",
+    levels: [] as string[],
     category: "",
     instructor: "",
     youtubeUrl: "",
@@ -68,6 +68,14 @@ const AddCourse = () => {
     setForm({ ...form, [name]: value });
   };
 
+  const handleLevelChange = (level: string, checked: boolean) => {
+    if (checked) {
+      setForm({ ...form, levels: [...form.levels, level] });
+    } else {
+      setForm({ ...form, levels: form.levels.filter((l) => l !== level) });
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -80,6 +88,7 @@ const AddCourse = () => {
           content: form.description, // Use description as content
           price: parseFloat(form.price) || 0,
           duration: parseInt(form.duration) || 0,
+          levels: form.levels, // Include the levels array
         }),
       });
 
@@ -98,7 +107,7 @@ const AddCourse = () => {
         price: "",
         currency: "MNT",
         duration: "",
-        level: "",
+        levels: [],
         category: "",
         instructor: "",
         youtubeUrl: "",
@@ -184,20 +193,39 @@ const AddCourse = () => {
         required
       />
 
-      <select
-        name="level"
-        value={form.level}
-        onChange={handleChange}
-        className="w-full border p-2 rounded"
-        required
-      >
-        <option value="">Түвшин сонгох</option>
-        {levels.map((level) => (
-          <option key={level} value={level}>
-            {level}
-          </option>
-        ))}
-      </select>
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Түвшин (олон сонгох боломжтой)
+        </label>
+        <div className="space-y-2 max-h-40 overflow-y-auto border border-gray-300 rounded p-3">
+          {levels.map((level) => (
+            <label key={level} className="flex items-center">
+              <input
+                type="checkbox"
+                checked={form.levels.includes(level)}
+                onChange={(e) => handleLevelChange(level, e.target.checked)}
+                className="mr-2 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+              />
+              <span className="text-sm text-gray-700">{level}</span>
+            </label>
+          ))}
+        </div>
+        {form.levels.length > 0 && (
+          <div className="mt-2">
+            <p className="text-sm text-gray-600">Сонгосон түвшинүүд:</p>
+            <div className="flex flex-wrap gap-1 mt-1">
+              {form.levels.map((level) => (
+                <span
+                  key={level}
+                  className="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full"
+                >
+                  {level}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
 
       <select
         name="category"

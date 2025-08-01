@@ -27,6 +27,7 @@ interface Course {
   currency?: string | null;
   duration?: number | null;
   level?: string | null;
+  levels?: string[];
   category?: string | null;
   instructor?: string | null;
   maxStudents?: number;
@@ -54,7 +55,7 @@ interface CourseFormData {
   price: string;
   currency: string;
   duration: string;
-  level: string;
+  levels: string[];
   category: string;
   instructor: string;
   maxStudents: string;
@@ -88,7 +89,7 @@ const AdminCoursesPage = () => {
     price: "",
     currency: "MNT",
     duration: "",
-    level: "",
+    levels: [] as string[],
     category: "",
     instructor: "",
     maxStudents: "",
@@ -126,7 +127,7 @@ const AdminCoursesPage = () => {
         duration: selectedCourse.duration
           ? String(selectedCourse.duration)
           : "",
-        level: selectedCourse.level || "",
+        levels: selectedCourse.levels || [],
         category: selectedCourse.category || "",
         instructor: selectedCourse.instructor || "",
         maxStudents: selectedCourse.maxStudents
@@ -198,6 +199,20 @@ const AdminCoursesPage = () => {
     }));
   };
 
+  const handleLevelChange = (level: string, checked: boolean) => {
+    if (checked) {
+      setFormData((prev) => ({
+        ...prev,
+        levels: [...prev.levels, level],
+      }));
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        levels: prev.levels.filter((l) => l !== level),
+      }));
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
@@ -209,7 +224,7 @@ const AdminCoursesPage = () => {
         content: formData.description, // Using description as content
         imageUrl: formData.imageUrl,
         price: "0", // Send as string to satisfy backend validation
-        level: formData.level || null,
+        levels: formData.levels,
         category: formData.category || null,
         instructor: formData.instructor || null,
         duration: formData.duration ? parseInt(formData.duration) : null,
@@ -248,7 +263,7 @@ const AdminCoursesPage = () => {
         price: "",
         currency: "MNT",
         duration: "",
-        level: "",
+        levels: [],
         category: "",
         instructor: "",
         maxStudents: "",
@@ -288,7 +303,7 @@ const AdminCoursesPage = () => {
         price: formData.price ? parseFloat(formData.price) : null,
         currency: formData.currency || "MNT",
         duration: formData.duration ? parseInt(formData.duration) : null,
-        level: formData.level || null,
+        levels: formData.levels,
         category: formData.category || null,
         instructor: formData.instructor || null,
         maxStudents: formData.maxStudents
@@ -359,7 +374,13 @@ const AdminCoursesPage = () => {
     const matchesSearch =
       course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       course.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesLevel = filterLevel === "all" || course.level === filterLevel;
+
+    // Check if any of the selected levels match the course's levels
+    const matchesLevel =
+      filterLevel === "all" ||
+      (course.levels && course.levels.includes(filterLevel)) ||
+      course.level === filterLevel;
+
     const matchesCategory =
       filterCategory === "all" || course.category === filterCategory;
     return matchesSearch && matchesLevel && matchesCategory;
@@ -495,7 +516,18 @@ const AdminCoursesPage = () => {
                 </div>
                 <div className="p-6">
                   <div className="flex items-center justify-between mb-2">
-                    {getLevelBadge(course.level ?? "Эхлэгч")}
+                    <div className="flex flex-wrap gap-1">
+                      {course.levels && course.levels.length > 0
+                        ? course.levels.map((level, index) => (
+                            <span
+                              key={index}
+                              className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded"
+                            >
+                              {level}
+                            </span>
+                          ))
+                        : getLevelBadge(course.level ?? "Эхлэгч")}
+                    </div>
                     {getStatusBadge(course.isActive)}
                   </div>
                   <h3 className="text-xl font-semibold text-gray-900 mb-2">
@@ -625,23 +657,42 @@ const AdminCoursesPage = () => {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
-                    Түвшин
+                    Түвшин (олон сонгох боломжтой)
                   </label>
-                  <select
-                    name="level"
-                    value={formData.level}
-                    onChange={handleInputChange}
-                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                  >
-                    <option value="">Түвшин сонгох</option>
+                  <div className="mt-1 space-y-2 max-h-40 overflow-y-auto border border-gray-300 rounded p-3">
                     {levels
                       .filter((level) => level !== "all")
                       .map((level) => (
-                        <option key={level} value={level}>
-                          {level}
-                        </option>
+                        <label key={level} className="flex items-center">
+                          <input
+                            type="checkbox"
+                            checked={formData.levels.includes(level)}
+                            onChange={(e) =>
+                              handleLevelChange(level, e.target.checked)
+                            }
+                            className="mr-2 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                          />
+                          <span className="text-sm text-gray-700">{level}</span>
+                        </label>
                       ))}
-                  </select>
+                  </div>
+                  {formData.levels.length > 0 && (
+                    <div className="mt-2">
+                      <p className="text-sm text-gray-600">
+                        Сонгосон түвшинүүд:
+                      </p>
+                      <div className="flex flex-wrap gap-1 mt-1">
+                        {formData.levels.map((level) => (
+                          <span
+                            key={level}
+                            className="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full"
+                          >
+                            {level}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
@@ -816,63 +867,42 @@ const AdminCoursesPage = () => {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
-                    Түвшин
+                    Түвшин (олон сонгох боломжтой)
                   </label>
-                  <select
-                    name="level"
-                    value={formData.level}
-                    onChange={handleInputChange}
-                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                  >
-                    <option value="">Түвшин сонгох</option>
+                  <div className="mt-1 space-y-2 max-h-40 overflow-y-auto border border-gray-300 rounded p-3">
                     {levels
                       .filter((level) => level !== "all")
                       .map((level) => (
-                        <option key={level} value={level}>
-                          {level}
-                        </option>
+                        <label key={level} className="flex items-center">
+                          <input
+                            type="checkbox"
+                            checked={formData.levels.includes(level)}
+                            onChange={(e) =>
+                              handleLevelChange(level, e.target.checked)
+                            }
+                            className="mr-2 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                          />
+                          <span className="text-sm text-gray-700">{level}</span>
+                        </label>
                       ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Ангилал
-                  </label>
-                  <select
-                    name="category"
-                    value={formData.category}
-                    onChange={handleInputChange}
-                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                  >
-                    <option value="">Ангилал сонгох</option>
-                    {categories
-                      .filter((cat) => cat !== "all")
-                      .map((category) => (
-                        <option key={category} value={category}>
-                          {category}
-                        </option>
-                      ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Түвшин
-                  </label>
-                  <select
-                    name="level"
-                    value={formData.level}
-                    onChange={handleInputChange}
-                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                  >
-                    <option value="">Түвшин сонгох</option>
-                    {levels
-                      .filter((level) => level !== "all")
-                      .map((level) => (
-                        <option key={level} value={level}>
-                          {level}
-                        </option>
-                      ))}
-                  </select>
+                  </div>
+                  {formData.levels.length > 0 && (
+                    <div className="mt-2">
+                      <p className="text-sm text-gray-600">
+                        Сонгосон түвшинүүд:
+                      </p>
+                      <div className="flex flex-wrap gap-1 mt-1">
+                        {formData.levels.map((level) => (
+                          <span
+                            key={level}
+                            className="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full"
+                          >
+                            {level}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">

@@ -11,6 +11,7 @@ interface Course {
   currency: string;
   duration: string;
   level: string;
+  levels: string[];
   category: string;
 }
 
@@ -45,7 +46,21 @@ export default function CourseCard({ course }: CourseCardProps) {
           <h3 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-black text-gray-900 mb-2 leading-tight">
             {course.title}
           </h3>
-          <p className="text-base text-gray-700 mb-6">{course.description}</p>
+          <p className="text-base text-gray-700 mb-4">{course.description}</p>
+          {course.levels && course.levels.length > 0 && (
+            <div className="mb-4">
+              <div className="flex flex-wrap gap-2">
+                {course.levels.map((level, index) => (
+                  <span
+                    key={index}
+                    className="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full font-medium"
+                  >
+                    {level}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
         <div className="flex justify-end">
           <Link

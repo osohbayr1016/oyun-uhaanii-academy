@@ -13,6 +13,7 @@ interface Course {
   currency: string;
   duration: string;
   level: string;
+  levels: string[];
   category: string;
 }
 
@@ -21,7 +22,7 @@ export default function CoursesPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
-  const [selectedLevel, setSelectedLevel] = useState<string>("all");
+  const [selectedLevels, setSelectedLevels] = useState<string[]>([]);
 
   useEffect(() => {
     fetchCourses();
@@ -78,8 +79,24 @@ export default function CoursesPage() {
   const filteredCourses = courses.filter((course) => {
     const categoryMatch =
       selectedCategory === "all" || course.category === selectedCategory;
+
+    // Check if any of the selected levels match the course's levels
     const levelMatch =
-      selectedLevel === "all" || course.level === selectedLevel;
+      selectedLevels.length === 0 ||
+      selectedLevels.some(
+        (selectedLevel) =>
+          (course.levels && course.levels.includes(selectedLevel)) ||
+          course.level === selectedLevel
+      );
+
+    // Debug logging
+    console.log("Filtering course:", course.title);
+    console.log("Selected levels:", selectedLevels);
+    console.log("Course levels:", course.levels);
+    console.log("Course level:", course.level);
+    console.log("Level match:", levelMatch);
+    console.log("Category match:", categoryMatch);
+
     return categoryMatch && levelMatch;
   });
 
@@ -144,19 +161,40 @@ export default function CoursesPage() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Түвшин
+                  Нас
                 </label>
-                <select
-                  value={selectedLevel}
-                  onChange={(e) => setSelectedLevel(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                >
-                  {levels.map((level) => (
-                    <option key={level} value={level}>
-                      {level === "all" ? "Бүгд" : level}
-                    </option>
-                  ))}
-                </select>
+                <div className="space-y-2 max-h-40 overflow-y-auto">
+                  {levels
+                    .filter((level) => level !== "all")
+                    .map((level) => (
+                      <label key={level} className="flex items-center">
+                        <input
+                          type="checkbox"
+                          checked={selectedLevels.includes(level)}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setSelectedLevels([...selectedLevels, level]);
+                            } else {
+                              setSelectedLevels(
+                                selectedLevels.filter((l) => l !== level)
+                              );
+                            }
+                          }}
+                          className="mr-2 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                        />
+                        <span className="text-sm text-gray-700">{level}</span>
+                      </label>
+                    ))}
+                  {selectedLevels.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => setSelectedLevels([])}
+                      className="text-sm text-blue-600 hover:text-blue-800 underline"
+                    >
+                      Бүх түвшинг цуцлах
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
           </div>

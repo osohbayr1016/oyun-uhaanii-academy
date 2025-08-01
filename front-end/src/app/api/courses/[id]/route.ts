@@ -46,13 +46,23 @@ export async function PUT(
     const backendUrl =
       process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
 
+    // Ensure levels is properly formatted as an array
+    const courseData = {
+      ...body,
+      levels: Array.isArray(body.levels)
+        ? body.levels
+        : body.levels
+        ? [body.levels]
+        : undefined,
+    };
+
     const response = await fetch(`${backendUrl}/api/courses/${id}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
         Authorization: request.headers.get("Authorization") || "",
       },
-      body: JSON.stringify(body),
+      body: JSON.stringify(courseData),
     });
 
     if (!response.ok) {
