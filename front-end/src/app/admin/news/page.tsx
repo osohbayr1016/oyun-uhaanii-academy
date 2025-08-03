@@ -9,6 +9,7 @@ interface NewsArticle {
   title: string;
   content: string;
   imageUrl?: string;
+  videoUrl?: string;
   publishedAt: string;
   author: {
     id: string;
@@ -27,6 +28,7 @@ export default function AdminNewsPage() {
     title: "",
     content: "",
     imageUrl: "",
+    videoUrl: "",
   });
 
   useEffect(() => {
@@ -68,13 +70,19 @@ export default function AdminNewsPage() {
         body: JSON.stringify(formData),
       });
 
-      if (!response.ok) throw new Error("Failed to save news");
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to save news");
+      }
 
       await fetchNews();
       resetForm();
+      alert(editingNews ? "Мэдээ амжилттай шинэчлэгдлээ" : "Мэдээ амжилттай нэмэгдлээ");
     } catch (error) {
       console.error("Error saving news:", error);
-      alert("Мэдээ хадгалахад алдаа гарлаа");
+      const errorMessage = error instanceof Error ? error.message : "Мэдээ хадгалахад алдаа гарлаа";
+      alert(errorMessage);
     }
   };
 
@@ -108,12 +116,13 @@ export default function AdminNewsPage() {
       title: article.title,
       content: article.content,
       imageUrl: article.imageUrl || "",
+      videoUrl: article.videoUrl || "",
     });
     setShowForm(true);
   };
 
   const resetForm = () => {
-    setFormData({ title: "", content: "", imageUrl: "" });
+    setFormData({ title: "", content: "", imageUrl: "", videoUrl: "" });
     setEditingNews(null);
     setShowForm(false);
   };
@@ -195,6 +204,21 @@ export default function AdminNewsPage() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Видео URL
+                  </label>
+                  <input
+                    type="url"
+                    value={formData.videoUrl}
+                    onChange={(e) =>
+                      setFormData({ ...formData, videoUrl: e.target.value })
+                    }
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="https://example.com/video.mp4"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
                     Агуулга
                   </label>
                   <textarea
@@ -255,7 +279,8 @@ export default function AdminNewsPage() {
                         <div className="flex items-center text-xs text-gray-500 gap-4">
                           <span>👤 {article.author.name}</span>
                           <span>📅 {formatDate(article.publishedAt)}</span>
-                          {article.imageUrl && <span>🖼️ Зурагтай</span>}
+                          {article.imageUrl && <span>��️ Зурагтай</span>}
+                          {article.videoUrl && <span>🎥 Видеотой</span>}
                         </div>
                       </div>
 

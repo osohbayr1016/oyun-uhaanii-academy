@@ -319,6 +319,7 @@ model News {
   title       String
   content     String
   imageUrl    String?
+  videoUrl    String?
   authorId    String
   publishedAt DateTime @default(now())
   createdAt   DateTime @default(now())

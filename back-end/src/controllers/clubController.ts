@@ -28,7 +28,7 @@ export const getClubContent = async (req: Request, res: Response) => {
           tournamentParticipants: "Клубийн гишүүд болон нийт сурагчид",
           tournamentDetails:
             "Тэмцээний талаарх дэлгэрэнгүй мэдээллийг манай мэдээ болон үйл ажиллагааны хэсгээс авна уу.",
-          tournamentButtonText: "Тэмцээний мэдээлэл үзэх",
+          tournamentButtonText: "МЭДЭЭ",
           introductionTitle: "КЛУБИЙН ТАНИЛЦУУЛГА",
           introductionContent:
             "RedS клуб нь 2020 онд байгуулагдсан бөгөөд Монголын оюуны спортын хөгжүүлэлтийг зорилгоор ажиллаж байна. Манай клуб нь сурагчдын сэтгэхүй, ой тогтоолт, логик сэтгэлгээ, багаар ажиллах чадварыг хөгжүүлэхэд чиглэсэн олон төрлийн үйл ажиллагаа явуулдаг. Бид оюуны спортын олон улсын стандартыг Монголд нутагшуулж, шилдэг тамирчдыг төлөвшүүлэхэд хувь нэмрээ оруулж байна.",
@@ -244,7 +244,7 @@ export const updateClubContent = async (req: Request, res: Response) => {
             tournamentDetails ||
             "Тэмцээний талаарх дэлгэрэнгүй мэдээллийг манай мэдээ болон үйл ажиллагааны хэсгээс авна уу.",
           tournamentButtonText:
-            tournamentButtonText || "Тэмцээний мэдээлэл үзэх",
+            tournamentButtonText || "МЭДЭЭ",
           introductionTitle: introductionTitle || "КЛУБИЙН ТАНИЛЦУУЛГА",
           introductionContent:
             introductionContent ||
@@ -447,7 +447,7 @@ export const uploadClubImage = async (req: Request, res: Response) => {
           tournamentParticipants: "Клубийн гишүүд болон нийт сурагчид",
           tournamentDetails:
             "Тэмцээний талаарх дэлгэрэнгүй мэдээллийг манай мэдээ болон үйл ажиллагааны хэсгээс авна уу.",
-          tournamentButtonText: "Тэмцээний мэдээлэл үзэх",
+          tournamentButtonText: "МЭДЭЭ",
           activitiesTitle: "КЛУБИЙН ҮЙЛ АЖИЛЛАГАА",
           activities: [
             {

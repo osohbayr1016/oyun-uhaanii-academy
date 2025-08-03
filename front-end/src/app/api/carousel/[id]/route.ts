@@ -11,12 +11,19 @@ export async function DELETE(
     const response = await fetch(`${API_BASE_URL}/api/carousel/${id}`, {
       method: "DELETE",
     });
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
+
     const data = await response.json();
+
+    if (!response.ok) {
+      return NextResponse.json(
+        { error: data.message || "Failed to delete carousel image" },
+        { status: response.status }
+      );
+    }
+
     return NextResponse.json(data);
   } catch (error) {
+    console.error("Error deleting carousel image:", error);
     return NextResponse.json(
       { error: "Failed to delete carousel image" },
       { status: 500 }

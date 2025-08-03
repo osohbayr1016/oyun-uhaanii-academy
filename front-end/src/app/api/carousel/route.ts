@@ -8,7 +8,8 @@ export async function GET() {
       headers: {
         "Content-Type": "application/json",
       },
-      next: { revalidate: 1800 }, // Cache for 30 minutes
+      // Remove caching to ensure fresh data
+      cache: "no-store",
     });
 
     if (!response.ok) {

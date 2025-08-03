@@ -10,6 +10,7 @@ interface NewsArticle {
   title: string;
   content: string;
   imageUrl?: string;
+  videoUrl?: string;
   publishedAt: string;
   author: {
     id: string;
@@ -53,6 +54,22 @@ export default function NewsArticlePage() {
       hour: "2-digit",
       minute: "2-digit",
     });
+  };
+
+  const getYouTubeEmbedUrl = (videoUrl: string) => {
+    if (!videoUrl) return "";
+
+    // Handle different YouTube URL formats
+    const patterns = [
+      /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]+)/,
+    ];
+
+    const match = videoUrl.match(patterns[0]);
+    if (match && match[1]) {
+      return `https://www.youtube.com/embed/${match[1]}`;
+    }
+
+    return videoUrl; // Return original URL if no video ID found
   };
 
   if (loading) {
@@ -133,6 +150,17 @@ export default function NewsArticlePage() {
             </div>
           )}
 
+          {article.videoUrl && !article.imageUrl && (
+            <div className="relative h-64 md:h-96 w-full">
+              <video
+                src={article.videoUrl}
+                className="w-full h-full object-cover"
+                controls
+                preload="metadata"
+              />
+            </div>
+          )}
+
           <div className="p-6 md:p-8">
             {/* Article Meta */}
             <div className="flex items-center text-sm text-gray-500 mb-4">
@@ -150,6 +178,26 @@ export default function NewsArticlePage() {
             <div className="prose prose-lg max-w-none text-gray-700 leading-relaxed">
               <p className="whitespace-pre-wrap">{article.content}</p>
             </div>
+
+            {/* Video Section */}
+            {article.videoUrl && article.imageUrl && (
+              <div className="mt-8 pt-6 border-t border-gray-200">
+                <h2 className="text-2xl font-bold text-gray-800 mb-4">Видео</h2>
+                <div
+                  className="relative w-full"
+                  style={{ paddingBottom: "56.25%" }}
+                >
+                  <iframe
+                    src={getYouTubeEmbedUrl(article.videoUrl)}
+                    title={article.title}
+                    className="absolute top-0 left-0 w-full h-full rounded-lg"
+                    frameBorder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                  ></iframe>
+                </div>
+              </div>
+            )}
 
             {/* Back to News Button */}
             <div className="mt-8 pt-6 border-t border-gray-200">

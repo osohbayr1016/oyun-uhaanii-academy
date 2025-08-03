@@ -31,9 +31,21 @@ export const addCarouselImage = async (req: Request, res: Response) => {
 export const deleteCarouselImage = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
+
+    // Check if the image exists before trying to delete it
+    const existingImage = await prisma.carouselImage.findUnique({
+      where: { id },
+    });
+
+    if (!existingImage) {
+      return res.status(404).json({ message: "Carousel image not found" });
+    }
+
+    // Delete the image
     await prisma.carouselImage.delete({ where: { id } });
-    res.json({ message: "Deleted" });
+    res.json({ message: "Carousel image deleted successfully" });
   } catch (error) {
+    console.error("Error deleting carousel image:", error);
     res.status(500).json({ message: "Failed to delete carousel image" });
   }
 };

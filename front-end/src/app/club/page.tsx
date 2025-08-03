@@ -33,7 +33,7 @@ const ClubPage = () => {
     tournamentParticipants: "Клубийн гишүүд болон нийт сурагчид",
     tournamentDetails:
       "Тэмцээний талаарх дэлгэрэнгүй мэдээллийг манай мэдээ болон үйл ажиллагааны хэсгээс авна уу.",
-    tournamentButtonText: "Тэмцээний мэдээлэл үзэх",
+    tournamentButtonText: "МЭДЭЭ",
     introductionTitle: "КЛУБИЙН ТАНИЛЦУУЛГА",
     introductionContent:
       "RedS клуб нь 2020 онд байгуулагдсан бөгөөд Монголын оюуны спортын хөгжүүлэлтийг зорилгоор ажиллаж байна. Манай клуб нь сурагчдын сэтгэхүй, ой тогтоолт, логик сэтгэлгээ, багаар ажиллах чадварыг хөгжүүлэхэд чиглэсэн олон төрлийн үйл ажиллагаа явуулдаг. Бид оюуны спортын олон улсын стандартыг Монголд нутагшуулж, шилдэг тамирчдыг төлөвшүүлэхэд хувь нэмрээ оруулж байна.",
@@ -164,8 +164,7 @@ const ClubPage = () => {
               tournamentDetails:
                 data.data.tournamentDetails ||
                 "Тэмцээний талаарх дэлгэрэнгүй мэдээллийг манай мэдээ болон үйл ажиллагааны хэсгээс авна уу.",
-              tournamentButtonText:
-                data.data.tournamentButtonText || "Тэмцээний мэдээлэл үзэх",
+              tournamentButtonText: data.data.tournamentButtonText || "МЭДЭЭ",
               introductionTitle:
                 data.data.introductionTitle || "КЛУБИЙН ТАНИЛЦУУЛГА",
               introductionContent:
@@ -482,7 +481,7 @@ const ClubPage = () => {
             </div>
           </div>
           <a
-            href="/tournaments"
+            href="/news"
             className="mt-2 inline-block bg-[#550080] text-white px-6 py-2 rounded-lg font-semibold shadow hover:bg-blue-700 transition-colors"
           >
             {clubContent.tournamentButtonText}

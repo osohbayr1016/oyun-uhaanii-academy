@@ -9,6 +9,7 @@ interface NewsArticle {
   title: string;
   content: string;
   imageUrl?: string;
+  videoUrl?: string;
   publishedAt: string;
   author: {
     id: string;
@@ -164,6 +165,16 @@ export default function NewsPage() {
                       alt={article.title}
                       fill
                       className="object-cover"
+                    />
+                  </div>
+                )}
+                {article.videoUrl && !article.imageUrl && (
+                  <div className="relative h-48 w-full">
+                    <video
+                      src={article.videoUrl}
+                      className="w-full h-full object-cover"
+                      controls
+                      preload="metadata"
                     />
                   </div>
                 )}

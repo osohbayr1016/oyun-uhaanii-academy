@@ -69,7 +69,7 @@ export const getNewsById = async (req: Request, res: Response) => {
 // Create new news article
 export const createNews = async (req: Request, res: Response) => {
   try {
-    const { title, content, imageUrl } = req.body;
+    const { title, content, imageUrl, videoUrl } = req.body;
     const authorId = req.user?.userId; // From auth middleware
 
     if (!authorId) {
@@ -81,6 +81,7 @@ export const createNews = async (req: Request, res: Response) => {
         title,
         content,
         imageUrl,
+        videoUrl,
         authorId,
       },
       include: {
@@ -105,7 +106,7 @@ export const createNews = async (req: Request, res: Response) => {
 export const updateNews = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const { title, content, imageUrl } = req.body;
+    const { title, content, imageUrl, videoUrl } = req.body;
     const userId = req.user?.userId;
 
     if (!userId) {
@@ -134,6 +135,7 @@ export const updateNews = async (req: Request, res: Response) => {
         title,
         content,
         imageUrl,
+        videoUrl,
       },
       include: {
         author: {

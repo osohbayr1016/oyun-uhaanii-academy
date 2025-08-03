@@ -973,7 +973,7 @@ export default function AdminClubPage() {
                   value={tournamentButtonText}
                   onChange={(e) => setTournamentButtonText(e.target.value)}
                   className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Тэмцээний мэдээлэл үзэх"
+                  placeholder="МЭДЭЭ"
                 />
                 <p className="text-xs text-gray-500 mt-1">
                   Тэмцээний хэсгийн товчны текст

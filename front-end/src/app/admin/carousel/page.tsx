@@ -19,10 +19,20 @@ export default function AdminCarouselPage() {
 
   const fetchImages = async () => {
     setLoading(true);
-    const res = await fetch(API_CAROUSEL);
-    const data = await res.json();
-    setImages(data);
-    setLoading(false);
+    try {
+      const res = await fetch(API_CAROUSEL, {
+        cache: "no-store", // Ensure fresh data
+        headers: {
+          "Cache-Control": "no-cache",
+        },
+      });
+      const data = await res.json();
+      setImages(data);
+    } catch (error) {
+      console.error("Error fetching images:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -31,18 +41,71 @@ export default function AdminCarouselPage() {
 
   const handleAdd = async () => {
     if (!imageUrl.trim()) return;
-    await fetch(API_CAROUSEL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ imageUrl: imageUrl.trim() }),
-    });
-    setImageUrl("");
-    fetchImages();
+
+    try {
+      setLoading(true);
+      const response = await fetch(API_CAROUSEL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ imageUrl: imageUrl.trim() }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Зураг нэмэхэд алдаа гарлаа");
+      }
+
+      setImageUrl("");
+      await fetchImages();
+      alert("Зураг амжилттай нэмэгдлээ");
+    } catch (error) {
+      console.error("Error adding image:", error);
+      alert(
+        error instanceof Error ? error.message : "Зураг нэмэхэд алдаа гарлаа"
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleDelete = async (id: string) => {
-    await fetch(`${API_CAROUSEL}/${id}`, { method: "DELETE" });
-    fetchImages();
+    if (!confirm("Энэ зургийг устгахдаа итгэлтэй байна уу?")) return;
+
+    try {
+      setLoading(true);
+      console.log("Attempting to delete image with ID:", id);
+
+      const response = await fetch(`${API_CAROUSEL}/${id}`, {
+        method: "DELETE",
+      });
+
+      const data = await response.json();
+      console.log("Delete response:", { status: response.status, data });
+
+      if (!response.ok) {
+        throw new Error(
+          data.message || data.error || "Зураг устгахад алдаа гарлаа"
+        );
+      }
+
+      // Remove the image from local state immediately for better UX
+      setImages((prevImages) => prevImages.filter((img) => img.id !== id));
+      alert("Зураг амжилттай устгагдлаа");
+
+      // Refresh the data to ensure sync with backend
+      setTimeout(() => {
+        fetchImages();
+      }, 100);
+    } catch (error) {
+      console.error("Error deleting image:", error);
+      alert(
+        error instanceof Error ? error.message : "Зураг устгахад алдаа гарлаа"
+      );
+      // Refresh the images list in case of error
+      await fetchImages();
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
