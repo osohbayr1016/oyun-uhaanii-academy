@@ -52,7 +52,7 @@ async function getCarouselImages(): Promise<CarouselImage[]> {
     const API_BASE_URL =
       process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
     const response = await fetch(`${API_BASE_URL}/api/carousel`, {
-      next: { revalidate: 1800 }, // Cache for 30 minutes
+      cache: "no-store", // No caching to ensure fresh data
     });
 
     if (!response.ok) {
