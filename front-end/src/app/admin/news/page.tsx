@@ -39,9 +39,7 @@ export default function AdminNewsPage() {
 
   const fetchNews = async () => {
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/news`
-      );
+      const response = await fetch("/api/news");
       if (!response.ok) throw new Error("Failed to fetch news");
       const data = await response.json();
       setNews(data);
@@ -57,9 +55,7 @@ export default function AdminNewsPage() {
 
     try {
       const token = localStorage.getItem("token");
-      const url = editingNews
-        ? `${process.env.NEXT_PUBLIC_API_URL}/api/news/${editingNews.id}`
-        : `${process.env.NEXT_PUBLIC_API_URL}/api/news`;
+      const url = editingNews ? `/api/news/${editingNews.id}` : "/api/news";
 
       const response = await fetch(url, {
         method: editingNews ? "PUT" : "POST",
@@ -73,15 +69,22 @@ export default function AdminNewsPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || "Failed to save news");
+        throw new Error(data.message || data.error || "Failed to save news");
       }
 
       await fetchNews();
       resetForm();
-      alert(editingNews ? "Мэдээ амжилттай шинэчлэгдлээ" : "Мэдээ амжилттай нэмэгдлээ");
+      alert(
+        editingNews
+          ? "Мэдээ амжилттай шинэчлэгдлээ"
+          : "Мэдээ амжилттай нэмэгдлээ"
+      );
     } catch (error) {
       console.error("Error saving news:", error);
-      const errorMessage = error instanceof Error ? error.message : "Мэдээ хадгалахад алдаа гарлаа";
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "Мэдээ хадгалахад алдаа гарлаа";
       alert(errorMessage);
     }
   };
@@ -91,17 +94,18 @@ export default function AdminNewsPage() {
 
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/news/${id}`,
-        {
-          method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const response = await fetch(`/api/news/${id}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
-      if (!response.ok) throw new Error("Failed to delete news");
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || data.error || "Failed to delete news");
+      }
 
       await fetchNews();
     } catch (error) {
@@ -279,7 +283,7 @@ export default function AdminNewsPage() {
                         <div className="flex items-center text-xs text-gray-500 gap-4">
                           <span>👤 {article.author.name}</span>
                           <span>📅 {formatDate(article.publishedAt)}</span>
-                          {article.imageUrl && <span>��️ Зурагтай</span>}
+                          {article.imageUrl && <span>🖼️ Зурагтай</span>}
                           {article.videoUrl && <span>🎥 Видеотой</span>}
                         </div>
                       </div>

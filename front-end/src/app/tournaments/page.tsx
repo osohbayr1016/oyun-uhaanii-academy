@@ -127,24 +127,43 @@ const TournamentsPage = () => {
 
   const getCategoryBadge = (category: string) => {
     switch (category) {
-      case "Шатар":
+      case "Рубикийн шоо":
+        return (
+          <span className="bg-red-100 text-red-800 text-xs font-medium px-2.5 py-0.5 rounded">
+            Рубикийн шоо
+          </span>
+        );
+      case "Хуруундай":
+        return (
+          <span className="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded">
+            Хуруундай
+          </span>
+        );
+      case "Спорт өрөлт":
+        return (
+          <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">
+            Спорт өрөлт
+          </span>
+        );
+      case "Түргэн бодолт":
+        return (
+          <span className="bg-yellow-100 text-yellow-800 text-xs font-medium px-2.5 py-0.5 rounded">
+            Түргэн бодолт
+          </span>
+        );
+      case "Хурдан уншлага":
         return (
           <span className="bg-purple-100 text-purple-800 text-xs font-medium px-2.5 py-0.5 rounded">
-            Шатар
+            Хурдан уншлага
           </span>
         );
-      case "Го":
+      case "Ой тогтоолт":
         return (
           <span className="bg-indigo-100 text-indigo-800 text-xs font-medium px-2.5 py-0.5 rounded">
-            Го
+            Ой тогтоолт
           </span>
         );
-      case "Покер":
-        return (
-          <span className="bg-pink-100 text-pink-800 text-xs font-medium px-2.5 py-0.5 rounded">
-            Покер
-          </span>
-        );
+
       default:
         return (
           <span className="bg-gray-100 text-gray-800 text-xs font-medium px-2.5 py-0.5 rounded">
@@ -244,9 +263,12 @@ const TournamentsPage = () => {
                 className="px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base"
               >
                 <option value="all">Бүх ангилал</option>
-                <option value="Шатар">Шатар</option>
-                <option value="Го">Го</option>
-                <option value="Покер">Покер</option>
+                <option value="Рубикийн шоо">Рубикийн шоо</option>
+                <option value="Хуруундай">Хуруундай</option>
+                <option value="Спорт өрөлт">Спорт өрөлт</option>
+                <option value="Түргэн бодолт">Түргэн бодолт</option>
+                <option value="Хурдан уншлага">Хурдан уншлага</option>
+                <option value="Ой тогтоолт">Ой тогтоолт</option>
               </select>
             </div>
           </div>

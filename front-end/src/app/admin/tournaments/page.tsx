@@ -395,6 +395,42 @@ const AdminTournamentsPage = () => {
 
   const getCategoryBadge = (category: string) => {
     switch (category) {
+      case "Рубикийн шоо":
+        return (
+          <span className="bg-red-100 text-red-800 text-xs font-medium px-2.5 py-0.5 rounded">
+            Рубикийн шоо
+          </span>
+        );
+      case "Хуруундай":
+        return (
+          <span className="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded">
+            Хуруундай
+          </span>
+        );
+      case "Спорт өрөлт":
+        return (
+          <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">
+            Спорт өрөлт
+          </span>
+        );
+      case "Түргэн бодолт":
+        return (
+          <span className="bg-yellow-100 text-yellow-800 text-xs font-medium px-2.5 py-0.5 rounded">
+            Түргэн бодолт
+          </span>
+        );
+      case "Хурдан уншлага":
+        return (
+          <span className="bg-purple-100 text-purple-800 text-xs font-medium px-2.5 py-0.5 rounded">
+            Хурдан уншлага
+          </span>
+        );
+      case "Ой тогтоолт":
+        return (
+          <span className="bg-indigo-100 text-indigo-800 text-xs font-medium px-2.5 py-0.5 rounded">
+            Ой тогтоолт
+          </span>
+        );
       case "Шатар":
         return (
           <span className="bg-purple-100 text-purple-800 text-xs font-medium px-2.5 py-0.5 rounded">
@@ -751,15 +787,24 @@ const AdminTournamentsPage = () => {
                   <label className="block text-sm font-medium text-gray-700">
                     Ангилал
                   </label>
-                  <input
-                    type="text"
+                  <select
                     name="category"
                     value={formData.category}
                     onChange={handleInputChange}
-                    placeholder="Ангилал оруулна уу"
                     required
                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                  />
+                  >
+                    <option value="">Ангилал сонгоно уу</option>
+                    <option value="Рубикийн шоо">Рубикийн шоо</option>
+                    <option value="Хуруундай">Хуруундай</option>
+                    <option value="Спорт өрөлт">Спорт өрөлт</option>
+                    <option value="Түргэн бодолт">Түргэн бодолт</option>
+                    <option value="Хурдан уншлага">Хурдан уншлага</option>
+                    <option value="Ой тогтоолт">Ой тогтоолт</option>
+                    <option value="Шатар">Шатар</option>
+                    <option value="Го">Го</option>
+                    <option value="Покер">Покер</option>
+                  </select>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
@@ -1013,8 +1058,7 @@ const AdminTournamentsPage = () => {
                   <label className="block text-sm font-medium text-gray-700">
                     Ангилал
                   </label>
-                  <input
-                    type="text"
+                  <select
                     name="category"
                     value={editFormData.category}
                     onChange={(e) =>
@@ -1023,10 +1067,20 @@ const AdminTournamentsPage = () => {
                         category: e.target.value,
                       }))
                     }
-                    placeholder="Ангилал оруулна уу"
                     required
                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                  />
+                  >
+                    <option value="">Ангилал сонгоно уу</option>
+                    <option value="Рубикийн шоо">Рубикийн шоо</option>
+                    <option value="Хуруундай">Хуруундай</option>
+                    <option value="Спорт өрөлт">Спорт өрөлт</option>
+                    <option value="Түргэн бодолт">Түргэн бодолт</option>
+                    <option value="Хурдан уншлага">Хурдан уншлага</option>
+                    <option value="Ой тогтоолт">Ой тогтоолт</option>
+                    <option value="Шатар">Шатар</option>
+                    <option value="Го">Го</option>
+                    <option value="Покер">Покер</option>
+                  </select>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
