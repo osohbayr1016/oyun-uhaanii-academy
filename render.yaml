@@ -3,8 +3,8 @@ services:
     name: oyun-uhaanii-academy-backend
     env: node
     plan: free
-    buildCommand: cd back-end && npm run build:render
-    startCommand: cd back-end && npm start
+    buildCommand: cd back-end && npm run build:render && ./verify-deployment.sh
+    startCommand: cd back-end && node dist/index.js
     envVars:
       - key: NODE_ENV
         value: production

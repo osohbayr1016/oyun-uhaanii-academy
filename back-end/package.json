@@ -8,7 +8,7 @@
     "start": "npm run prestart && node dist/index.js",
     "dev": "nodemon --exec ts-node src/index.ts",
     "build": "npm install && npx tsc && npx prisma generate",
-    "build:render": "npm install && ./node_modules/.bin/tsc && npx prisma generate",
+    "build:render": "npm install && npx tsc && npx prisma generate",
     "build:deploy": "npm install && npx tsc && npx prisma generate && npx prisma migrate deploy",
     "postinstall": "prisma generate",
     "prisma:migrate": "npx prisma migrate dev",

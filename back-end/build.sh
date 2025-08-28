@@ -18,4 +18,12 @@ echo "🏗️ Compiling TypeScript..."
 npx tsc --version
 npx tsc
 
+echo "📁 Verifying build output..."
+if [ ! -f "dist/index.js" ]; then
+    echo "❌ Error: dist/index.js not found after compilation!"
+    echo "📂 Contents of dist directory:"
+    ls -la dist/
+    exit 1
+fi
+
 echo "✅ Build completed successfully!" 
