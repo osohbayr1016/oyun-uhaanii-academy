@@ -37,7 +37,7 @@ NODE_ENV=production
 4. **Add this environment variable:**
 
 ```
-NEXT_PUBLIC_API_URL=https://oyun-uhaanii-academy.onrender.com
+NEXT_PUBLIC_API_URL=https://oyun-uhaanii-academy-a4m9.onrender.com
 ```
 
 5. **Redeploy your project**
@@ -50,10 +50,10 @@ Run these commands to verify everything works:
 
 ```bash
 # Test backend health
-curl https://oyun-uhaanii-academy.onrender.com/health
+curl https://oyun-uhaanii-academy-a4m9.onrender.com/health
 
 # Test database connection
-curl https://oyun-uhaanii-academy.onrender.com/api/courses
+curl https://oyun-uhaanii-academy-a4m9.onrender.com/api/courses
 
 # Test frontend
 curl https://oyun-uhaanii-academy.vercel.app/api/courses

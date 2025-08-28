@@ -14,7 +14,10 @@ const JWT_SECRET = process.env.JWT_SECRET || "supersecret"; // Fallback for dev,
 // Middleware
 // CORS configuration
 const corsOptions = {
-  origin: function (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) {
+  origin: function (
+    origin: string | undefined,
+    callback: (err: Error | null, allow?: boolean) => void
+  ) {
     const allowedOrigins = [
       "http://localhost:3000",
       "http://localhost:3001",
@@ -22,14 +25,14 @@ const corsOptions = {
       "http://127.0.0.1:3001",
       process.env.CORS_ORIGIN, // Production frontend URL
     ].filter(Boolean); // Remove undefined values
-    
+
     // Allow requests with no origin (like mobile apps or curl requests)
     if (!origin) return callback(null, true);
-    
+
     if (allowedOrigins.indexOf(origin) !== -1) {
       callback(null, true);
     } else {
-      callback(new Error('Not allowed by CORS'));
+      callback(new Error("Not allowed by CORS"));
     }
   },
   credentials: true,

@@ -43,7 +43,7 @@ NODE_ENV=production
 4. **Add this environment variable:**
 
 ```
-NEXT_PUBLIC_API_URL=https://oyun-uhaanii-academy.onrender.com
+NEXT_PUBLIC_API_URL=https://oyun-uhaanii-academy-a4m9.onrender.com
 ```
 
 5. **Redeploy your frontend**
@@ -55,7 +55,7 @@ NEXT_PUBLIC_API_URL=https://oyun-uhaanii-academy.onrender.com
 ### **Test Backend Health:**
 
 ```bash
-curl https://oyun-uhaanii-academy.onrender.com/health
+curl https://oyun-uhaanii-academy-a4m9.onrender.com/health
 ```
 
 **Expected Response:**
@@ -71,7 +71,7 @@ curl https://oyun-uhaanii-academy.onrender.com/health
 ### **Test Database Connection:**
 
 ```bash
-curl https://oyun-uhaanii-academy.onrender.com/api/courses
+curl https://oyun-uhaanii-academy-a4m9.onrender.com/api/courses
 ```
 
 **Expected Response:**
@@ -145,7 +145,7 @@ curl https://oyun-uhaanii-academy.vercel.app/api/courses
 
 | Variable              | Value                                       | Purpose         |
 | --------------------- | ------------------------------------------- | --------------- |
-| `NEXT_PUBLIC_API_URL` | `https://oyun-uhaanii-academy.onrender.com` | Backend API URL |
+| `NEXT_PUBLIC_API_URL` | `https://oyun-uhaanii-academy-a4m9.onrender.com` | Backend API URL |
 
 ---
 
@@ -202,7 +202,7 @@ If you continue to have issues:
 
 ```bash
 # Test current status
-curl https://oyun-uhaanii-academy.onrender.com/health
+curl https://oyun-uhaanii-academy-a4m9.onrender.com/health
 
 # If still failing, the issue is environment variables
 # Follow the step-by-step fix above
