@@ -1,5 +1,6 @@
 import express, { Request, Response, NextFunction } from "express";
 import cors from "cors";
+import compression from "compression";
 import dotenv from "dotenv";
 import { PrismaClient } from "@prisma/client";
 
@@ -41,6 +42,7 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions)); // Enables Cross-Origin Resource Sharing
+app.use(compression()); // Enable gzip/deflate/br compression
 app.use(express.json()); // Parses JSON request bodies
 
 // Import your routes

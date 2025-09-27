@@ -116,3 +116,39 @@ export const api = {
 };
 
 export default apiClient;
+
+// Server-side fetch helper with caching controls
+export async function serverFetchJson<T>(
+  path: string,
+  options?: {
+    revalidateSeconds?: number | false;
+    cache?: RequestCache;
+    init?: RequestInit;
+  }
+): Promise<T> {
+  const API_BASE_URL =
+    process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
+
+  const { revalidateSeconds, cache, init } = options || {};
+
+  const url = path.startsWith("http") ? path : `${API_BASE_URL}${path}`;
+
+  const response = await fetch(url, {
+    ...(init || {}),
+    next:
+      typeof revalidateSeconds === "number"
+        ? { revalidate: revalidateSeconds }
+        : undefined,
+    cache: cache,
+    headers: {
+      Accept: "application/json",
+      ...(init?.headers || {}),
+    },
+  } as RequestInit & { next?: { revalidate: number } });
+
+  if (!response.ok) {
+    const text = await response.text().catch(() => "");
+    throw new Error(`Fetch failed ${response.status}: ${text}`);
+  }
+  return (await response.json()) as T;
+}
