@@ -3,12 +3,15 @@ import cors from "cors";
 import compression from "compression";
 import dotenv from "dotenv";
 import { PrismaClient } from "@prisma/client";
+import { performBackendWarmup } from "./utils/warmup";
+import { createStartupQueueMiddleware } from "./middleware/startupQueue";
 
 // Load environment variables from .env file
 dotenv.config();
 
 const app = express();
 const prisma = new PrismaClient();
+const isWarmingUp = { value: true };
 const PORT = process.env.PORT || 5001;
 const JWT_SECRET = process.env.JWT_SECRET || "supersecret"; // Fallback for dev, but use .env
 
@@ -44,6 +47,8 @@ const corsOptions = {
 app.use(cors(corsOptions)); // Enables Cross-Origin Resource Sharing
 app.use(compression()); // Enable gzip/deflate/br compression
 app.use(express.json()); // Parses JSON request bodies
+// Queue requests during warm-up to avoid concurrent heavy hits on first load
+app.use(createStartupQueueMiddleware(isWarmingUp));
 
 // Import your routes
 import productRoutes from "./routes/productRoutes";
@@ -166,6 +171,16 @@ if (process.env.NODE_ENV !== "test") {
     } catch (error) {
       console.error("❌ Database connection failed:", error);
       console.error("Please check your DATABASE_URL environment variable");
+    }
+
+    // Perform warm-up after server starts listening to avoid blocking boot
+    try {
+      await performBackendWarmup(prisma);
+    } finally {
+      isWarmingUp.value = false;
+      console.log(
+        "🚀 Warm-up gate disabled; serving requests at normal concurrency"
+      );
     }
   });
 }

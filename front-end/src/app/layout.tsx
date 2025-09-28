@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import ConditionalLayout from "./_components/ConditionalLayout";
 import { AuthProvider } from "@/lib/auth";
+import { Analytics } from "@vercel/analytics/react";
 
 export const metadata: Metadata = {
   title: "Academy Officer",
@@ -84,6 +85,7 @@ export default function RootLayout({
           src="https://connect.facebook.net/mn_MN/sdk.js#xfbml=1&version=v18.0"
           nonce="random_nonce"
         />
+        <Analytics />
       </body>
     </html>
   );
