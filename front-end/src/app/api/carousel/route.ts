@@ -1,15 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
+import { fetchWithTimeout } from "@/lib/fetchWithTimeout";
+import { getApiBaseUrl } from "@/lib/env";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
+const API_BASE_URL = getApiBaseUrl();
 
 export async function GET() {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/carousel`, {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/api/carousel`, {
       headers: {
         "Content-Type": "application/json",
       },
-      // Remove caching to ensure fresh data
-      cache: "no-store",
+      next: { revalidate: 600 },
+      timeoutMs: 6000,
     });
 
     if (!response.ok) {
@@ -36,10 +38,11 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const response = await fetch(`${API_BASE_URL}/api/carousel`, {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/api/carousel`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
+      timeoutMs: 8000,
     });
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);

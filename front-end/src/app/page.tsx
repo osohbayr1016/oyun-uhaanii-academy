@@ -1,6 +1,8 @@
 import Link from "next/link";
 import Image from "next/image";
 import HeroSection from "./_components/HeroSection";
+import { fetchWithTimeout } from "@/lib/fetchWithTimeout";
+import { getApiBaseUrl } from "@/lib/env";
 import InteractiveCarousel from "./_components/InteractiveCarousel";
 import { Brain, Crown, Earth, Medal, Star, Trophy } from "lucide-react";
 
@@ -26,14 +28,19 @@ interface CarouselImage {
   imageUrl: string;
 }
 
+export const revalidate = 300;
+
 // Server-side data fetching
 async function getHomeContent(): Promise<HomeContent> {
   try {
-    const API_BASE_URL =
-      process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
-    const response = await fetch(`${API_BASE_URL}/api/home-content`, {
-      next: { revalidate: 3600 }, // Cache for 1 hour
-    });
+    const API_BASE_URL = getApiBaseUrl();
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/api/home-content`,
+      {
+        next: { revalidate: 3600 },
+        timeoutMs: 6000,
+      }
+    );
 
     if (!response.ok) {
       console.error("Failed to fetch home content:", response.status);
@@ -49,10 +56,10 @@ async function getHomeContent(): Promise<HomeContent> {
 
 async function getCarouselImages(): Promise<CarouselImage[]> {
   try {
-    const API_BASE_URL =
-      process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
-    const response = await fetch(`${API_BASE_URL}/api/carousel`, {
-      cache: "no-store", // No caching to ensure fresh data
+    const API_BASE_URL = getApiBaseUrl();
+    const response = await fetchWithTimeout(`${API_BASE_URL}/api/carousel`, {
+      next: { revalidate: 600 },
+      timeoutMs: 6000,
     });
 
     if (!response.ok) {

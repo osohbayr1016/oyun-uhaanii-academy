@@ -1,6 +1,8 @@
 import axios, { AxiosInstance, AxiosResponse, AxiosError } from "axios";
+import { fetchWithTimeout } from "./fetchWithTimeout";
+import { getApiBaseUrl } from "./env";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
+const API_BASE_URL = getApiBaseUrl();
 
 // Create axios instance with default configuration
 const apiClient: AxiosInstance = axios.create({
@@ -124,16 +126,16 @@ export async function serverFetchJson<T>(
     revalidateSeconds?: number | false;
     cache?: RequestCache;
     init?: RequestInit;
+    timeoutMs?: number;
   }
 ): Promise<T> {
-  const API_BASE_URL =
-    process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
+  const API_BASE_URL = getApiBaseUrl();
 
-  const { revalidateSeconds, cache, init } = options || {};
+  const { revalidateSeconds, cache, init, timeoutMs } = options || {};
 
   const url = path.startsWith("http") ? path : `${API_BASE_URL}${path}`;
 
-  const response = await fetch(url, {
+  const response = await fetchWithTimeout(url, {
     ...(init || {}),
     next:
       typeof revalidateSeconds === "number"
@@ -144,7 +146,8 @@ export async function serverFetchJson<T>(
       Accept: "application/json",
       ...(init?.headers || {}),
     },
-  } as RequestInit & { next?: { revalidate: number } });
+    timeoutMs: timeoutMs ?? 8000,
+  } as any);
 
   if (!response.ok) {
     const text = await response.text().catch(() => "");
