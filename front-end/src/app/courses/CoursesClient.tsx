@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import CourseCard from "./_components/CourseCard";
 
-type Course = {
+export type Course = {
   id: string;
   title: string;
   description: string;

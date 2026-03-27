@@ -3,6 +3,7 @@
 export type WorkerBindings = {
   HYPERDRIVE: Hyperdrive;
   JWT_SECRET?: string;
+  /** One origin or comma-separated list (e.g. www + apex domain). */
   CORS_ORIGIN?: string;
   /** Public site URL for email links (newsletter unsubscribe, etc.) */
   FRONTEND_URL?: string;

@@ -1,8 +1,6 @@
 export type FetchWithTimeoutInit = RequestInit & {
   timeoutMs?: number;
-  // Allow Next.js extended init
-  // eslint-disable-next-line @typescript-eslint/ban-types
-  next?: { revalidate?: number } & {};
+  next?: { revalidate?: number } & Record<string, unknown>;
 };
 
 export async function fetchWithTimeout(

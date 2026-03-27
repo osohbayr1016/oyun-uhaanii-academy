@@ -21,6 +21,7 @@ localConnectionString = "postgresql://postgres:postgres@127.0.0.1:5432/postgres"
 
 [vars]
 NODE_ENV = "production"
-# Set your real Vercel URL so browsers can call the API (or set in Dashboard → Settings → Variables)
-# CORS_ORIGIN = "https://your-app.vercel.app"
-# FRONTEND_URL = "https://your-app.vercel.app"
+# Public site (no trailing slash) — email links, redirects
+FRONTEND_URL = "https://www.academyofficer.mn"
+# Browsers send Origin per host; list www + apex if both are used
+CORS_ORIGIN = "https://www.academyofficer.mn,https://academyofficer.mn"

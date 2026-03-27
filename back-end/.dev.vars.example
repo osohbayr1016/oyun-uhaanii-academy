@@ -2,3 +2,4 @@
 JWT_SECRET=your-local-secret
 CORS_ORIGIN=http://localhost:3000
 FRONTEND_URL=http://localhost:3000
+# Production-style (wrangler.toml [vars]): FRONTEND_URL + CORS_ORIGIN for www + apex
