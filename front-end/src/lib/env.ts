@@ -16,21 +16,48 @@ function isWrongApiUrl(url: string): boolean {
   }
 }
 
+function isLocalhostUrl(url: string): boolean {
+  try {
+    const { hostname } = new URL(url);
+    return hostname === "localhost" || hostname === "127.0.0.1";
+  } catch {
+    return false;
+  }
+}
+
+/** True when running on Vercel preview or production (not `vercel dev`). */
+function isDeployedOnVercel(): boolean {
+  const v = process.env.VERCEL_ENV;
+  return v === "preview" || v === "production";
+}
+
 export function getApiBaseUrl(): string {
   const raw = process.env.NEXT_PUBLIC_API_URL?.trim();
   if (raw) {
     if (isWrongApiUrl(raw)) {
-      if (process.env.NODE_ENV === "production") {
-        console.warn(
-          "[env] NEXT_PUBLIC_API_URL must be your Worker URL, not the website. Using default API URL."
-        );
-      }
+      console.warn(
+        "[env] NEXT_PUBLIC_API_URL must be your Worker URL, not the website. Using default API URL."
+      );
+      return DEFAULT_PRODUCTION_API_URL;
+    }
+    if (isLocalhostUrl(raw) && isDeployedOnVercel()) {
+      console.warn(
+        "[env] NEXT_PUBLIC_API_URL points to localhost on Vercel; using default Worker URL."
+      );
       return DEFAULT_PRODUCTION_API_URL;
     }
     return raw;
   }
 
-  if (process.env.NODE_ENV !== "production") {
+  // No explicit URL: local `next dev` / `vercel dev` uses local backend; deployed Vercel uses Worker
+  if (process.env.VERCEL_ENV === "development") {
+    return "http://localhost:5001";
+  }
+  if (
+    process.env.NODE_ENV !== "production" &&
+    !process.env.VERCEL_ENV &&
+    !process.env.VERCEL
+  ) {
     return "http://localhost:5001";
   }
 

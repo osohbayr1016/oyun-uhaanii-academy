@@ -6,8 +6,10 @@ export async function GET(request: NextRequest) {
     const backendUrl =
       getApiBaseUrl();
     const response = await fetch(`${backendUrl}/api/courses`, {
+      cache: "no-store",
       headers: {
         "Content-Type": "application/json",
+        Accept: "application/json",
       },
     });
 
@@ -50,6 +52,7 @@ export async function POST(request: NextRequest) {
 
     const response = await fetch(`${backendUrl}/api/courses`, {
       method: "POST",
+      cache: "no-store",
       headers: {
         "Content-Type": "application/json",
         Authorization: request.headers.get("Authorization") || "",

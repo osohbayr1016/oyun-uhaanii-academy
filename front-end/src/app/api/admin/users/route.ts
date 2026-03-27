@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getApiBaseUrl } from "@/lib/env";
 
-const API_BASE_URL = getApiBaseUrl();
-
 export async function GET(req: NextRequest) {
   try {
     // Try to get the token from the request headers (SSR) or from cookies (browser)
@@ -21,9 +19,11 @@ export async function GET(req: NextRequest) {
     if (token && !/^bearer /i.test(token)) {
       token = `Bearer ${token}`;
     }
-    const response = await fetch(`${API_BASE_URL}/api/admin/users`, {
+    const response = await fetch(`${getApiBaseUrl()}/api/admin/users`, {
+      cache: "no-store",
       headers: {
         "Content-Type": "application/json",
+        Accept: "application/json",
         Authorization: token,
       },
     });
