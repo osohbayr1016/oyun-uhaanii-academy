@@ -1,48 +1,49 @@
-import { Request, Response } from "express";
-import { PrismaClient } from "@prisma/client";
+import { getPrisma } from "../utils/prisma";
+import type { PublicCtx } from "../types/context";
 
-const prisma = new PrismaClient();
-
-export const getAllProducts = async (req: Request, res: Response) => {
+export const getAllProducts = async (c: PublicCtx) => {
   try {
-    const products = await prisma.product.findMany({
+    const products = await getPrisma().product.findMany({
       orderBy: { createdAt: "desc" },
     });
-    res.json(products);
+    return c.json(products);
   } catch (error) {
     console.error("Get all products error:", error);
     if (process.env.NODE_ENV === "development") {
-      res.status(500).json({
-        message: "Failed to fetch products",
-        error: error instanceof Error ? error.stack : error,
-      });
-    } else {
-      res.status(500).json({ message: "Failed to fetch products" });
+      return c.json(
+        {
+          message: "Failed to fetch products",
+          error: error instanceof Error ? error.stack : error,
+        },
+        500
+      );
     }
+    return c.json({ message: "Failed to fetch products" }, 500);
   }
 };
 
-export const getProductById = async (req: Request, res: Response) => {
+export const getProductById = async (c: PublicCtx) => {
   try {
-    const { id } = req.params;
-    const product = await prisma.product.findUnique({
+    const id = c.req.param("id");
+    const product = await getPrisma().product.findUnique({
       where: { id },
     });
 
     if (!product) {
-      return res.status(404).json({ message: "Product not found" });
+      return c.json({ message: "Product not found" }, 404);
     }
 
-    res.json(product);
+    return c.json(product);
   } catch (error) {
     console.error("Get product by ID error:", error);
-    res.status(500).json({ message: "Failed to fetch product" });
+    return c.json({ message: "Failed to fetch product" }, 500);
   }
 };
 
-export const createProduct = async (req: Request, res: Response) => {
+export const createProduct = async (c: PublicCtx) => {
   try {
-    console.log("Backend: Received product data:", req.body);
+    const body = await c.req.json<Record<string, unknown>>();
+    console.log("Backend: Received product data:", body);
 
     const {
       name,
@@ -55,66 +56,58 @@ export const createProduct = async (req: Request, res: Response) => {
       materials,
       dimensions,
       stockStatusText,
-    } = req.body;
+    } = body;
 
-    // Validate required fields
-    if (!name || !name.trim()) {
-      return res.status(400).json({
-        message: "Product name is required",
-      });
+    if (!name || !String(name).trim()) {
+      return c.json({ message: "Product name is required" }, 400);
     }
 
-    if (!price || isNaN(parseFloat(price))) {
-      return res.status(400).json({
-        message: "Valid price is required",
-      });
+    if (!price || isNaN(parseFloat(String(price)))) {
+      return c.json({ message: "Valid price is required" }, 400);
     }
 
-    if (!description || !description.trim()) {
-      return res.status(400).json({
-        message: "Product description is required",
-      });
+    if (!description || !String(description).trim()) {
+      return c.json({ message: "Product description is required" }, 400);
     }
 
-    if (!category || !category.trim()) {
-      return res.status(400).json({
-        message: "Product category is required",
-      });
+    if (!category || !String(category).trim()) {
+      return c.json({ message: "Product category is required" }, 400);
     }
 
     const productData = {
-      name: name.trim(),
-      price: parseFloat(price),
-      currency: currency || "MNT",
-      imageUrl: imageUrl || "",
-      description: description.trim(),
-      category: category.trim(),
-      stock: parseInt(stock) || 0,
-      materials: materials || [],
-      dimensions: dimensions || {},
-      stockStatusText: stockStatusText || null,
+      name: String(name).trim(),
+      price: parseFloat(String(price)),
+      currency: (currency as string) || "MNT",
+      imageUrl: (imageUrl as string) || "",
+      description: String(description).trim(),
+      category: String(category).trim(),
+      stock: parseInt(String(stock), 10) || 0,
+      materials: (materials as string[]) || [],
+      dimensions: (dimensions as object) || {},
+      stockStatusText: (stockStatusText as string | null) || null,
     };
 
-    console.log("Backend: Creating product with data:", productData);
-
-    const product = await prisma.product.create({
+    const product = await getPrisma().product.create({
       data: productData,
     });
 
-    console.log("Backend: Product created successfully:", product);
-    res.status(201).json(product);
+    return c.json(product, 201);
   } catch (error) {
     console.error("Backend: Create product error:", error);
-    res.status(500).json({
-      message: "Failed to create product",
-      error: error instanceof Error ? error.message : "Unknown error",
-    });
+    return c.json(
+      {
+        message: "Failed to create product",
+        error: error instanceof Error ? error.message : "Unknown error",
+      },
+      500
+    );
   }
 };
 
-export const updateProduct = async (req: Request, res: Response) => {
+export const updateProduct = async (c: PublicCtx) => {
   try {
-    const { id } = req.params;
+    const id = c.req.param("id");
+    const body = await c.req.json<Record<string, unknown>>();
     const {
       name,
       price,
@@ -126,52 +119,55 @@ export const updateProduct = async (req: Request, res: Response) => {
       materials,
       dimensions,
       stockStatusText,
-    } = req.body;
+    } = body;
 
-    const existingProduct = await prisma.product.findUnique({
+    const existingProduct = await getPrisma().product.findUnique({
       where: { id },
     });
 
     if (!existingProduct) {
-      return res.status(404).json({ message: "Product not found" });
+      return c.json({ message: "Product not found" }, 404);
     }
 
-    const product = await prisma.product.update({
+    const product = await getPrisma().product.update({
       where: { id },
       data: {
-        name: name ? name.trim() : undefined,
-        price: price ? parseFloat(price) : undefined,
-        currency,
-        imageUrl,
-        description: description ? description.trim() : undefined,
-        category: category ? category.trim() : undefined,
-        stock: stock ? parseInt(stock) : undefined,
-        materials,
-        dimensions,
+        name: name ? String(name).trim() : undefined,
+        price: price ? parseFloat(String(price)) : undefined,
+        currency: currency as string | undefined,
+        imageUrl: imageUrl as string | undefined,
+        description: description ? String(description).trim() : undefined,
+        category: category ? String(category).trim() : undefined,
+        stock: stock ? parseInt(String(stock), 10) : undefined,
+        materials: materials as string[] | undefined,
+        dimensions: dimensions as object | undefined,
         stockStatusText: stockStatusText || null,
       },
     });
 
-    res.json(product);
+    return c.json(product);
   } catch (error) {
     console.error("Backend: Update product error:", error);
-    res.status(500).json({
-      message: "Failed to update product",
-      error: error instanceof Error ? error.message : "Unknown error",
-    });
+    return c.json(
+      {
+        message: "Failed to update product",
+        error: error instanceof Error ? error.message : "Unknown error",
+      },
+      500
+    );
   }
 };
 
-export const deleteProduct = async (req: Request, res: Response) => {
+export const deleteProduct = async (c: PublicCtx) => {
   try {
-    const { id } = req.params;
-    await prisma.product.delete({
+    const id = c.req.param("id");
+    await getPrisma().product.delete({
       where: { id },
     });
 
-    res.json({ message: "Product deleted successfully" });
+    return c.json({ message: "Product deleted successfully" });
   } catch (error) {
     console.error("Delete product error:", error);
-    res.status(500).json({ message: "Failed to delete product" });
+    return c.json({ message: "Failed to delete product" }, 500);
   }
 };

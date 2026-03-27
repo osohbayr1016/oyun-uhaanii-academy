@@ -1,9 +1,10 @@
-import request from "supertest";
-import { app, prisma } from "../src/index";
+import { app } from "../src/index";
+import { getPrisma } from "../src/utils/prisma";
+
+const prisma = getPrisma();
 
 describe("Products Controller", () => {
   beforeAll(async () => {
-    // Clean up database before tests
     await prisma.product.deleteMany();
   });
 
@@ -13,13 +14,13 @@ describe("Products Controller", () => {
 
   describe("GET /api/products", () => {
     it("should return empty array when no products exist", async () => {
-      const response = await request(app).get("/api/products").expect(200);
-
-      expect(response.body).toEqual([]);
+      const response = await app.request("http://localhost/api/products");
+      expect(response.status).toBe(200);
+      const body = await response.json();
+      expect(body).toEqual([]);
     });
 
     it("should return all products", async () => {
-      // Create a test product
       const testProduct = await prisma.product.create({
         data: {
           name: "Test Product",
@@ -34,12 +35,13 @@ describe("Products Controller", () => {
         },
       });
 
-      const response = await request(app).get("/api/products").expect(200);
-
-      expect(Array.isArray(response.body)).toBe(true);
-      expect(response.body.length).toBeGreaterThan(0);
-      expect(response.body[0]).toHaveProperty("id");
-      expect(response.body[0].name).toBe(testProduct.name);
+      const response = await app.request("http://localhost/api/products");
+      expect(response.status).toBe(200);
+      const body = (await response.json()) as Array<{ id: string; name: string }>;
+      expect(Array.isArray(body)).toBe(true);
+      expect(body.length).toBeGreaterThan(0);
+      expect(body[0]).toHaveProperty("id");
+      expect(body[0].name).toBe(testProduct.name);
     });
   });
 
@@ -57,33 +59,37 @@ describe("Products Controller", () => {
         dimensions: { width: 10, height: 10 },
       };
 
-      const response = await request(app)
-        .post("/api/products")
-        .send(productData)
-        .expect(201);
+      const response = await app.request("http://localhost/api/products", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(productData),
+      });
 
-      expect(response.body).toHaveProperty("id");
-      expect(response.body.name).toBe(productData.name);
-      expect(response.body.price).toBe(productData.price);
-      expect(response.body.materials).toEqual(productData.materials);
+      expect(response.status).toBe(201);
+      const body = (await response.json()) as typeof productData & { id: string };
+      expect(body).toHaveProperty("id");
+      expect(body.name).toBe(productData.name);
+      expect(body.price).toBe(productData.price);
+      expect(body.materials).toEqual(productData.materials);
     });
 
     it("should return 400 for invalid product data", async () => {
       const invalidProductData = {
-        name: "", // Invalid: empty name
-        price: -100, // Invalid: negative price
+        name: "",
+        price: -100,
       };
 
-      await request(app)
-        .post("/api/products")
-        .send(invalidProductData)
-        .expect(400);
+      const response = await app.request("http://localhost/api/products", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(invalidProductData),
+      });
+      expect(response.status).toBe(400);
     });
   });
 
   describe("GET /api/products/:id", () => {
     it("should return a specific product", async () => {
-      // Create a test product
       const testProduct = await prisma.product.create({
         data: {
           name: "Specific Product",
@@ -98,24 +104,25 @@ describe("Products Controller", () => {
         },
       });
 
-      const response = await request(app)
-        .get(`/api/products/${testProduct.id}`)
-        .expect(200);
-
-      expect(response.body.id).toBe(testProduct.id);
-      expect(response.body.name).toBe(testProduct.name);
+      const response = await app.request(
+        `http://localhost/api/products/${testProduct.id}`
+      );
+      expect(response.status).toBe(200);
+      const body = (await response.json()) as { id: string; name: string };
+      expect(body.id).toBe(testProduct.id);
+      expect(body.name).toBe(testProduct.name);
     });
 
     it("should return 404 for non-existent product", async () => {
-      const nonExistentId = "non-existent-id";
-
-      await request(app).get(`/api/products/${nonExistentId}`).expect(404);
+      const response = await app.request(
+        "http://localhost/api/products/non-existent-id"
+      );
+      expect(response.status).toBe(404);
     });
   });
 
   describe("PUT /api/products/:id", () => {
     it("should update a product successfully", async () => {
-      // Create a test product
       const testProduct = await prisma.product.create({
         data: {
           name: "Original Name",
@@ -136,20 +143,25 @@ describe("Products Controller", () => {
         stock: 20,
       };
 
-      const response = await request(app)
-        .put(`/api/products/${testProduct.id}`)
-        .send(updateData)
-        .expect(200);
+      const response = await app.request(
+        `http://localhost/api/products/${testProduct.id}`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(updateData),
+        }
+      );
 
-      expect(response.body.name).toBe(updateData.name);
-      expect(response.body.price).toBe(updateData.price);
-      expect(response.body.stock).toBe(updateData.stock);
+      expect(response.status).toBe(200);
+      const body = (await response.json()) as typeof updateData;
+      expect(body.name).toBe(updateData.name);
+      expect(body.price).toBe(updateData.price);
+      expect(body.stock).toBe(updateData.stock);
     });
   });
 
   describe("DELETE /api/products/:id", () => {
     it("should delete a product successfully", async () => {
-      // Create a test product
       const testProduct = await prisma.product.create({
         data: {
           name: "To Delete",
@@ -164,10 +176,16 @@ describe("Products Controller", () => {
         },
       });
 
-      await request(app).delete(`/api/products/${testProduct.id}`).expect(200);
+      const del = await app.request(
+        `http://localhost/api/products/${testProduct.id}`,
+        { method: "DELETE" }
+      );
+      expect(del.status).toBe(200);
 
-      // Verify product is deleted
-      await request(app).get(`/api/products/${testProduct.id}`).expect(404);
+      const get = await app.request(
+        `http://localhost/api/products/${testProduct.id}`
+      );
+      expect(get.status).toBe(404);
     });
   });
 });

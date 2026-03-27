@@ -1,19 +1,14 @@
-import express from "express";
+import { Hono } from "hono";
 import {
   getHomeContent,
   createHomeContent,
   updateHomeContent,
 } from "../controllers/homeContentController";
+import type { AppEnv } from "../hono/appEnv";
 
-const router = express.Router();
+const r = new Hono<AppEnv>();
+r.get("/", getHomeContent);
+r.post("/", createHomeContent);
+r.put("/", updateHomeContent);
 
-// GET /api/home-content
-router.get("/", getHomeContent);
-
-// POST /api/home-content
-router.post("/", createHomeContent);
-
-// PUT /api/home-content
-router.put("/", updateHomeContent);
-
-export default router; 
+export default r;

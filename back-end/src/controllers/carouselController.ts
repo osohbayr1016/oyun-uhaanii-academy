@@ -1,51 +1,49 @@
-import { Request, Response } from "express";
-import { PrismaClient } from "@prisma/client";
-const prisma = new PrismaClient();
+import { getPrisma } from "../utils/prisma";
+import type { PublicCtx } from "../types/context";
 
-export const getCarouselImages = async (req: Request, res: Response) => {
+export const getCarouselImages = async (c: PublicCtx) => {
   try {
-    const images = await prisma.carouselImage.findMany({
+    const images = await getPrisma().carouselImage.findMany({
       orderBy: { createdAt: "asc" },
     });
-    res.json(images);
-  } catch (error) {
-    res.status(500).json({ message: "Failed to fetch carousel images" });
+    return c.json(images);
+  } catch {
+    return c.json({ message: "Failed to fetch carousel images" }, 500);
   }
 };
 
-export const addCarouselImage = async (req: Request, res: Response) => {
+export const addCarouselImage = async (c: PublicCtx) => {
   try {
-    const { imageUrl } = req.body;
+    const body = await c.req.json<{ imageUrl?: string }>();
+    const { imageUrl } = body;
     if (!imageUrl || !imageUrl.trim()) {
-      return res.status(400).json({ message: "Image URL is required" });
+      return c.json({ message: "Image URL is required" }, 400);
     }
-    const image = await prisma.carouselImage.create({
+    const image = await getPrisma().carouselImage.create({
       data: { imageUrl: imageUrl.trim() },
     });
-    res.status(201).json(image);
-  } catch (error) {
-    res.status(500).json({ message: "Failed to add carousel image" });
+    return c.json(image, 201);
+  } catch {
+    return c.json({ message: "Failed to add carousel image" }, 500);
   }
 };
 
-export const deleteCarouselImage = async (req: Request, res: Response) => {
+export const deleteCarouselImage = async (c: PublicCtx) => {
   try {
-    const { id } = req.params;
+    const id = c.req.param("id");
 
-    // Check if the image exists before trying to delete it
-    const existingImage = await prisma.carouselImage.findUnique({
+    const existingImage = await getPrisma().carouselImage.findUnique({
       where: { id },
     });
 
     if (!existingImage) {
-      return res.status(404).json({ message: "Carousel image not found" });
+      return c.json({ message: "Carousel image not found" }, 404);
     }
 
-    // Delete the image
-    await prisma.carouselImage.delete({ where: { id } });
-    res.json({ message: "Carousel image deleted successfully" });
+    await getPrisma().carouselImage.delete({ where: { id } });
+    return c.json({ message: "Carousel image deleted successfully" });
   } catch (error) {
     console.error("Error deleting carousel image:", error);
-    res.status(500).json({ message: "Failed to delete carousel image" });
+    return c.json({ message: "Failed to delete carousel image" }, 500);
   }
 };

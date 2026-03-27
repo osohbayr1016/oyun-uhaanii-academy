@@ -1,180 +1,145 @@
-import { Request, Response } from "express";
-import { prisma } from "../utils/prisma";
-import nodemailer from "nodemailer";
+import { getPrisma } from "../utils/prisma";
+import { sendEmailViaResend } from "../utils/mail";
+import type { AppCtx } from "../types/context";
+import type { PublicCtx } from "../types/context";
 
-// Subscribe to newsletter
-export const subscribeToNewsletter = async (req: Request, res: Response) => {
+function frontendBase(c: { env: { FRONTEND_URL?: string } }) {
+  return c.env.FRONTEND_URL ?? process.env.FRONTEND_URL ?? "http://localhost:3000";
+}
+
+export const subscribeToNewsletter = async (c: PublicCtx) => {
   try {
-    const { email } = req.body;
+    const body = await c.req.json<{ email?: string }>();
+    const { email } = body;
 
     if (!email || !email.trim()) {
-      return res.status(400).json({ message: "Имэйл хаяг шаардлагатай" });
+      return c.json({ message: "Имэйл хаяг шаардлагатай" }, 400);
     }
 
-    // Basic email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      return res.status(400).json({ message: "Имэйл хаяг буруу байна" });
+      return c.json({ message: "Имэйл хаяг буруу байна" }, 400);
     }
 
-    // Check if already subscribed
-    const existingSubscription = await prisma.newsletter.findUnique({
+    const existingSubscription = await getPrisma().newsletter.findUnique({
       where: { email: email.toLowerCase() },
     });
 
     if (existingSubscription) {
       if (existingSubscription.isActive) {
-        return res
-          .status(400)
-          .json({ message: "Энэ имэйл хаяг аль хэдийн бүртгэгдсэн байна" });
-      } else {
-        // Reactivate subscription
-        await prisma.newsletter.update({
-          where: { email: email.toLowerCase() },
-          data: { isActive: true },
-        });
-        return res.json({
-          message: "Мэдээний жагсаалтад амжилттай бүртгэгдлээ",
-        });
+        return c.json(
+          { message: "Энэ имэйл хаяг аль хэдийн бүртгэгдсэн байна" },
+          400
+        );
       }
+      await getPrisma().newsletter.update({
+        where: { email: email.toLowerCase() },
+        data: { isActive: true },
+      });
+      return c.json({
+        message: "Мэдээний жагсаалтад амжилттай бүртгэгдлээ",
+      });
     }
 
-    // Create new subscription
-    await prisma.newsletter.create({
+    await getPrisma().newsletter.create({
       data: {
         email: email.toLowerCase(),
         isActive: true,
       },
     });
 
-    res
-      .status(201)
-      .json({ message: "Мэдээний жагсаалтад амжилттай бүртгэгдлээ" });
+    return c.json(
+      { message: "Мэдээний жагсаалтад амжилттай бүртгэгдлээ" },
+      201
+    );
   } catch (error) {
     console.error("Error subscribing to newsletter:", error);
-    res.status(500).json({ message: "Серверийн алдаа" });
+    return c.json({ message: "Серверийн алдаа" }, 500);
   }
 };
 
-// Unsubscribe from newsletter
-export const unsubscribeFromNewsletter = async (
-  req: Request,
-  res: Response
-) => {
+export const unsubscribeFromNewsletter = async (c: PublicCtx) => {
   try {
-    const { token } = req.params;
+    const token = c.req.param("token");
 
-    const subscription = await prisma.newsletter.findUnique({
+    const subscription = await getPrisma().newsletter.findUnique({
       where: { unsubscribeToken: token },
     });
 
     if (!subscription) {
-      return res.status(404).json({ message: "Бүртгэл олдсонгүй" });
+      return c.json({ message: "Бүртгэл олдсонгүй" }, 404);
     }
 
-    await prisma.newsletter.update({
+    await getPrisma().newsletter.update({
       where: { unsubscribeToken: token },
       data: { isActive: false },
     });
 
-    res.json({ message: "Мэдээний жагсаалтаас амжилттай хасагдлаа" });
+    return c.json({ message: "Мэдээний жагсаалтаас амжилттай хасагдлаа" });
   } catch (error) {
     console.error("Error unsubscribing from newsletter:", error);
-    res.status(500).json({ message: "Серверийн алдаа" });
+    return c.json({ message: "Серверийн алдаа" }, 500);
   }
 };
 
-// Get all active subscribers (admin only)
-export const getNewsletterSubscribers = async (req: Request, res: Response) => {
+export const getNewsletterSubscribers = async (c: AppCtx) => {
   try {
-    const subscribers = await prisma.newsletter.findMany({
+    const subscribers = await getPrisma().newsletter.findMany({
       where: { isActive: true },
       orderBy: { subscribedAt: "desc" },
     });
 
-    res.json(subscribers);
+    return c.json(subscribers);
   } catch (error) {
     console.error("Error fetching newsletter subscribers:", error);
-    res.status(500).json({ message: "Серверийн алдаа" });
+    return c.json({ message: "Серверийн алдаа" }, 500);
   }
 };
 
-// Send weekly newsletter (admin only)
-export const sendWeeklyNewsletter = async (req: Request, res: Response) => {
+export const sendWeeklyNewsletter = async (c: AppCtx) => {
   try {
-    const { subject, content } = req.body;
+    const body = await c.req.json<{ subject?: string; content?: string }>();
+    const { subject, content } = body;
 
     if (!subject || !content) {
-      return res
-        .status(400)
-        .json({ message: "Гарчиг болон агуулга шаардлагатай" });
+      return c.json({ message: "Гарчиг болон агуулга шаардлагатай" }, 400);
     }
 
-    // Get all active subscribers
-    const subscribers = await prisma.newsletter.findMany({
+    const subscribers = await getPrisma().newsletter.findMany({
       where: { isActive: true },
     });
 
     if (subscribers.length === 0) {
-      return res
-        .status(400)
-        .json({ message: "Идэвхтэй бүртгэлтэй хэрэглэгч байхгүй байна" });
+      return c.json(
+        { message: "Идэвхтэй бүртгэлтэй хэрэглэгч байхгүй байна" },
+        400
+      );
     }
 
-    // Check SMTP configuration
-    const smtpHost = process.env.SMTP_HOST;
-    const smtpUser = process.env.SMTP_USER;
-    const smtpPass = process.env.SMTP_PASS;
+    const apiKey = c.env.RESEND_API_KEY ?? process.env.RESEND_API_KEY;
+    const fromEmail =
+      c.env.RESEND_FROM_EMAIL ??
+      process.env.RESEND_FROM_EMAIL ??
+      process.env.SMTP_USER;
 
-    if (!smtpHost || !smtpUser || !smtpPass) {
-      console.error("SMTP configuration missing:", {
-        host: smtpHost ? "set" : "missing",
-        user: smtpUser ? "set" : "missing",
-        pass: smtpPass ? "set" : "missing",
-      });
-      return res.status(500).json({
-        message:
-          "Имэйл тохиргоо дутуу байна. SMTP_HOST, SMTP_USER, SMTP_PASS тохируулна уу.",
-        error: "SMTP_CONFIG_MISSING",
-      });
-    }
-
-    // Configure email transporter
-    const transporter = nodemailer.createTransport({
-      host: smtpHost,
-      port: parseInt(process.env.SMTP_PORT || "587"),
-      secure: false,
-      auth: {
-        user: smtpUser,
-        pass: smtpPass,
-      },
-    });
-
-    // Verify SMTP connection
-    try {
-      await transporter.verify();
-      console.log("SMTP connection verified successfully");
-    } catch (verifyError) {
-      console.error("SMTP verification failed:", verifyError);
-      return res.status(500).json({
-        message:
-          "Имэйл серверийн холболт амжилтгүй. SMTP тохиргоог шалгана уу.",
-        error: "SMTP_VERIFICATION_FAILED",
-        details:
-          verifyError instanceof Error ? verifyError.message : "Unknown error",
-      });
+    if (!apiKey || !fromEmail) {
+      return c.json(
+        {
+          message:
+            "Имэйл тохиргоо дутуу байна. RESEND_API_KEY болон RESEND_FROM_EMAIL (эсвэл SMTP_USER) тохируулна уу.",
+          error: "EMAIL_CONFIG_MISSING",
+        },
+        500
+      );
     }
 
     let successCount = 0;
     let errorCount = 0;
     const errors: string[] = [];
 
-    // Send emails to all subscribers
     for (const subscriber of subscribers) {
       try {
-        const unsubscribeUrl = `${
-          process.env.FRONTEND_URL || "http://localhost:3000"
-        }/unsubscribe/${subscriber.unsubscribeToken}`;
+        const unsubscribeUrl = `${frontendBase(c)}/unsubscribe/${subscriber.unsubscribeToken}`;
 
         const emailContent = `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -191,33 +156,29 @@ export const sendWeeklyNewsletter = async (req: Request, res: Response) => {
           </div>
         `;
 
-        await transporter.sendMail({
-          from: smtpUser,
+        await sendEmailViaResend(apiKey, {
+          from: fromEmail,
           to: subscriber.email,
-          subject: subject,
+          subject,
           html: emailContent,
         });
 
-        // Update last email sent timestamp
-        await prisma.newsletter.update({
+        await getPrisma().newsletter.update({
           where: { id: subscriber.id },
           data: { lastEmailSent: new Date() },
         });
 
         successCount++;
-        console.log(`✅ Email sent successfully to: ${subscriber.email}`);
-      } catch (error) {
-        console.error(`❌ Error sending email to ${subscriber.email}:`, error);
+      } catch (err) {
+        console.error(`Error sending email to ${subscriber.email}:`, err);
         errorCount++;
         errors.push(
-          `${subscriber.email}: ${
-            error instanceof Error ? error.message : "Unknown error"
-          }`
+          `${subscriber.email}: ${err instanceof Error ? err.message : "Unknown error"}`
         );
       }
     }
 
-    res.json({
+    return c.json({
       message: `Имэйл илгээлт дууссан. Амжилттай: ${successCount}, Алдаа: ${errorCount}`,
       successCount,
       errorCount,
@@ -225,25 +186,27 @@ export const sendWeeklyNewsletter = async (req: Request, res: Response) => {
     });
   } catch (error) {
     console.error("Error sending weekly newsletter:", error);
-    res.status(500).json({
-      message: "Серверийн алдаа",
-      error: error instanceof Error ? error.message : "Unknown error",
-    });
+    return c.json(
+      {
+        message: "Серверийн алдаа",
+        error: error instanceof Error ? error.message : "Unknown error",
+      },
+      500
+    );
   }
 };
 
-// Get newsletter statistics (admin only)
-export const getNewsletterStats = async (req: Request, res: Response) => {
+export const getNewsletterStats = async (c: AppCtx) => {
   try {
-    const totalSubscribers = await prisma.newsletter.count({
+    const totalSubscribers = await getPrisma().newsletter.count({
       where: { isActive: true },
     });
 
-    const totalUnsubscribed = await prisma.newsletter.count({
+    const totalUnsubscribed = await getPrisma().newsletter.count({
       where: { isActive: false },
     });
 
-    const thisWeekSubscribers = await prisma.newsletter.count({
+    const thisWeekSubscribers = await getPrisma().newsletter.count({
       where: {
         isActive: true,
         subscribedAt: {
@@ -252,13 +215,13 @@ export const getNewsletterStats = async (req: Request, res: Response) => {
       },
     });
 
-    res.json({
+    return c.json({
       totalSubscribers,
       totalUnsubscribed,
       thisWeekSubscribers,
     });
   } catch (error) {
     console.error("Error fetching newsletter stats:", error);
-    res.status(500).json({ message: "Серверийн алдаа" });
+    return c.json({ message: "Серверийн алдаа" }, 500);
   }
 };

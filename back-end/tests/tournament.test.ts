@@ -1,15 +1,18 @@
-import request from "supertest";
+import type { Prisma } from "@prisma/client";
 import { app } from "../src/index";
-import { PrismaClient } from "@prisma/client";
+import { getPrisma } from "../src/utils/prisma";
 
-const prisma = new PrismaClient();
+const prisma = getPrisma();
 
-const baseTournament = {
+const startDate = new Date();
+const endDate = new Date(Date.now() + 86400000);
+
+const baseTournament: Prisma.TournamentCreateInput = {
   title: "Test Tournament",
   description: "A test tournament",
   imageUrl: "https://example.com/image.jpg",
-  startDate: new Date().toISOString(),
-  endDate: new Date(Date.now() + 86400000).toISOString(),
+  startDate,
+  endDate,
   location: "Test City",
   maxParticipants: 16,
   entryFee: 1000,
@@ -17,12 +20,10 @@ const baseTournament = {
   category: "Chess",
   status: "upcoming",
   rules: "Standard rules",
-  prizes: "Trophy",
+  prizes: "Trophy" as Prisma.InputJsonValue,
 };
 
 describe("Tournament Controller", () => {
-  let tournamentId: string;
-
   beforeEach(async () => {
     await prisma.tournamentParticipant.deleteMany();
     await prisma.tournament.deleteMany();
@@ -33,48 +34,127 @@ describe("Tournament Controller", () => {
   });
 
   it("should create a new tournament", async () => {
-    const res = await request(app)
-      .post("/api/tournaments")
-      .send(baseTournament)
-      .expect(201);
-    expect(res.body).toHaveProperty("id");
-    tournamentId = res.body.id;
-    expect(res.body.title).toBe(baseTournament.title);
+    const res = await app.request("http://localhost/api/tournaments", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        ...baseTournament,
+        startDate: startDate.toISOString(),
+        endDate: endDate.toISOString(),
+        prizes: "Trophy",
+      }),
+    });
+    expect(res.status).toBe(201);
+    const body = (await res.json()) as { id: string; title: string };
+    expect(body).toHaveProperty("id");
+    expect(body.title).toBe(baseTournament.title);
   });
 
   it("should get all tournaments", async () => {
-    await prisma.tournament.create({ data: { ...baseTournament } });
-    const res = await request(app).get("/api/tournaments").expect(200);
-    expect(Array.isArray(res.body)).toBe(true);
-    expect(res.body.length).toBeGreaterThan(0);
+    await prisma.tournament.create({
+      data: {
+        title: baseTournament.title!,
+        description: baseTournament.description!,
+        imageUrl: baseTournament.imageUrl!,
+        startDate: baseTournament.startDate as Date,
+        endDate: baseTournament.endDate as Date,
+        location: baseTournament.location as string,
+        maxParticipants: baseTournament.maxParticipants as number,
+        entryFee: baseTournament.entryFee as number,
+        currency: baseTournament.currency!,
+        category: baseTournament.category!,
+        status: baseTournament.status!,
+        rules: baseTournament.rules as string,
+        prizes: baseTournament.prizes as Prisma.InputJsonValue,
+      },
+    });
+    const res = await app.request("http://localhost/api/tournaments");
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as unknown[];
+    expect(Array.isArray(body)).toBe(true);
+    expect(body.length).toBeGreaterThan(0);
   });
 
   it("should get a tournament by id", async () => {
     const created = await prisma.tournament.create({
-      data: { ...baseTournament },
+      data: {
+        title: baseTournament.title!,
+        description: baseTournament.description!,
+        imageUrl: baseTournament.imageUrl!,
+        startDate: baseTournament.startDate as Date,
+        endDate: baseTournament.endDate as Date,
+        location: baseTournament.location as string,
+        maxParticipants: baseTournament.maxParticipants as number,
+        entryFee: baseTournament.entryFee as number,
+        currency: baseTournament.currency!,
+        category: baseTournament.category!,
+        status: baseTournament.status!,
+        rules: baseTournament.rules as string,
+        prizes: baseTournament.prizes as Prisma.InputJsonValue,
+      },
     });
-    const res = await request(app)
-      .get(`/api/tournaments/${created.id}`)
-      .expect(200);
-    expect(res.body).toHaveProperty("id", created.id);
+    const res = await app.request(
+      `http://localhost/api/tournaments/${created.id}`
+    );
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as { id: string };
+    expect(body).toHaveProperty("id", created.id);
   });
 
   it("should update a tournament", async () => {
     const created = await prisma.tournament.create({
-      data: { ...baseTournament },
+      data: {
+        title: baseTournament.title!,
+        description: baseTournament.description!,
+        imageUrl: baseTournament.imageUrl!,
+        startDate: baseTournament.startDate as Date,
+        endDate: baseTournament.endDate as Date,
+        location: baseTournament.location as string,
+        maxParticipants: baseTournament.maxParticipants as number,
+        entryFee: baseTournament.entryFee as number,
+        currency: baseTournament.currency!,
+        category: baseTournament.category!,
+        status: baseTournament.status!,
+        rules: baseTournament.rules as string,
+        prizes: baseTournament.prizes as Prisma.InputJsonValue,
+      },
     });
-    const res = await request(app)
-      .put(`/api/tournaments/${created.id}`)
-      .send({ title: "Updated Title" })
-      .expect(200);
-    expect(res.body.title).toBe("Updated Title");
+    const res = await app.request(
+      `http://localhost/api/tournaments/${created.id}`,
+      {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title: "Updated Title" }),
+      }
+    );
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as { title: string };
+    expect(body.title).toBe("Updated Title");
   });
 
   it("should delete a tournament", async () => {
     const created = await prisma.tournament.create({
-      data: { ...baseTournament },
+      data: {
+        title: baseTournament.title!,
+        description: baseTournament.description!,
+        imageUrl: baseTournament.imageUrl!,
+        startDate: baseTournament.startDate as Date,
+        endDate: baseTournament.endDate as Date,
+        location: baseTournament.location as string,
+        maxParticipants: baseTournament.maxParticipants as number,
+        entryFee: baseTournament.entryFee as number,
+        currency: baseTournament.currency!,
+        category: baseTournament.category!,
+        status: baseTournament.status!,
+        rules: baseTournament.rules as string,
+        prizes: baseTournament.prizes as Prisma.InputJsonValue,
+      },
     });
-    await request(app).delete(`/api/tournaments/${created.id}`).expect(200);
+    const del = await app.request(
+      `http://localhost/api/tournaments/${created.id}`,
+      { method: "DELETE" }
+    );
+    expect(del.status).toBe(200);
     const found = await prisma.tournament.findUnique({
       where: { id: created.id },
     });
@@ -83,7 +163,21 @@ describe("Tournament Controller", () => {
 
   it("should register a participant", async () => {
     const created = await prisma.tournament.create({
-      data: { ...baseTournament },
+      data: {
+        title: baseTournament.title!,
+        description: baseTournament.description!,
+        imageUrl: baseTournament.imageUrl!,
+        startDate: baseTournament.startDate as Date,
+        endDate: baseTournament.endDate as Date,
+        location: baseTournament.location as string,
+        maxParticipants: baseTournament.maxParticipants as number,
+        entryFee: baseTournament.entryFee as number,
+        currency: baseTournament.currency!,
+        category: baseTournament.category!,
+        status: baseTournament.status!,
+        rules: baseTournament.rules as string,
+        prizes: baseTournament.prizes as Prisma.InputJsonValue,
+      },
     });
     const user = await prisma.user.create({
       data: {
@@ -93,11 +187,17 @@ describe("Tournament Controller", () => {
         role: "user",
       },
     });
-    const res = await request(app)
-      .post(`/api/tournaments/${created.id}/participants`)
-      .send({ userId: user.id })
-      .expect(201);
-    expect(res.body).toHaveProperty("id");
-    expect(res.body.user.id).toBe(user.id);
+    const res = await app.request(
+      `http://localhost/api/tournaments/${created.id}/participants`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: user.id }),
+      }
+    );
+    expect(res.status).toBe(201);
+    const body = (await res.json()) as { id: string; user: { id: string } };
+    expect(body).toHaveProperty("id");
+    expect(body.user.id).toBe(user.id);
   });
 });

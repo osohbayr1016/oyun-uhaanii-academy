@@ -1,12 +1,10 @@
-import request from "supertest";
 import { app } from "../src/index";
-import { PrismaClient } from "@prisma/client";
+import { getPrisma } from "../src/utils/prisma";
 
-const prisma = new PrismaClient();
+const prisma = getPrisma();
 
 describe("Auth Controller", () => {
   beforeAll(async () => {
-    // Clean up database before all tests
     await prisma.user.deleteMany();
   });
 
@@ -16,7 +14,6 @@ describe("Auth Controller", () => {
 
   describe("POST /api/auth/register", () => {
     beforeEach(async () => {
-      // Clean up users before each test in this suite
       await prisma.user.deleteMany();
     });
 
@@ -27,16 +24,22 @@ describe("Auth Controller", () => {
         password: "password123",
       };
 
-      const response = await request(app)
-        .post("/api/auth/register")
-        .send(userData)
-        .expect(201);
+      const res = await app.request("http://localhost/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(userData),
+      });
 
-      expect(response.body).toHaveProperty("token");
-      expect(response.body.user).toHaveProperty("id");
-      expect(response.body.user.email).toBe(userData.email);
-      expect(response.body.user.name).toBe(userData.name);
-      expect(response.body.user).not.toHaveProperty("password");
+      expect(res.status).toBe(201);
+      const body = (await res.json()) as {
+        token?: string;
+        user?: { id: string; email: string; name: string; password?: string };
+      };
+      expect(body).toHaveProperty("token");
+      expect(body.user).toHaveProperty("id");
+      expect(body.user?.email).toBe(userData.email);
+      expect(body.user?.name).toBe(userData.name);
+      expect(body.user).not.toHaveProperty("password");
     });
 
     it("should return 400 for invalid email", async () => {
@@ -46,7 +49,12 @@ describe("Auth Controller", () => {
         password: "password123",
       };
 
-      await request(app).post("/api/auth/register").send(userData).expect(400);
+      const res = await app.request("http://localhost/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(userData),
+      });
+      expect(res.status).toBe(400);
     });
 
     it("should return 400 for duplicate email", async () => {
@@ -56,11 +64,19 @@ describe("Auth Controller", () => {
         password: "password123",
       };
 
-      // First registration
-      await request(app).post("/api/auth/register").send(userData).expect(201);
+      const first = await app.request("http://localhost/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(userData),
+      });
+      expect(first.status).toBe(201);
 
-      // Second registration with same email
-      await request(app).post("/api/auth/register").send(userData).expect(400);
+      const second = await app.request("http://localhost/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(userData),
+      });
+      expect(second.status).toBe(400);
     });
   });
 
@@ -71,14 +87,20 @@ describe("Auth Controller", () => {
         password: "password123",
       };
 
-      const response = await request(app)
-        .post("/api/auth/login")
-        .send(loginData)
-        .expect(200);
+      const res = await app.request("http://localhost/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(loginData),
+      });
 
-      expect(response.body).toHaveProperty("token");
-      expect(response.body.user).toHaveProperty("id");
-      expect(response.body.user.email).toBe(loginData.email);
+      expect(res.status).toBe(200);
+      const body = (await res.json()) as {
+        token?: string;
+        user?: { id: string; email: string };
+      };
+      expect(body).toHaveProperty("token");
+      expect(body.user).toHaveProperty("id");
+      expect(body.user?.email).toBe(loginData.email);
     });
 
     it("should return 401 for invalid credentials", async () => {
@@ -87,7 +109,12 @@ describe("Auth Controller", () => {
         password: "wrongpassword",
       };
 
-      await request(app).post("/api/auth/login").send(loginData).expect(401);
+      const res = await app.request("http://localhost/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(loginData),
+      });
+      expect(res.status).toBe(401);
     });
 
     it("should return 404 for non-existent user", async () => {
@@ -96,7 +123,12 @@ describe("Auth Controller", () => {
         password: "password123",
       };
 
-      await request(app).post("/api/auth/login").send(loginData).expect(404);
+      const res = await app.request("http://localhost/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(loginData),
+      });
+      expect(res.status).toBe(404);
     });
   });
 });

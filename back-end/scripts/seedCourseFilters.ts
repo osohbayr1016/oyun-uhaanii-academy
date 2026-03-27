@@ -1,6 +1,6 @@
-import { PrismaClient } from '@prisma/client';
+import { getPrismaForNode } from "../src/utils/nodePrisma";
 
-const prisma = new PrismaClient();
+const prisma = getPrismaForNode();
 
 async function seedCourseFilters() {
   try {

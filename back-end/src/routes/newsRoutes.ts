@@ -1,4 +1,4 @@
-import express from "express";
+import { Hono } from "hono";
 import {
   getAllNews,
   getNewsById,
@@ -6,17 +6,14 @@ import {
   updateNews,
   deleteNews,
 } from "../controllers/newsController";
-import authMiddleware from "../middleware/authMiddleware";
+import authenticateToken from "../middleware/authMiddleware";
+import type { AppEnv } from "../hono/appEnv";
 
-const router = express.Router();
+const r = new Hono<AppEnv>();
+r.get("/", getAllNews);
+r.get("/:id", getNewsById);
+r.post("/", authenticateToken, createNews);
+r.put("/:id", authenticateToken, updateNews);
+r.delete("/:id", authenticateToken, deleteNews);
 
-// Public routes
-router.get("/", getAllNews);
-router.get("/:id", getNewsById);
-
-// Protected routes (require authentication)
-router.post("/", authMiddleware, createNews);
-router.put("/:id", authMiddleware, updateNews);
-router.delete("/:id", authMiddleware, deleteNews);
-
-export default router;
+export default r;

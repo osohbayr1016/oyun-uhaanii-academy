@@ -1,10 +1,10 @@
-import { Request, Response } from "express";
-import { prisma } from "../utils/prisma";
+import { getPrisma } from "../utils/prisma";
+import type { AppCtx } from "../types/context";
+import type { PublicCtx } from "../types/context";
 
-// Get all courses
-export const getAllCourses = async (req: Request, res: Response) => {
+export const getAllCourses = async (c: PublicCtx) => {
   try {
-    const courses = await prisma.course.findMany({
+    const courses = await getPrisma().course.findMany({
       include: {
         enrollments: {
           select: {
@@ -24,39 +24,37 @@ export const getAllCourses = async (req: Request, res: Response) => {
       },
     });
 
-    // Transform data to include student count and average rating
-    const transformedCourses = courses.map((course: any) => ({
+    const transformedCourses = courses.map((course) => ({
       ...course,
       studentCount: course.enrollments.length,
       averageRating:
         course.reviews.length > 0
-          ? course.reviews.reduce(
-              (acc: number, review: any) => acc + review.rating,
-              0
-            ) / course.reviews.length
+          ? course.reviews.reduce((acc, review) => acc + review.rating, 0) /
+            course.reviews.length
           : 0,
     }));
 
-    res.json(transformedCourses);
+    return c.json(transformedCourses);
   } catch (error) {
     console.error("Error fetching courses:", error);
     if (process.env.NODE_ENV === "development") {
-      res.status(500).json({
-        message: "Server error",
-        error: error instanceof Error ? error.stack : error,
-      });
-    } else {
-      res.status(500).json({ message: "Server error" });
+      return c.json(
+        {
+          message: "Server error",
+          error: error instanceof Error ? error.stack : error,
+        },
+        500
+      );
     }
+    return c.json({ message: "Server error" }, 500);
   }
 };
 
-// Get single course by ID
-export const getCourseById = async (req: Request, res: Response) => {
+export const getCourseById = async (c: PublicCtx) => {
   try {
-    const { id } = req.params;
+    const id = c.req.param("id");
 
-    const course = await prisma.course.findUnique({
+    const course = await getPrisma().course.findUnique({
       where: { id },
       include: {
         enrollments: {
@@ -90,29 +88,28 @@ export const getCourseById = async (req: Request, res: Response) => {
     });
 
     if (!course) {
-      return res.status(404).json({ message: "Course not found" });
+      return c.json({ message: "Course not found" }, 404);
     }
 
-    // Add extra fields for design (backgroundImage, youtubeUrl, subtitle)
-    // If not present in DB, fallback to null or empty string
     const courseWithDesign = {
       ...course,
       backgroundImage:
-        "backgroundImage" in course ? (course as any).backgroundImage : null,
-      youtubeUrl: "youtubeUrl" in course ? (course as any).youtubeUrl : null,
-      subtitle: "subtitle" in course ? (course as any).subtitle : "",
+        "backgroundImage" in course ? (course as { backgroundImage?: string }).backgroundImage : null,
+      youtubeUrl:
+        "youtubeUrl" in course ? (course as { youtubeUrl?: string }).youtubeUrl : null,
+      subtitle: "subtitle" in course ? (course as { subtitle?: string }).subtitle : "",
     };
 
-    res.json(courseWithDesign);
+    return c.json(courseWithDesign);
   } catch (error) {
     console.error("Error fetching course:", error);
-    res.status(500).json({ message: "Server error" });
+    return c.json({ message: "Server error" }, 500);
   }
 };
 
-// Create new course
-export const createCourse = async (req: Request, res: Response) => {
+export const createCourse = async (c: PublicCtx) => {
   try {
+    const body = await c.req.json<Record<string, unknown>>();
     const {
       title,
       description,
@@ -138,70 +135,72 @@ export const createCourse = async (req: Request, res: Response) => {
       structure,
       courseMaterials,
       enrollLink,
-    } = req.body;
+    } = body;
 
-    // Input validation
-    if (!title || !title.trim()) {
-      return res.status(400).json({ message: "Course title is required" });
+    if (!title || !String(title).trim()) {
+      return c.json({ message: "Course title is required" }, 400);
     }
-    if (!description || !description.trim()) {
-      return res
-        .status(400)
-        .json({ message: "Course description is required" });
+    if (!description || !String(description).trim()) {
+      return c.json({ message: "Course description is required" }, 400);
     }
-    if (!imageUrl || !imageUrl.trim()) {
-      return res.status(400).json({ message: "Course imageUrl is required" });
+    if (!imageUrl || !String(imageUrl).trim()) {
+      return c.json({ message: "Course imageUrl is required" }, 400);
     }
-    // Remove all other required field validation
 
-    const course = await prisma.course.create({
+    const course = await getPrisma().course.create({
       data: {
-        title,
-        description,
-        content,
-        imageUrl,
-        price: price ? parseFloat(price) : undefined,
-        currency,
-        duration: duration ? parseInt(duration) : undefined,
-        level,
-        levels: Array.isArray(levels) ? levels : levels ? [levels] : [],
-        category,
-        instructor,
-        maxStudents: maxStudents ? parseInt(maxStudents) : null,
-        startDate: startDate ? new Date(startDate) : null,
-        endDate: endDate ? new Date(endDate) : null,
-        youtubeUrl,
-        heroImage,
-        backgroundImage,
-        sectionImage,
-        sectionText,
-        goal,
-        target,
-        structure,
-        courseMaterials,
-        enrollLink,
+        title: title as string,
+        description: description as string,
+        content: content as string,
+        imageUrl: imageUrl as string,
+        price: price ? parseFloat(String(price)) : undefined,
+        currency: currency as string,
+        duration: duration ? parseInt(String(duration), 10) : undefined,
+        level: level as string | undefined,
+        levels: Array.isArray(levels)
+          ? (levels as string[])
+          : levels
+            ? [String(levels)]
+            : [],
+        category: category as string | undefined,
+        instructor: instructor as string | undefined,
+        maxStudents: maxStudents ? parseInt(String(maxStudents), 10) : null,
+        startDate: startDate ? new Date(String(startDate)) : null,
+        endDate: endDate ? new Date(String(endDate)) : null,
+        youtubeUrl: youtubeUrl as string | undefined,
+        heroImage: heroImage as string | undefined,
+        backgroundImage: backgroundImage as string | undefined,
+        sectionImage: sectionImage as string | undefined,
+        sectionText: sectionText as string | undefined,
+        goal: goal as string | undefined,
+        target: target as string | undefined,
+        structure: structure as string | undefined,
+        courseMaterials: courseMaterials as string | undefined,
+        enrollLink: enrollLink as string | undefined,
       },
     });
 
-    res.status(201).json(course);
+    return c.json(course, 201);
   } catch (error) {
     console.error("Error creating course:", error);
     if (process.env.NODE_ENV === "development") {
-      res.status(500).json({
-        message: "Server error",
-        error: error instanceof Error ? error.message : String(error),
-        stack: error instanceof Error ? error.stack : undefined,
-      });
-    } else {
-      res.status(500).json({ message: "Server error" });
+      return c.json(
+        {
+          message: "Server error",
+          error: error instanceof Error ? error.message : String(error),
+          stack: error instanceof Error ? error.stack : undefined,
+        },
+        500
+      );
     }
+    return c.json({ message: "Server error" }, 500);
   }
 };
 
-// Update course
-export const updateCourse = async (req: Request, res: Response) => {
+export const updateCourse = async (c: AppCtx) => {
   try {
-    const { id } = req.params;
+    const id = c.req.param("id");
+    const body = await c.req.json<Record<string, unknown>>();
     const {
       title,
       description,
@@ -228,74 +227,77 @@ export const updateCourse = async (req: Request, res: Response) => {
       structure,
       courseMaterials,
       enrollLink,
-    } = req.body;
+    } = body;
 
-    const existingCourse = await prisma.course.findUnique({
+    const existingCourse = await getPrisma().course.findUnique({
       where: { id },
     });
 
     if (!existingCourse) {
-      return res.status(404).json({ message: "Course not found" });
+      return c.json({ message: "Course not found" }, 404);
     }
 
-    const updatedCourse = await prisma.course.update({
+    const updatedCourse = await getPrisma().course.update({
       where: { id },
       data: {
-        title,
-        description,
-        content,
-        imageUrl,
-        price: price ? parseFloat(price) : undefined,
-        currency,
-        duration: duration ? parseInt(duration) : undefined,
-        level,
-        levels: Array.isArray(levels) ? levels : levels ? [levels] : undefined,
-        category,
-        instructor,
-        maxStudents: maxStudents ? parseInt(maxStudents) : undefined,
-        startDate: startDate ? new Date(startDate) : undefined,
-        endDate: endDate ? new Date(endDate) : undefined,
-        isActive: isActive !== undefined ? isActive : undefined,
-        backgroundImage,
-        sectionImage,
-        sectionText,
-        youtubeUrl,
-        heroImage,
-        goal,
-        target,
-        structure,
-        courseMaterials,
-        enrollLink,
+        title: title as string | undefined,
+        description: description as string | undefined,
+        content: content as string | undefined,
+        imageUrl: imageUrl as string | undefined,
+        price: price ? parseFloat(String(price)) : undefined,
+        currency: currency as string | undefined,
+        duration: duration ? parseInt(String(duration), 10) : undefined,
+        level: level as string | undefined,
+        levels: Array.isArray(levels)
+          ? (levels as string[])
+          : levels
+            ? [String(levels)]
+            : undefined,
+        category: category as string | undefined,
+        instructor: instructor as string | undefined,
+        maxStudents: maxStudents ? parseInt(String(maxStudents), 10) : undefined,
+        startDate: startDate ? new Date(String(startDate)) : undefined,
+        endDate: endDate ? new Date(String(endDate)) : undefined,
+        isActive: isActive !== undefined ? Boolean(isActive) : undefined,
+        backgroundImage: backgroundImage as string | undefined,
+        sectionImage: sectionImage as string | undefined,
+        sectionText: sectionText as string | undefined,
+        youtubeUrl: youtubeUrl as string | undefined,
+        heroImage: heroImage as string | undefined,
+        goal: goal as string | undefined,
+        target: target as string | undefined,
+        structure: structure as string | undefined,
+        courseMaterials: courseMaterials as string | undefined,
+        enrollLink: enrollLink as string | undefined,
       },
     });
 
-    res.json(updatedCourse);
+    return c.json(updatedCourse);
   } catch (error) {
     console.error("Error updating course:", error);
-    res.status(500).json({ message: "Server error" });
+    return c.json({ message: "Server error" }, 500);
   }
 };
 
-// Delete course
-export const deleteCourse = async (req: Request, res: Response) => {
+export const deleteCourse = async (c: PublicCtx) => {
   try {
-    const { id } = req.params;
+    const id = c.req.param("id");
 
-    const existingCourse = await prisma.course.findUnique({
+    const existingCourse = await getPrisma().course.findUnique({
       where: { id },
     });
 
     if (!existingCourse) {
-      return res.status(404).json({ message: "Course not found" });
+      return c.json({ message: "Course not found" }, 404);
     }
 
-    await prisma.course.delete({
+    await getPrisma().course.delete({
       where: { id },
     });
 
-    res.json({ message: "Course deleted successfully" });
+    return c.json({ message: "Course deleted successfully" });
   } catch (error) {
     console.error("Error deleting course:", error);
-    res.status(500).json({ message: "Server error" });
+    return c.json({ message: "Server error" }, 500);
   }
 };

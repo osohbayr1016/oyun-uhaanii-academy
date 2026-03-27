@@ -1,24 +1,18 @@
-import { Router } from "express";
-// import {
-//   getProducts,
-//   getProductById,
-//   createProduct,
-// } from "./controllers/productController";
+import { Hono } from "hono";
 import {
-  getProductById,
   getAllProducts,
+  getProductById,
   createProduct,
   updateProduct,
   deleteProduct,
 } from "../controllers/productController";
-import authMiddleware from "../middleware/authMiddleware"; // Protect some routes
+import type { AppEnv } from "../hono/appEnv";
 
-const router = Router();
+const r = new Hono<AppEnv>();
+r.get("/", getAllProducts);
+r.get("/:id", getProductById);
+r.post("/", createProduct);
+r.put("/:id", updateProduct);
+r.delete("/:id", deleteProduct);
 
-router.get("/", getAllProducts);
-router.get("/:id", getProductById);
-router.post("/", createProduct); // Temporarily removed authMiddleware for testing
-router.put("/:id", updateProduct); // Temporarily removed authMiddleware for testing
-router.delete("/:id", deleteProduct); // Temporarily removed authMiddleware for testing
-
-export default router;
+export default r;

@@ -1,61 +1,58 @@
-import { Request, Response } from "express";
-import { prisma } from "../utils/prisma";
+import { getPrisma } from "../utils/prisma";
+import type { PublicCtx } from "../types/context";
 
-// Get all text contents
-export const getAllTextContents = async (req: Request, res: Response) => {
+export const getAllTextContents = async (c: PublicCtx) => {
   try {
-    const contents = await prisma.textContent.findMany();
-    res.json(contents);
-  } catch (error) {
-    res.status(500).json({ error: "Failed to fetch text contents" });
+    const contents = await getPrisma().textContent.findMany();
+    return c.json(contents);
+  } catch {
+    return c.json({ error: "Failed to fetch text contents" }, 500);
   }
 };
 
-// Get text content by key
-export const getTextContentByKey = async (req: Request, res: Response) => {
-  const { key } = req.params;
+export const getTextContentByKey = async (c: PublicCtx) => {
+  const key = c.req.param("key");
   try {
-    const content = await prisma.textContent.findUnique({ where: { key } });
-    if (!content) return res.status(404).json({ error: "Not found" });
-    res.json(content);
-  } catch (error) {
-    res.status(500).json({ error: "Failed to fetch text content" });
+    const content = await getPrisma().textContent.findUnique({ where: { key } });
+    if (!content) return c.json({ error: "Not found" }, 404);
+    return c.json(content);
+  } catch {
+    return c.json({ error: "Failed to fetch text content" }, 500);
   }
 };
 
-// Create new text content
-export const createTextContent = async (req: Request, res: Response) => {
-  const { key, value } = req.body;
+export const createTextContent = async (c: PublicCtx) => {
+  const body = await c.req.json<{ key?: string; value?: string }>();
+  const { key, value } = body;
   try {
-    const content = await prisma.textContent.create({ data: { key, value } });
-    res.status(201).json(content);
-  } catch (error) {
-    res.status(500).json({ error: "Failed to create text content" });
+    const content = await getPrisma().textContent.create({ data: { key: key!, value: value! } });
+    return c.json(content, 201);
+  } catch {
+    return c.json({ error: "Failed to create text content" }, 500);
   }
 };
 
-// Update text content by key
-export const updateTextContent = async (req: Request, res: Response) => {
-  const { key } = req.params;
-  const { value } = req.body;
+export const updateTextContent = async (c: PublicCtx) => {
+  const key = c.req.param("key");
+  const body = await c.req.json<{ value?: string }>();
+  const { value } = body;
   try {
-    const content = await prisma.textContent.update({
+    const content = await getPrisma().textContent.update({
       where: { key },
-      data: { value },
+      data: { value: value! },
     });
-    res.json(content);
-  } catch (error) {
-    res.status(500).json({ error: "Failed to update text content" });
+    return c.json(content);
+  } catch {
+    return c.json({ error: "Failed to update text content" }, 500);
   }
 };
 
-// Delete text content by key
-export const deleteTextContent = async (req: Request, res: Response) => {
-  const { key } = req.params;
+export const deleteTextContent = async (c: PublicCtx) => {
+  const key = c.req.param("key");
   try {
-    await prisma.textContent.delete({ where: { key } });
-    res.status(204).end();
-  } catch (error) {
-    res.status(500).json({ error: "Failed to delete text content" });
+    await getPrisma().textContent.delete({ where: { key } });
+    return new Response(null, { status: 204 });
+  } catch {
+    return c.json({ error: "Failed to delete text content" }, 500);
   }
 };

@@ -1,4 +1,4 @@
-import { Router } from "express";
+import { Hono } from "hono";
 import {
   getAllTournaments,
   getTournamentById,
@@ -8,18 +8,15 @@ import {
   registerParticipant,
   updateParticipantStatus,
 } from "../controllers/tournamentController";
+import type { AppEnv } from "../hono/appEnv";
 
-const router = Router();
+const r = new Hono<AppEnv>();
+r.get("/", getAllTournaments);
+r.get("/:id", getTournamentById);
+r.post("/", createTournament);
+r.put("/:id", updateTournament);
+r.delete("/:id", deleteTournament);
+r.post("/:tournamentId/participants", registerParticipant);
+r.put("/:tournamentId/participants/:userId", updateParticipantStatus);
 
-// Tournament CRUD routes
-router.get("/", getAllTournaments);
-router.get("/:id", getTournamentById);
-router.post("/", createTournament); // Temporarily removed authMiddleware for testing
-router.put("/:id", updateTournament); // Temporarily removed authMiddleware for testing
-router.delete("/:id", deleteTournament); // Temporarily removed authMiddleware for testing
-
-// Participant routes
-router.post("/:tournamentId/participants", registerParticipant);
-router.put("/:tournamentId/participants/:userId", updateParticipantStatus);
-
-export default router;
+export default r;

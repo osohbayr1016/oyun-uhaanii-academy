@@ -1,12 +1,10 @@
-import { PrismaClient } from "@prisma/client";
-import { Request, Response } from "express";
+import { getPrisma } from "../utils/prisma";
+import type { AppCtx } from "../types/context";
+import type { PublicCtx } from "../types/context";
 
-const prisma = new PrismaClient();
-
-// Get all news articles
-export const getAllNews = async (req: Request, res: Response) => {
+export const getAllNews = async (c: PublicCtx) => {
   try {
-    const news = await prisma.news.findMany({
+    const news = await getPrisma().news.findMany({
       include: {
         author: {
           select: {
@@ -21,28 +19,27 @@ export const getAllNews = async (req: Request, res: Response) => {
       },
     });
 
-    res.json(news);
+    return c.json(news);
   } catch (error) {
     console.error("Error fetching news:", error);
     if (process.env.NODE_ENV === "development") {
-      res
-        .status(500)
-        .json({
+      return c.json(
+        {
           message: "Server error",
           error: error instanceof Error ? error.stack : error,
-        });
-    } else {
-      res.status(500).json({ message: "Server error" });
+        },
+        500
+      );
     }
+    return c.json({ message: "Server error" }, 500);
   }
 };
 
-// Get single news article by ID
-export const getNewsById = async (req: Request, res: Response) => {
+export const getNewsById = async (c: PublicCtx) => {
   try {
-    const { id } = req.params;
+    const id = c.req.param("id");
 
-    const news = await prisma.news.findUnique({
+    const news = await getPrisma().news.findUnique({
       where: { id },
       include: {
         author: {
@@ -56,30 +53,35 @@ export const getNewsById = async (req: Request, res: Response) => {
     });
 
     if (!news) {
-      return res.status(404).json({ message: "News article not found" });
+      return c.json({ message: "News article not found" }, 404);
     }
 
-    res.json(news);
+    return c.json(news);
   } catch (error) {
     console.error("Error fetching news:", error);
-    res.status(500).json({ message: "Server error" });
+    return c.json({ message: "Server error" }, 500);
   }
 };
 
-// Create new news article
-export const createNews = async (req: Request, res: Response) => {
+export const createNews = async (c: AppCtx) => {
   try {
-    const { title, content, imageUrl, videoUrl } = req.body;
-    const authorId = req.user?.userId; // From auth middleware
+    const body = await c.req.json<{
+      title?: string;
+      content?: string;
+      imageUrl?: string;
+      videoUrl?: string;
+    }>();
+    const { title, content, imageUrl, videoUrl } = body;
+    const authorId = c.get("user")?.userId;
 
     if (!authorId) {
-      return res.status(401).json({ message: "Unauthorized" });
+      return c.json({ message: "Unauthorized" }, 401);
     }
 
-    const news = await prisma.news.create({
+    const news = await getPrisma().news.create({
       data: {
-        title,
-        content,
+        title: title!,
+        content: content!,
         imageUrl,
         videoUrl,
         authorId,
@@ -95,41 +97,44 @@ export const createNews = async (req: Request, res: Response) => {
       },
     });
 
-    res.status(201).json(news);
+    return c.json(news, 201);
   } catch (error) {
     console.error("Error creating news:", error);
-    res.status(500).json({ message: "Server error" });
+    return c.json({ message: "Server error" }, 500);
   }
 };
 
-// Update news article
-export const updateNews = async (req: Request, res: Response) => {
+export const updateNews = async (c: AppCtx) => {
   try {
-    const { id } = req.params;
-    const { title, content, imageUrl, videoUrl } = req.body;
-    const userId = req.user?.userId;
+    const id = c.req.param("id");
+    const body = await c.req.json<{
+      title?: string;
+      content?: string;
+      imageUrl?: string;
+      videoUrl?: string;
+    }>();
+    const { title, content, imageUrl, videoUrl } = body;
+    const userId = c.get("user")?.userId;
 
     if (!userId) {
-      return res.status(401).json({ message: "Unauthorized" });
+      return c.json({ message: "Unauthorized" }, 401);
     }
 
-    // Check if news exists and user is author or admin
-    const existingNews = await prisma.news.findUnique({
+    const existingNews = await getPrisma().news.findUnique({
       where: { id },
       include: { author: true },
     });
 
     if (!existingNews) {
-      return res.status(404).json({ message: "News article not found" });
+      return c.json({ message: "News article not found" }, 404);
     }
 
-    // Check if user is author or admin
-    const user = await prisma.user.findUnique({ where: { id: userId } });
+    const user = await getPrisma().user.findUnique({ where: { id: userId } });
     if (existingNews.authorId !== userId && user?.role !== "admin") {
-      return res.status(403).json({ message: "Forbidden" });
+      return c.json({ message: "Forbidden" }, 403);
     }
 
-    const updatedNews = await prisma.news.update({
+    const updatedNews = await getPrisma().news.update({
       where: { id },
       data: {
         title,
@@ -148,46 +153,43 @@ export const updateNews = async (req: Request, res: Response) => {
       },
     });
 
-    res.json(updatedNews);
+    return c.json(updatedNews);
   } catch (error) {
     console.error("Error updating news:", error);
-    res.status(500).json({ message: "Server error" });
+    return c.json({ message: "Server error" }, 500);
   }
 };
 
-// Delete news article
-export const deleteNews = async (req: Request, res: Response) => {
+export const deleteNews = async (c: AppCtx) => {
   try {
-    const { id } = req.params;
-    const userId = req.user?.userId;
+    const id = c.req.param("id");
+    const userId = c.get("user")?.userId;
 
     if (!userId) {
-      return res.status(401).json({ message: "Unauthorized" });
+      return c.json({ message: "Unauthorized" }, 401);
     }
 
-    // Check if news exists and user is author or admin
-    const existingNews = await prisma.news.findUnique({
+    const existingNews = await getPrisma().news.findUnique({
       where: { id },
       include: { author: true },
     });
 
     if (!existingNews) {
-      return res.status(404).json({ message: "News article not found" });
+      return c.json({ message: "News article not found" }, 404);
     }
 
-    // Check if user is author or admin
-    const user = await prisma.user.findUnique({ where: { id: userId } });
+    const user = await getPrisma().user.findUnique({ where: { id: userId } });
     if (existingNews.authorId !== userId && user?.role !== "admin") {
-      return res.status(403).json({ message: "Forbidden" });
+      return c.json({ message: "Forbidden" }, 403);
     }
 
-    await prisma.news.delete({
+    await getPrisma().news.delete({
       where: { id },
     });
 
-    res.json({ message: "News article deleted successfully" });
+    return c.json({ message: "News article deleted successfully" });
   } catch (error) {
     console.error("Error deleting news:", error);
-    res.status(500).json({ message: "Server error" });
+    return c.json({ message: "Server error" }, 500);
   }
 };

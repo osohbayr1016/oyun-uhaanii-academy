@@ -1,153 +1,136 @@
-import express from 'express';
-import { PrismaClient } from '@prisma/client';
-import { authenticateToken } from '../middleware/authMiddleware';
+import { Hono } from "hono";
+import { getPrisma } from "../utils/prisma";
+import authenticateToken from "../middleware/authMiddleware";
+import type { AppEnv } from "../hono/appEnv";
 
-const router = express.Router();
-const prisma = new PrismaClient();
+const r = new Hono<AppEnv>();
 
-// Get all course categories
-router.get('/categories', async (req, res) => {
+r.get("/categories", async (c) => {
   try {
-    const categories = await prisma.courseCategory.findMany({
+    const categories = await getPrisma().courseCategory.findMany({
       where: { isActive: true },
-      orderBy: { name: 'asc' }
+      orderBy: { name: "asc" },
     });
-    res.json(categories);
+    return c.json(categories);
   } catch (error) {
-    console.error('Error fetching categories:', error);
-    res.status(500).json({ error: 'Failed to fetch categories' });
+    console.error("Error fetching categories:", error);
+    return c.json({ error: "Failed to fetch categories" }, 500);
   }
 });
 
-// Get all course levels
-router.get('/levels', async (req, res) => {
+r.get("/levels", async (c) => {
   try {
-    const levels = await prisma.courseLevel.findMany({
+    const levels = await getPrisma().courseLevel.findMany({
       where: { isActive: true },
-      orderBy: { name: 'asc' }
+      orderBy: { name: "asc" },
     });
-    res.json(levels);
+    return c.json(levels);
   } catch (error) {
-    console.error('Error fetching levels:', error);
-    res.status(500).json({ error: 'Failed to fetch levels' });
+    console.error("Error fetching levels:", error);
+    return c.json({ error: "Failed to fetch levels" }, 500);
   }
 });
 
-// Admin routes - require authentication
-// Create new category
-router.post('/categories', authenticateToken, async (req, res) => {
+r.post("/categories", authenticateToken, async (c) => {
   try {
-    const { name } = req.body;
-    
+    const body = await c.req.json<{ name?: string }>();
+    const { name } = body;
     if (!name) {
-      return res.status(400).json({ error: 'Category name is required' });
+      return c.json({ error: "Category name is required" }, 400);
     }
-
-    const category = await prisma.courseCategory.create({
-      data: { name }
+    const category = await getPrisma().courseCategory.create({
+      data: { name },
     });
-    
-    res.status(201).json(category);
-  } catch (error: any) {
-    if (error.code === 'P2002') {
-      return res.status(400).json({ error: 'Category with this name already exists' });
+    return c.json(category, 201);
+  } catch (error: unknown) {
+    const err = error as { code?: string };
+    if (err.code === "P2002") {
+      return c.json({ error: "Category with this name already exists" }, 400);
     }
-    console.error('Error creating category:', error);
-    res.status(500).json({ error: 'Failed to create category' });
+    console.error("Error creating category:", error);
+    return c.json({ error: "Failed to create category" }, 500);
   }
 });
 
-// Create new level
-router.post('/levels', authenticateToken, async (req, res) => {
+r.post("/levels", authenticateToken, async (c) => {
   try {
-    const { name } = req.body;
-    
+    const body = await c.req.json<{ name?: string }>();
+    const { name } = body;
     if (!name) {
-      return res.status(400).json({ error: 'Level name is required' });
+      return c.json({ error: "Level name is required" }, 400);
     }
-
-    const level = await prisma.courseLevel.create({
-      data: { name }
+    const level = await getPrisma().courseLevel.create({
+      data: { name },
     });
-    
-    res.status(201).json(level);
-  } catch (error: any) {
-    if (error.code === 'P2002') {
-      return res.status(400).json({ error: 'Level with this name already exists' });
+    return c.json(level, 201);
+  } catch (error: unknown) {
+    const err = error as { code?: string };
+    if (err.code === "P2002") {
+      return c.json({ error: "Level with this name already exists" }, 400);
     }
-    console.error('Error creating level:', error);
-    res.status(500).json({ error: 'Failed to create level' });
+    console.error("Error creating level:", error);
+    return c.json({ error: "Failed to create level" }, 500);
   }
 });
 
-// Update category
-router.put('/categories/:id', authenticateToken, async (req, res) => {
+r.put("/categories/:id", authenticateToken, async (c) => {
   try {
-    const { id } = req.params;
-    const { name, isActive } = req.body;
-    
-    const category = await prisma.courseCategory.update({
+    const id = c.req.param("id");
+    const body = await c.req.json<{ name?: string; isActive?: boolean }>();
+    const { name, isActive } = body;
+    const category = await getPrisma().courseCategory.update({
       where: { id },
-      data: { name, isActive }
+      data: { name, isActive },
     });
-    
-    res.json(category);
+    return c.json(category);
   } catch (error) {
-    console.error('Error updating category:', error);
-    res.status(500).json({ error: 'Failed to update category' });
+    console.error("Error updating category:", error);
+    return c.json({ error: "Failed to update category" }, 500);
   }
 });
 
-// Update level
-router.put('/levels/:id', authenticateToken, async (req, res) => {
+r.put("/levels/:id", authenticateToken, async (c) => {
   try {
-    const { id } = req.params;
-    const { name, isActive } = req.body;
-    
-    const level = await prisma.courseLevel.update({
+    const id = c.req.param("id");
+    const body = await c.req.json<{ name?: string; isActive?: boolean }>();
+    const { name, isActive } = body;
+    const level = await getPrisma().courseLevel.update({
       where: { id },
-      data: { name, isActive }
+      data: { name, isActive },
     });
-    
-    res.json(level);
+    return c.json(level);
   } catch (error) {
-    console.error('Error updating level:', error);
-    res.status(500).json({ error: 'Failed to update level' });
+    console.error("Error updating level:", error);
+    return c.json({ error: "Failed to update level" }, 500);
   }
 });
 
-// Delete category (soft delete)
-router.delete('/categories/:id', authenticateToken, async (req, res) => {
+r.delete("/categories/:id", authenticateToken, async (c) => {
   try {
-    const { id } = req.params;
-    
-    await prisma.courseCategory.update({
+    const id = c.req.param("id");
+    await getPrisma().courseCategory.update({
       where: { id },
-      data: { isActive: false }
+      data: { isActive: false },
     });
-    
-    res.json({ message: 'Category deleted successfully' });
+    return c.json({ message: "Category deleted successfully" });
   } catch (error) {
-    console.error('Error deleting category:', error);
-    res.status(500).json({ error: 'Failed to delete category' });
+    console.error("Error deleting category:", error);
+    return c.json({ error: "Failed to delete category" }, 500);
   }
 });
 
-// Delete level (soft delete)
-router.delete('/levels/:id', authenticateToken, async (req, res) => {
+r.delete("/levels/:id", authenticateToken, async (c) => {
   try {
-    const { id } = req.params;
-    
-    await prisma.courseLevel.update({
+    const id = c.req.param("id");
+    await getPrisma().courseLevel.update({
       where: { id },
-      data: { isActive: false }
+      data: { isActive: false },
     });
-    
-    res.json({ message: 'Level deleted successfully' });
+    return c.json({ message: "Level deleted successfully" });
   } catch (error) {
-    console.error('Error deleting level:', error);
-    res.status(500).json({ error: 'Failed to delete level' });
+    console.error("Error deleting level:", error);
+    return c.json({ error: "Failed to delete level" }, 500);
   }
 });
 
-export default router; 
+export default r;

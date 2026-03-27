@@ -1,0 +1,14 @@
+name = "oyun-uhaanii-api"
+main = "src/worker.ts"
+compatibility_date = "2024-11-01"
+compatibility_flags = [ "nodejs_compat" ]
+
+# Replace id with your Hyperdrive UUID from the Cloudflare dashboard.
+# For local dev, set localConnectionString (or use .dev.vars + wrangler dev).
+[[hyperdrive]]
+binding = "HYPERDRIVE"
+id = "00000000-0000-0000-0000-000000000000"
+localConnectionString = "postgresql://postgres:postgres@127.0.0.1:5432/postgres"
+
+[vars]
+NODE_ENV = "development"

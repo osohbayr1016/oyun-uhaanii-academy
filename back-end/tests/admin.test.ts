@@ -1,15 +1,13 @@
-import request from "supertest";
 import { app } from "../src/index";
-import { PrismaClient } from "@prisma/client";
-import { generateToken } from "../src/utils/jwt";
+import { getPrisma } from "../src/utils/prisma";
+import { signUserToken } from "../src/utils/jwt";
 
-const prisma = new PrismaClient();
+const prisma = getPrisma();
 
 describe("Admin Controller", () => {
   let adminToken: string;
 
   beforeEach(async () => {
-    // Clean up database before each test
     await prisma.activity.deleteMany();
     await prisma.tournamentParticipant.deleteMany();
     await prisma.tournament.deleteMany();
@@ -18,7 +16,6 @@ describe("Admin Controller", () => {
     await prisma.product.deleteMany();
     await prisma.user.deleteMany();
 
-    // Create admin user and generate token
     const adminUser = await prisma.user.create({
       data: {
         name: "Admin User",
@@ -27,7 +24,10 @@ describe("Admin Controller", () => {
         role: "admin",
       },
     });
-    adminToken = generateToken(adminUser.id);
+    adminToken = await signUserToken(
+      adminUser.id,
+      process.env.JWT_SECRET as string
+    );
   });
 
   afterAll(async () => {
@@ -35,7 +35,6 @@ describe("Admin Controller", () => {
   });
 
   it("should get admin stats", async () => {
-    // Create test data
     await prisma.user.create({
       data: {
         name: "Test User",
@@ -55,6 +54,7 @@ describe("Admin Controller", () => {
         currency: "MNT",
         duration: 10,
         level: "beginner",
+        levels: [],
         category: "Test",
         instructor: "Test Instructor",
       },
@@ -91,19 +91,19 @@ describe("Admin Controller", () => {
       },
     });
 
-    const res = await request(app)
-      .get("/api/admin/stats")
-      .set("Authorization", `Bearer ${adminToken}`)
-      .expect(200);
-    expect(res.body).toHaveProperty("totalUsers", 2); // admin + test user
-    expect(res.body).toHaveProperty("totalCourses", 1);
-    expect(res.body).toHaveProperty("totalProducts", 1);
-    expect(res.body).toHaveProperty("totalTournaments", 1);
-    expect(res.body).toHaveProperty("totalNews", 1);
+    const res = await app.request("http://localhost/api/admin/stats", {
+      headers: { Authorization: `Bearer ${adminToken}` },
+    });
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as Record<string, number>;
+    expect(body).toHaveProperty("totalUsers", 2);
+    expect(body).toHaveProperty("totalCourses", 1);
+    expect(body).toHaveProperty("totalProducts", 1);
+    expect(body).toHaveProperty("totalTournaments", 1);
+    expect(body).toHaveProperty("totalNews", 1);
   });
 
   it("should get all users", async () => {
-    // Create test users
     await prisma.user.createMany({
       data: [
         {
@@ -121,21 +121,21 @@ describe("Admin Controller", () => {
       ],
     });
 
-    const res = await request(app)
-      .get("/api/admin/users")
-      .set("Authorization", `Bearer ${adminToken}`)
-      .expect(200);
-    expect(Array.isArray(res.body)).toBe(true);
-    expect(res.body.length).toBe(3); // admin + 2 test users
-    expect(res.body[0]).toHaveProperty("id");
-    expect(res.body[0]).toHaveProperty("name");
-    expect(res.body[0]).toHaveProperty("email");
-    expect(res.body[0]).toHaveProperty("role");
-    expect(res.body[0]).not.toHaveProperty("password");
+    const res = await app.request("http://localhost/api/admin/users", {
+      headers: { Authorization: `Bearer ${adminToken}` },
+    });
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as Array<{ id: string; password?: string }>;
+    expect(Array.isArray(body)).toBe(true);
+    expect(body.length).toBe(3);
+    expect(body[0]).toHaveProperty("id");
+    expect(body[0]).toHaveProperty("name");
+    expect(body[0]).toHaveProperty("email");
+    expect(body[0]).toHaveProperty("role");
+    expect(body[0]).not.toHaveProperty("password");
   });
 
   it("should get recent activities", async () => {
-    // Create test activity
     const user = await prisma.user.create({
       data: {
         name: "Test User",
@@ -154,14 +154,15 @@ describe("Admin Controller", () => {
       },
     });
 
-    const res = await request(app)
-      .get("/api/admin/activities")
-      .set("Authorization", `Bearer ${adminToken}`)
-      .expect(200);
-    expect(Array.isArray(res.body)).toBe(true);
-    expect(res.body.length).toBe(1);
-    expect(res.body[0]).toHaveProperty("id");
-    expect(res.body[0]).toHaveProperty("action", "login");
-    expect(res.body[0]).toHaveProperty("message", "User logged in");
+    const res = await app.request("http://localhost/api/admin/activities", {
+      headers: { Authorization: `Bearer ${adminToken}` },
+    });
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as Array<{ id: string; action: string }>;
+    expect(Array.isArray(body)).toBe(true);
+    expect(body.length).toBe(1);
+    expect(body[0]).toHaveProperty("id");
+    expect(body[0]).toHaveProperty("action", "login");
+    expect(body[0]).toHaveProperty("message", "User logged in");
   });
 });

@@ -1,29 +1,18 @@
-import { Request, Response, NextFunction } from "express";
-
-// Simple startup gate: while warmingUp is true, requests are served sequentially
-// by a promise chain. After warm-up completes, middleware becomes a no-op.
+import { createMiddleware } from "hono/factory";
 
 export function createStartupQueueMiddleware(isWarmingUpRef: {
   value: boolean;
 }) {
-  let queue = Promise.resolve<void>(undefined);
+  let tail = Promise.resolve();
 
-  return function startupQueue(
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ) {
+  return createMiddleware(async (c, next) => {
     if (!isWarmingUpRef.value) {
-      return next();
+      await next();
+      return;
     }
-
-    const proceed = () =>
-      new Promise<void>((resolve) => {
-        // Serialize handlers during warm-up; keep it minimal to avoid long waits
-        next();
-        resolve();
-      });
-
-    queue = queue.then(proceed, proceed);
-  };
+    const run = () => next();
+    const p = tail.then(run, run);
+    tail = p.catch(() => undefined);
+    await p;
+  });
 }

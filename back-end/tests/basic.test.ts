@@ -1,8 +1,8 @@
 import { app } from "../src/index";
 
 describe("Basic API Tests", () => {
-  it("should return 200 for health check endpoint", async () => {
-    const response = await fetch("http://localhost:5001/");
+  it("should return 200 for root endpoint", async () => {
+    const response = await app.request("http://localhost/");
     expect(response.status).toBe(200);
   });
 

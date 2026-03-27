@@ -1,11 +1,10 @@
-import { PrismaClient } from "@prisma/client";
-import { Request, Response } from "express";
+import type { Prisma } from "@prisma/client";
+import { getPrisma } from "../utils/prisma";
+import type { PublicCtx } from "../types/context";
 
-const prisma = new PrismaClient();
-
-export const getAllTournaments = async (req: Request, res: Response) => {
+export const getAllTournaments = async (c: PublicCtx) => {
   try {
-    const tournaments = await prisma.tournament.findMany({
+    const tournaments = await getPrisma().tournament.findMany({
       orderBy: { createdAt: "desc" },
       include: {
         participants: {
@@ -22,24 +21,26 @@ export const getAllTournaments = async (req: Request, res: Response) => {
         matches: true,
       },
     });
-    res.json(tournaments);
+    return c.json(tournaments);
   } catch (error) {
     console.error("Get all tournaments error:", error);
     if (process.env.NODE_ENV === "development") {
-      res.status(500).json({
-        message: "Failed to fetch tournaments",
-        error: error instanceof Error ? error.stack : error,
-      });
-    } else {
-      res.status(500).json({ message: "Failed to fetch tournaments" });
+      return c.json(
+        {
+          message: "Failed to fetch tournaments",
+          error: error instanceof Error ? error.stack : error,
+        },
+        500
+      );
     }
+    return c.json({ message: "Failed to fetch tournaments" }, 500);
   }
 };
 
-export const getTournamentById = async (req: Request, res: Response) => {
+export const getTournamentById = async (c: PublicCtx) => {
   try {
-    const { id } = req.params;
-    const tournament = await prisma.tournament.findUnique({
+    const id = c.req.param("id");
+    const tournament = await getPrisma().tournament.findUnique({
       where: { id },
       include: {
         participants: {
@@ -79,20 +80,19 @@ export const getTournamentById = async (req: Request, res: Response) => {
     });
 
     if (!tournament) {
-      return res.status(404).json({ message: "Tournament not found" });
+      return c.json({ message: "Tournament not found" }, 404);
     }
 
-    res.json(tournament);
+    return c.json(tournament);
   } catch (error) {
     console.error("Get tournament by ID error:", error);
-    res.status(500).json({ message: "Failed to fetch tournament" });
+    return c.json({ message: "Failed to fetch tournament" }, 500);
   }
 };
 
-export const createTournament = async (req: Request, res: Response) => {
+export const createTournament = async (c: PublicCtx) => {
   try {
-    console.log("Backend: Received tournament data:", req.body);
-
+    const body = await c.req.json<Record<string, unknown>>();
     const {
       title,
       description,
@@ -108,53 +108,45 @@ export const createTournament = async (req: Request, res: Response) => {
       rules,
       prizes,
       enrollLink,
-    } = req.body;
+    } = body;
 
-    // Validate required fields
-    if (!title || !title.trim()) {
-      return res.status(400).json({
-        message: "Tournament title is required",
-      });
+    if (!title || !String(title).trim()) {
+      return c.json({ message: "Tournament title is required" }, 400);
     }
 
-    if (!description || !description.trim()) {
-      return res.status(400).json({
-        message: "Tournament description is required",
-      });
+    if (!description || !String(description).trim()) {
+      return c.json({ message: "Tournament description is required" }, 400);
     }
 
     if (!startDate || !endDate) {
-      return res.status(400).json({
-        message: "Start date and end date are required",
-      });
+      return c.json({ message: "Start date and end date are required" }, 400);
     }
 
-    if (!category || !category.trim()) {
-      return res.status(400).json({
-        message: "Tournament category is required",
-      });
+    if (!category || !String(category).trim()) {
+      return c.json({ message: "Tournament category is required" }, 400);
     }
 
     const tournamentData = {
-      title: title.trim(),
-      description: description.trim(),
-      imageUrl: imageUrl || "",
-      startDate: new Date(startDate),
-      endDate: new Date(endDate),
-      location: location || null,
-      maxParticipants: maxParticipants ? parseInt(maxParticipants) : null,
-      entryFee: entryFee ? parseFloat(entryFee) : null,
-      currency: currency || "MNT",
-      category: category.trim(),
-      status: status || "upcoming",
-      rules: rules || null,
-      prizes: prizes || null,
-      enrollLink: enrollLink || null,
+      title: String(title).trim(),
+      description: String(description).trim(),
+      imageUrl: (imageUrl as string) || "",
+      startDate: new Date(String(startDate)),
+      endDate: new Date(String(endDate)),
+      location: (location as string) || null,
+      maxParticipants: maxParticipants ? parseInt(String(maxParticipants), 10) : null,
+      entryFee: entryFee ? parseFloat(String(entryFee)) : null,
+      currency: (currency as string) || "MNT",
+      category: String(category).trim(),
+      status: (status as string) || "upcoming",
+      rules: rules != null ? String(rules) : null,
+      prizes:
+        prizes !== undefined && prizes !== null
+          ? (prizes as Prisma.InputJsonValue)
+          : undefined,
+      enrollLink: (enrollLink as string) || null,
     };
 
-    console.log("Backend: Creating tournament with data:", tournamentData);
-
-    const tournament = await prisma.tournament.create({
+    const tournament = await getPrisma().tournament.create({
       data: tournamentData,
       include: {
         participants: {
@@ -172,70 +164,71 @@ export const createTournament = async (req: Request, res: Response) => {
       },
     });
 
-    console.log("Backend: Tournament created successfully:", tournament);
-    res.status(201).json(tournament);
+    return c.json(tournament, 201);
   } catch (error) {
     console.error("Backend: Create tournament error:", error);
-    res.status(500).json({
-      message: "Failed to create tournament",
-      error: error instanceof Error ? error.message : "Unknown error",
-    });
+    return c.json(
+      {
+        message: "Failed to create tournament",
+        error: error instanceof Error ? error.message : "Unknown error",
+      },
+      500
+    );
   }
 };
 
-export const updateTournament = async (req: Request, res: Response) => {
+export const updateTournament = async (c: PublicCtx) => {
   try {
-    const { id } = req.params;
-    const updateData = { ...req.body };
+    const id = c.req.param("id");
+    const updateData = { ...(await c.req.json<Record<string, unknown>>()) };
 
-    // Remove deprecated prize fields if present
     delete updateData.prize1;
     delete updateData.prize2;
     delete updateData.prize3;
 
-    // Convert date strings to Date objects if they exist
     if (updateData.startDate) {
-      updateData.startDate = new Date(updateData.startDate);
+      updateData.startDate = new Date(String(updateData.startDate));
     }
     if (updateData.endDate) {
-      updateData.endDate = new Date(updateData.endDate);
+      updateData.endDate = new Date(String(updateData.endDate));
     }
 
-    const tournament = await prisma.tournament.update({
+    const tournament = await getPrisma().tournament.update({
       where: { id },
       data: updateData,
     });
 
-    res.json(tournament);
+    return c.json(tournament);
   } catch (error) {
     console.error("Update tournament error:", error);
-    res.status(500).json({ message: "Failed to update tournament" });
+    return c.json({ message: "Failed to update tournament" }, 500);
   }
 };
 
-export const deleteTournament = async (req: Request, res: Response) => {
+export const deleteTournament = async (c: PublicCtx) => {
   try {
-    const { id } = req.params;
-    await prisma.tournament.delete({
+    const id = c.req.param("id");
+    await getPrisma().tournament.delete({
       where: { id },
     });
 
-    res.json({ message: "Tournament deleted successfully" });
+    return c.json({ message: "Tournament deleted successfully" });
   } catch (error) {
     console.error("Delete tournament error:", error);
-    res.status(500).json({ message: "Failed to delete tournament" });
+    return c.json({ message: "Failed to delete tournament" }, 500);
   }
 };
 
-export const registerParticipant = async (req: Request, res: Response) => {
+export const registerParticipant = async (c: PublicCtx) => {
   try {
-    const { tournamentId } = req.params;
-    const { userId } = req.body;
+    const tournamentId = c.req.param("tournamentId")!;
+    const body = await c.req.json<{ userId?: string }>();
+    const { userId } = body;
 
-    const participant = await prisma.tournamentParticipant.create({
+    const participant = await getPrisma().tournamentParticipant.create({
       data: {
         tournamentId,
-        userId,
+        userId: userId!,
         status: "registered",
       },
       include: {
@@ -249,26 +242,28 @@ export const registerParticipant = async (req: Request, res: Response) => {
       },
     });
 
-    res.status(201).json(participant);
+    return c.json(participant, 201);
   } catch (error) {
     console.error("Register participant error:", error);
-    res.status(500).json({ message: "Failed to register participant" });
+    return c.json({ message: "Failed to register participant" }, 500);
   }
 };
 
-export const updateParticipantStatus = async (req: Request, res: Response) => {
+export const updateParticipantStatus = async (c: PublicCtx) => {
   try {
-    const { tournamentId, userId } = req.params;
-    const { status } = req.body;
+    const tournamentId = c.req.param("tournamentId")!;
+    const userId = c.req.param("userId")!;
+    const body = await c.req.json<{ status?: string }>();
+    const { status } = body;
 
-    const participant = await prisma.tournamentParticipant.update({
+    const participant = await getPrisma().tournamentParticipant.update({
       where: {
         tournamentId_userId: {
           tournamentId,
           userId,
         },
       },
-      data: { status },
+      data: { status: status! },
       include: {
         user: {
           select: {
@@ -280,9 +275,9 @@ export const updateParticipantStatus = async (req: Request, res: Response) => {
       },
     });
 
-    res.json(participant);
+    return c.json(participant);
   } catch (error) {
     console.error("Update participant status error:", error);
-    res.status(500).json({ message: "Failed to update participant status" });
+    return c.json({ message: "Failed to update participant status" }, 500);
   }
 };

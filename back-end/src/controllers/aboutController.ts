@@ -1,16 +1,15 @@
-import { PrismaClient } from "@prisma/client";
-import { Request, Response } from "express";
+import type { Prisma } from "@prisma/client";
+import { getPrisma } from "../utils/prisma";
+import type { PublicCtx } from "../types/context";
+import { aboutPageSeedRows } from "./aboutSeedData";
 
-const prisma = new PrismaClient();
-
-export const getAboutPageContent = async (req: Request, res: Response) => {
+export const getAboutPageContent = async (c: PublicCtx) => {
   try {
-    const content = await prisma.aboutPageContent.findMany({
+    const content = await getPrisma().aboutPageContent.findMany({
       orderBy: { createdAt: "asc" },
     });
 
-    // Transform the data into a more usable format
-    const formattedContent: any = {};
+    const formattedContent: Record<string, unknown> = {};
     content.forEach((item) => {
       if (item.section === "team") {
         formattedContent[item.section] = {
@@ -34,15 +33,16 @@ export const getAboutPageContent = async (req: Request, res: Response) => {
       }
     });
 
-    res.json(formattedContent);
+    return c.json(formattedContent);
   } catch (error) {
     console.error("Get about page content error:", error);
-    res.status(500).json({ message: "Failed to fetch about page content" });
+    return c.json({ message: "Failed to fetch about page content" }, 500);
   }
 };
 
-export const updateAboutPageContent = async (req: Request, res: Response) => {
+export const updateAboutPageContent = async (c: PublicCtx) => {
   try {
+    const body = await c.req.json<Record<string, unknown>>();
     const {
       section,
       title,
@@ -56,138 +56,97 @@ export const updateAboutPageContent = async (req: Request, res: Response) => {
       contactPhone,
       contactEmail,
       contactHours,
-    } = req.body;
+    } = body;
 
     if (!section) {
-      return res.status(400).json({ message: "Section is required" });
+      return c.json({ message: "Section is required" }, 400);
     }
 
-    // Check if content exists for this section
-    const existingContent = await prisma.aboutPageContent.findUnique({
-      where: { section },
+    const existingContent = await getPrisma().aboutPageContent.findUnique({
+      where: { section: String(section) },
     });
 
     let result;
     if (existingContent) {
-      // Update existing content
-      result = await prisma.aboutPageContent.update({
-        where: { section },
-        data:
-          section === "team"
-            ? { teamMembers }
-            : {
-                title,
-                content,
-                imageUrl,
-                teamMemberName,
-                teamMemberRole,
-                teamMemberImage,
-                contactAddress,
-                contactPhone,
-                contactEmail,
-                contactHours,
-              },
+      const teamUpdate: Prisma.AboutPageContentUpdateInput = {
+        teamMembers: teamMembers as Prisma.InputJsonValue,
+      };
+      const restUpdate: Prisma.AboutPageContentUpdateInput = {
+        title: title as string | undefined,
+        content: content as string | undefined,
+        imageUrl: imageUrl as string | undefined,
+        teamMemberName: teamMemberName as string | undefined,
+        teamMemberRole: teamMemberRole as string | undefined,
+        teamMemberImage: teamMemberImage as string | undefined,
+        contactAddress: contactAddress as string | undefined,
+        contactPhone: contactPhone as string | undefined,
+        contactEmail: contactEmail as string | undefined,
+        contactHours: contactHours as string | undefined,
+      };
+      result = await getPrisma().aboutPageContent.update({
+        where: { section: String(section) },
+        data: section === "team" ? teamUpdate : restUpdate,
       });
     } else {
-      // Create new content
-      result = await prisma.aboutPageContent.create({
-        data:
-          section === "team"
-            ? { section, teamMembers }
-            : {
-                section,
-                title,
-                content,
-                imageUrl,
-                teamMemberName,
-                teamMemberRole,
-                teamMemberImage,
-                contactAddress,
-                contactPhone,
-                contactEmail,
-                contactHours,
-              },
+      const teamCreate: Prisma.AboutPageContentCreateInput = {
+        section: String(section),
+        teamMembers: teamMembers as Prisma.InputJsonValue,
+      };
+      const restCreate: Prisma.AboutPageContentCreateInput = {
+        section: String(section),
+        title: title as string | undefined,
+        content: content as string | undefined,
+        imageUrl: imageUrl as string | undefined,
+        teamMemberName: teamMemberName as string | undefined,
+        teamMemberRole: teamMemberRole as string | undefined,
+        teamMemberImage: teamMemberImage as string | undefined,
+        contactAddress: contactAddress as string | undefined,
+        contactPhone: contactPhone as string | undefined,
+        contactEmail: contactEmail as string | undefined,
+        contactHours: contactHours as string | undefined,
+      };
+      result = await getPrisma().aboutPageContent.create({
+        data: section === "team" ? teamCreate : restCreate,
       });
     }
 
-    res.json(result);
+    return c.json(result);
   } catch (error) {
     console.error("Update about page content error:", error);
-    res.status(500).json({ message: "Failed to update about page content" });
+    return c.json({ message: "Failed to update about page content" }, 500);
   }
 };
 
-export const deleteAboutPageContent = async (req: Request, res: Response) => {
+export const deleteAboutPageContent = async (c: PublicCtx) => {
   try {
-    const { section } = req.params;
+    const section = c.req.param("section");
 
-    await prisma.aboutPageContent.delete({
+    await getPrisma().aboutPageContent.delete({
       where: { section },
     });
 
-    res.json({ message: "About page content deleted successfully" });
+    return c.json({ message: "About page content deleted successfully" });
   } catch (error) {
     console.error("Delete about page content error:", error);
-    res.status(500).json({ message: "Failed to delete about page content" });
+    return c.json({ message: "Failed to delete about page content" }, 500);
   }
 };
 
-export const seedAboutPageContent = async (req: Request, res: Response) => {
+export const seedAboutPageContent = async (c: PublicCtx) => {
   try {
-    const defaultContent = [
-      {
-        section: "hero",
-        title: "Бидний тухай",
-        content:
-          "Монголын Оюун Ухааны Холбооны Officer салбар нь хүүхэд, өсвөр үеийнхний сэтгэн бодох чадвар, анхаарал төвлөрөл, ой тогтоолтыг хөгжүүлэхэд чиглэсэн мэргэжлийн сургалтуудыг санал болгодог.",
-        imageUrl: "/placeholder-about.jpg",
-      },
-      {
-        section: "goals",
-        title: "Бидний зорилго",
-        content:
-          "Бидний үндсэн зорилго бол хүүхэд, залуусын оюуны чадамжийг хөгжүүлж, өөртөө итгэлтэй, бүтээлч, сэтгэлгээ өндөртэй ирээдүйн манлайлагчдыг бэлтгэх юм. Түүнчлэн, Монголын нэрийг дэлхийд гаргах оюуны спортын шилдэг тамирчдыг төлөвшүүлэхэд хувь нэмрээ оруулахыг бид эрхэмлэдэг.",
-        imageUrl: "/placeholder-goals.jpg",
-      },
-      {
-        section: "values",
-        title: "Бидний үнэт зүйлс",
-        content:
-          "Чадварлаг боловсрол: Олон улсын аргачлал дээр суурилсан сургалтын хөтөлбөр\nХүүхэд төвтэй хандлага: Хүүхдийн сэтгэл зүйд нийцсэн уур амьсгал, хандлага\nБүтээлч байдал ба шинийг сэтгэхүй: Хүүхдийг өөрөөр нь сэтгэж, хөгжих боломжийг олгох\nХариуцлага ба тууштай байдал: Суралцах үйл явцдаа тууштай ханддаг хандлагыг төлөвшүүлэх\nХамтын өсөлт: Багш, сурагч, эцэг эхийн хамтын оролцоотой хөгжлийн орчин",
-        imageUrl: "/placeholder-values.jpg",
-      },
-      {
-        section: "history",
-        title: "Бидний түүх",
-        content:
-          "Монголын Оюун Ухааны Холбооны албан ёсны салбар болох Officer салбар 20__ онд байгуулагдсан. Үүсгэн байгуулагдсан цагаасаа хойш бид олон зуун хүүхдэд оюуны хөгжил, тархины спортоор дамжуулан өөрийгөө нээх боломжийг олгож, аймаг, дүүргийн болон улсын хэмжээний уралдаан тэмцээнүүдэд амжилттай оролцсон тамирчдыг бэлтгэж ирсэн. Бидний өсөлт, хөгжлийн замнал нь сурагчдын амжилтаар хэмжигддэг бөгөөд өдөр бүр шинэ амжилтын төлөө бид хичээнгүйлэн ажилладаг.",
-        imageUrl: "/placeholder-history.jpg",
-      },
-      {
-        section: "contact",
-        title: "Холбоо барих",
-        contactAddress: "БЗД - 16-р хороо, Улаанбаатар 13321",
-        contactPhone: "+976 9999 0000",
-        contactEmail: "contact@oyun-uhaanii.mn",
-        contactHours: "Даваа-Баасан: 9:00-18:00",
-      },
-    ];
+    await getPrisma().aboutPageContent.deleteMany();
 
-    // Clear existing content
-    await prisma.aboutPageContent.deleteMany();
-
-    // Insert default content
     const results = await Promise.all(
-      defaultContent.map((content) =>
-        prisma.aboutPageContent.create({
-          data: content,
+      aboutPageSeedRows.map((row) =>
+        getPrisma().aboutPageContent.create({
+          data: row,
         })
       )
     );
 
-    res.json({ message: "About page content seeded successfully", results });
+    return c.json({ message: "About page content seeded successfully", results });
   } catch (error) {
     console.error("Seed about page content error:", error);
-    res.status(500).json({ message: "Failed to seed about page content" });
+    return c.json({ message: "Failed to seed about page content" }, 500);
   }
 };

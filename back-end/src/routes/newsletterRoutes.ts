@@ -1,4 +1,4 @@
-import express from "express";
+import { Hono } from "hono";
 import {
   subscribeToNewsletter,
   unsubscribeFromNewsletter,
@@ -6,22 +6,14 @@ import {
   sendWeeklyNewsletter,
   getNewsletterStats,
 } from "../controllers/newsletterController";
-import { authenticateToken, requireAdmin } from "../middleware/authMiddleware";
+import authenticateToken, { requireAdmin } from "../middleware/authMiddleware";
+import type { AppEnv } from "../hono/appEnv";
 
-const router = express.Router();
+const r = new Hono<AppEnv>();
+r.post("/subscribe", subscribeToNewsletter);
+r.get("/unsubscribe/:token", unsubscribeFromNewsletter);
+r.get("/subscribers", authenticateToken, requireAdmin, getNewsletterSubscribers);
+r.post("/send", authenticateToken, requireAdmin, sendWeeklyNewsletter);
+r.get("/stats", authenticateToken, requireAdmin, getNewsletterStats);
 
-// Public routes
-router.post("/subscribe", subscribeToNewsletter);
-router.get("/unsubscribe/:token", unsubscribeFromNewsletter);
-
-// Admin routes (protected)
-router.get(
-  "/subscribers",
-  authenticateToken,
-  requireAdmin,
-  getNewsletterSubscribers
-);
-router.post("/send", authenticateToken, requireAdmin, sendWeeklyNewsletter);
-router.get("/stats", authenticateToken, requireAdmin, getNewsletterStats);
-
-export default router;
+export default r;

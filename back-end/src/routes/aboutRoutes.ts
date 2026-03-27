@@ -1,25 +1,17 @@
-import express from "express";
+import { Hono } from "hono";
 import {
   getAboutPageContent,
   updateAboutPageContent,
   deleteAboutPageContent,
   seedAboutPageContent,
 } from "../controllers/aboutController";
-import { authenticateToken, requireAdmin } from "../middleware/authMiddleware";
+import authenticateToken, { requireAdmin } from "../middleware/authMiddleware";
+import type { AppEnv } from "../hono/appEnv";
 
-const router = express.Router();
+const r = new Hono<AppEnv>();
+r.get("/", getAboutPageContent);
+r.put("/", authenticateToken, requireAdmin, updateAboutPageContent);
+r.delete("/:section", authenticateToken, requireAdmin, deleteAboutPageContent);
+r.post("/seed", authenticateToken, requireAdmin, seedAboutPageContent);
 
-// Public route to get about page content
-router.get("/", getAboutPageContent);
-
-// Admin routes (protected)
-router.put("/", authenticateToken, requireAdmin, updateAboutPageContent);
-router.delete(
-  "/:section",
-  authenticateToken,
-  requireAdmin,
-  deleteAboutPageContent
-);
-router.post("/seed", authenticateToken, requireAdmin, seedAboutPageContent);
-
-export default router;
+export default r;

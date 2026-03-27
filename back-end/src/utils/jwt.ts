@@ -1,16 +1,31 @@
-import jwt from "jsonwebtoken";
+import * as jose from "jose";
 
-const JWT_SECRET = process.env.JWT_SECRET || "supersecret"; // Use from .env in production
+function getSecretKey(secret: string): Uint8Array {
+  return new TextEncoder().encode(secret);
+}
 
-export const generateToken = (userId: string): string => {
-  return jwt.sign({ userId }, JWT_SECRET, { expiresIn: "1h" });
-};
+export async function signUserToken(
+  userId: string,
+  secret: string
+): Promise<string> {
+  return new jose.SignJWT({ userId })
+    .setProtectedHeader({ alg: "HS256" })
+    .setExpirationTime("1h")
+    .sign(getSecretKey(secret));
+}
 
-export const verifyToken = (token: string): { userId: string } | null => {
+export async function verifyUserToken(
+  token: string,
+  secret: string
+): Promise<{ userId: string } | null> {
   try {
-    const decoded = jwt.verify(token, JWT_SECRET) as { userId: string };
-    return decoded;
-  } catch (error) {
-    return null; // Token is invalid or expired
+    const { payload } = await jose.jwtVerify(token, getSecretKey(secret), {
+      algorithms: ["HS256"],
+    });
+    const userId = payload.userId;
+    if (typeof userId !== "string") return null;
+    return { userId };
+  } catch {
+    return null;
   }
-};
+}

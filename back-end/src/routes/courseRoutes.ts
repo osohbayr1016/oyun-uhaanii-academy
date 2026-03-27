@@ -1,4 +1,4 @@
-import express from "express";
+import { Hono } from "hono";
 import {
   getAllCourses,
   getCourseById,
@@ -6,17 +6,14 @@ import {
   updateCourse,
   deleteCourse,
 } from "../controllers/courseController";
-import authMiddleware from "../middleware/authMiddleware";
+import authenticateToken from "../middleware/authMiddleware";
+import type { AppEnv } from "../hono/appEnv";
 
-const router = express.Router();
+const r = new Hono<AppEnv>();
+r.get("/", getAllCourses);
+r.get("/:id", getCourseById);
+r.post("/", createCourse);
+r.put("/:id", authenticateToken, updateCourse);
+r.delete("/:id", deleteCourse);
 
-// Public routes
-router.get("/", getAllCourses);
-router.get("/:id", getCourseById);
-
-// Protected routes (require authentication)
-router.post("/", createCourse); // Temporarily removed auth for testing
-router.put("/:id", authMiddleware, updateCourse);
-router.delete("/:id", deleteCourse); // Temporarily removed authMiddleware for testing
-
-export default router;
+export default r;

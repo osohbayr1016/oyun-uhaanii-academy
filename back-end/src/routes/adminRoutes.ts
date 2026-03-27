@@ -1,16 +1,16 @@
-import { Router } from "express";
+import { Hono } from "hono";
 import {
   getAdminStats,
   getAllUsers,
   getRecentActivities,
 } from "../controllers/adminController";
-import authMiddleware from "../middleware/authMiddleware";
+import authenticateToken from "../middleware/authMiddleware";
+import type { AppEnv } from "../hono/appEnv";
 
-const router = Router();
+const r = new Hono<AppEnv>();
+r.use("*", authenticateToken);
+r.get("/stats", getAdminStats);
+r.get("/users", getAllUsers);
+r.get("/activities", getRecentActivities);
 
-// Only allow admins to access this route
-router.get("/stats", authMiddleware, getAdminStats);
-router.get("/users", authMiddleware, getAllUsers);
-router.get("/activities", authMiddleware, getRecentActivities);
-
-export default router;
+export default r;

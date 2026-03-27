@@ -1,14 +1,13 @@
-import { Request, Response } from "express";
-import { PrismaClient } from "@prisma/client";
-import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
+import type { Context } from "hono";
+import bcrypt from "bcryptjs";
+import { getPrisma } from "../utils/prisma";
+import { signUserToken } from "../utils/jwt";
+import type { WorkerBindings } from "../types/bindings";
 
-const prisma = new PrismaClient();
-const JWT_SECRET = process.env.JWT_SECRET;
+type AuthCtx = Context<{ Bindings: WorkerBindings }>;
 
-if (!JWT_SECRET) {
-  console.error("FATAL: JWT_SECRET is not set in environment variables.");
-  process.exit(1);
+function jwtSecret(c: AuthCtx): string | undefined {
+  return c.env.JWT_SECRET ?? process.env.JWT_SECRET;
 }
 
 const validateEmail = (email: string) => /.+@.+\..+/.test(email);
@@ -17,41 +16,36 @@ const validatePassword = (password: string) =>
 const validateName = (name: string) =>
   typeof name === "string" && name.trim().length > 0;
 
-const generateToken = (userId: string): string => {
-  return jwt.sign({ userId }, JWT_SECRET, { expiresIn: "1h" });
-};
-
-export const register = async (req: Request, res: Response) => {
+export const register = async (c: AuthCtx) => {
+  const JWT_SECRET = jwtSecret(c);
+  if (!JWT_SECRET) {
+    return c.json({ message: "Server misconfiguration" }, 500);
+  }
   try {
-    const { email, password, name } = req.body;
+    const body = await c.req.json<{ email?: string; password?: string; name?: string }>();
+    const { email, password, name } = body;
 
-    // Input validation
     if (!email || !validateEmail(email)) {
-      return res.status(400).json({ message: "Valid email is required" });
+      return c.json({ message: "Valid email is required" }, 400);
     }
     if (!password || !validatePassword(password)) {
-      return res
-        .status(400)
-        .json({ message: "Password must be at least 6 characters" });
+      return c.json({ message: "Password must be at least 6 characters" }, 400);
     }
     if (!name || !validateName(name)) {
-      return res.status(400).json({ message: "Name is required" });
+      return c.json({ message: "Name is required" }, 400);
     }
 
-    // Check if user already exists
-    const existingUser = await prisma.user.findUnique({
+    const existingUser = await getPrisma().user.findUnique({
       where: { email },
     });
     if (existingUser) {
-      return res.status(400).json({ message: "User already exists" });
+      return c.json({ message: "User already exists" }, 400);
     }
 
-    // Hash password
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-    // Create user
-    const user = await prisma.user.create({
+    const user = await getPrisma().user.create({
       data: {
         email,
         password: hashedPassword,
@@ -60,65 +54,64 @@ export const register = async (req: Request, res: Response) => {
       },
     });
 
-    // Generate token
-    const token = generateToken(user.id);
+    const token = await signUserToken(user.id, JWT_SECRET);
 
-    return res.status(201).json({
-      message: "User created successfully",
-      token,
-      user: {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        role: user.role,
+    return c.json(
+      {
+        message: "User created successfully",
+        token,
+        user: {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          role: user.role,
+        },
       },
-    });
-  } catch (error: any) {
-    // Handle unique constraint error (duplicate email) from Prisma
-    if (error.code === "P2002" && error.meta?.target?.includes("email")) {
-      return res.status(400).json({ message: "User already exists" });
+      201
+    );
+  } catch (error: unknown) {
+    const err = error as { code?: string; meta?: { target?: string[] } };
+    if (err.code === "P2002" && err.meta?.target?.includes("email")) {
+      return c.json({ message: "User already exists" }, 400);
     }
-    console.error("Registration error:", error, "Request body:", req.body);
-    return res
-      .status(500)
-      .json({ message: "Server error during registration" });
+    console.error("Registration error:", error);
+    return c.json({ message: "Server error during registration" }, 500);
   }
 };
 
-export const login = async (req: Request, res: Response) => {
+export const login = async (c: AuthCtx) => {
+  const JWT_SECRET = jwtSecret(c);
+  if (!JWT_SECRET) {
+    return c.json({ message: "Server misconfiguration" }, 500);
+  }
   try {
-    const { email, password } = req.body;
+    const body = await c.req.json<{ email?: string; password?: string }>();
+    const { email, password } = body;
 
-    // Input validation
     if (!email || !validateEmail(email)) {
-      return res.status(400).json({ message: "Valid email is required" });
+      return c.json({ message: "Valid email is required" }, 400);
     }
     if (!password || !validatePassword(password)) {
-      return res
-        .status(400)
-        .json({ message: "Password must be at least 6 characters" });
+      return c.json({ message: "Password must be at least 6 characters" }, 400);
     }
 
-    // Find user
-    const user = await prisma.user.findUnique({
+    const user = await getPrisma().user.findUnique({
       where: { email },
     });
 
     if (!user) {
-      return res.status(404).json({ message: "User not found" });
+      return c.json({ message: "User not found" }, 404);
     }
 
-    // Check password
     const isPasswordValid = await bcrypt.compare(password, user.password);
 
     if (!isPasswordValid) {
-      return res.status(401).json({ message: "Invalid credentials" });
+      return c.json({ message: "Invalid credentials" }, 401);
     }
 
-    // Generate token
-    const token = generateToken(user.id);
+    const token = await signUserToken(user.id, JWT_SECRET);
 
-    res.json({
+    return c.json({
       message: "Login successful",
       token,
       user: {
@@ -129,7 +122,7 @@ export const login = async (req: Request, res: Response) => {
       },
     });
   } catch (error) {
-    console.error("Login error:", error, "Request body:", req.body);
-    res.status(500).json({ message: "Server error during login" });
+    console.error("Login error:", error);
+    return c.json({ message: "Server error during login" }, 500);
   }
 };

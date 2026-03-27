@@ -1,9 +1,10 @@
-import request from "supertest";
-import { app, prisma } from "../src/index";
+import { app } from "../src/index";
+import { getPrisma } from "../src/utils/prisma";
+
+const prisma = getPrisma();
 
 describe("Courses Controller", () => {
   beforeAll(async () => {
-    // Clean up database before tests
     await prisma.course.deleteMany();
   });
 
@@ -13,13 +14,13 @@ describe("Courses Controller", () => {
 
   describe("GET /api/courses", () => {
     it("should return empty array when no courses exist", async () => {
-      const response = await request(app).get("/api/courses").expect(200);
-
-      expect(response.body).toEqual([]);
+      const response = await app.request("http://localhost/api/courses");
+      expect(response.status).toBe(200);
+      const body = await response.json();
+      expect(body).toEqual([]);
     });
 
     it("should return all courses", async () => {
-      // Create a test course
       const testCourse = await prisma.course.create({
         data: {
           title: "Test Course",
@@ -27,6 +28,7 @@ describe("Courses Controller", () => {
           instructor: "Test Instructor",
           duration: 10,
           level: "Beginner",
+          levels: [],
           price: 50000,
           currency: "MNT",
           imageUrl: "https://example.com/course.jpg",
@@ -36,12 +38,13 @@ describe("Courses Controller", () => {
         },
       });
 
-      const response = await request(app).get("/api/courses").expect(200);
-
-      expect(Array.isArray(response.body)).toBe(true);
-      expect(response.body.length).toBeGreaterThan(0);
-      expect(response.body[0]).toHaveProperty("id");
-      expect(response.body[0].title).toBe(testCourse.title);
+      const response = await app.request("http://localhost/api/courses");
+      expect(response.status).toBe(200);
+      const body = (await response.json()) as Array<{ id: string; title: string }>;
+      expect(Array.isArray(body)).toBe(true);
+      expect(body.length).toBeGreaterThan(0);
+      expect(body[0]).toHaveProperty("id");
+      expect(body[0].title).toBe(testCourse.title);
     });
   });
 
@@ -61,33 +64,37 @@ describe("Courses Controller", () => {
         content: "New Content",
       };
 
-      const response = await request(app)
-        .post("/api/courses")
-        .send(courseData)
-        .expect(201);
+      const response = await app.request("http://localhost/api/courses", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(courseData),
+      });
 
-      expect(response.body).toHaveProperty("id");
-      expect(response.body.title).toBe(courseData.title);
-      expect(response.body.instructor).toBe(courseData.instructor);
-      expect(response.body.price).toBe(courseData.price);
+      expect(response.status).toBe(201);
+      const body = (await response.json()) as typeof courseData & { id: string };
+      expect(body).toHaveProperty("id");
+      expect(body.title).toBe(courseData.title);
+      expect(body.instructor).toBe(courseData.instructor);
+      expect(body.price).toBe(courseData.price);
     });
 
     it("should return 400 for invalid course data", async () => {
       const invalidCourseData = {
-        title: "", // Invalid: empty title
-        price: -1000, // Invalid: negative price
+        title: "",
+        price: -1000,
       };
 
-      await request(app)
-        .post("/api/courses")
-        .send(invalidCourseData)
-        .expect(400);
+      const response = await app.request("http://localhost/api/courses", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(invalidCourseData),
+      });
+      expect(response.status).toBe(400);
     });
   });
 
   describe("GET /api/courses/:id", () => {
     it("should return a specific course", async () => {
-      // Create a test course
       const testCourse = await prisma.course.create({
         data: {
           title: "Specific Course",
@@ -95,6 +102,7 @@ describe("Courses Controller", () => {
           instructor: "Specific Instructor",
           duration: 15,
           level: "Advanced",
+          levels: [],
           price: 100000,
           currency: "MNT",
           imageUrl: "https://example.com/specific-course.jpg",
@@ -104,18 +112,20 @@ describe("Courses Controller", () => {
         },
       });
 
-      const response = await request(app)
-        .get(`/api/courses/${testCourse.id}`)
-        .expect(200);
-
-      expect(response.body.id).toBe(testCourse.id);
-      expect(response.body.title).toBe(testCourse.title);
+      const response = await app.request(
+        `http://localhost/api/courses/${testCourse.id}`
+      );
+      expect(response.status).toBe(200);
+      const body = (await response.json()) as { id: string; title: string };
+      expect(body.id).toBe(testCourse.id);
+      expect(body.title).toBe(testCourse.title);
     });
 
     it("should return 404 for non-existent course", async () => {
-      const nonExistentId = "non-existent-id";
-
-      await request(app).get(`/api/courses/${nonExistentId}`).expect(404);
+      const response = await app.request(
+        "http://localhost/api/courses/non-existent-id"
+      );
+      expect(response.status).toBe(404);
     });
   });
 });

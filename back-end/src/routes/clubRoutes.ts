@@ -1,18 +1,15 @@
-import express from "express";
+import { Hono } from "hono";
 import {
   getClubContent,
   updateClubContent,
   uploadClubImage,
 } from "../controllers/clubController";
-import { authenticateToken } from "../middleware/authMiddleware";
+import authenticateToken from "../middleware/authMiddleware";
+import type { AppEnv } from "../hono/appEnv";
 
-const router = express.Router();
+const r = new Hono<AppEnv>();
+r.get("/", getClubContent);
+r.put("/", authenticateToken, updateClubContent);
+r.post("/upload", authenticateToken, uploadClubImage);
 
-// Public routes
-router.get("/", getClubContent);
-
-// Protected routes (admin only)
-router.put("/", authenticateToken, updateClubContent);
-router.post("/upload", authenticateToken, uploadClubImage);
-
-export default router;
+export default r;

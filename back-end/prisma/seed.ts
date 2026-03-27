@@ -1,7 +1,7 @@
-import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
+import { getPrismaForNode } from "../src/utils/nodePrisma";
 
-const prisma = new PrismaClient();
+const prisma = getPrismaForNode();
 
 async function main() {
   // Create an admin user

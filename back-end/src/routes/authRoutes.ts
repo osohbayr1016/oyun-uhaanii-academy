@@ -1,9 +1,9 @@
-import { Router } from "express";
+import { Hono } from "hono";
 import { register, login } from "../controllers/authController";
+import type { AppEnv } from "../hono/appEnv";
 
-const router = Router();
+const r = new Hono<AppEnv>();
+r.post("/register", register);
+r.post("/login", login);
 
-router.post("/register", register);
-router.post("/login", login);
-
-export default router;
+export default r;

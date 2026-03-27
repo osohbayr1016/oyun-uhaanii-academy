@@ -1,13 +1,14 @@
-import express from "express";
+import { Hono } from "hono";
 import {
   getCarouselImages,
   addCarouselImage,
   deleteCarouselImage,
 } from "../controllers/carouselController";
-const router = express.Router();
+import type { AppEnv } from "../hono/appEnv";
 
-router.get("/", getCarouselImages);
-router.post("/", addCarouselImage);
-router.delete("/:id", deleteCarouselImage);
+const r = new Hono<AppEnv>();
+r.get("/", getCarouselImages);
+r.post("/", addCarouselImage);
+r.delete("/:id", deleteCarouselImage);
 
-export default router;
+export default r;
