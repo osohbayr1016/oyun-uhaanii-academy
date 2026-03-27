@@ -7,6 +7,7 @@ import React, {
   useEffect,
   ReactNode,
 } from "react";
+import { getApiBaseUrl } from "@/lib/env";
 
 export interface User {
   id: string;
@@ -43,7 +44,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
 
   // Always use NEXT_PUBLIC_API_URL, fallback to localhost
   const API_BASE_URL =
-    process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
+    getApiBaseUrl();
 
   useEffect(() => {
     const token = localStorage.getItem("token");

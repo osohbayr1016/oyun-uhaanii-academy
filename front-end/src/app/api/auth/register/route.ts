@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getApiBaseUrl } from "@/lib/env";
 
 export async function POST(request: NextRequest) {
   try {
@@ -7,7 +8,7 @@ export async function POST(request: NextRequest) {
 
     const response = await fetch(
       `${
-        process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001"
+        getApiBaseUrl()
       }/api/auth/register`,
       {
         method: "POST",

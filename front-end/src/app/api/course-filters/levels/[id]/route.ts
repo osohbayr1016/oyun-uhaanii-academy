@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getApiBaseUrl } from "@/lib/env";
 
 export async function PUT(
   request: NextRequest,
@@ -10,7 +11,7 @@ export async function PUT(
     const token = request.headers.get("authorization");
 
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/api/course-filters/levels/${id}`,
+      `${getApiBaseUrl()}/api/course-filters/levels/${id}`,
       {
         method: "PUT",
         headers: {
@@ -46,7 +47,7 @@ export async function DELETE(
     const token = request.headers.get("authorization");
 
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/api/course-filters/levels/${id}`,
+      `${getApiBaseUrl()}/api/course-filters/levels/${id}`,
       {
         method: "DELETE",
         headers: {

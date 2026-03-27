@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getApiBaseUrl } from "@/lib/env";
 
 export async function GET(request: NextRequest) {
   try {
     const backendUrl =
-      process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
+      getApiBaseUrl();
     const response = await fetch(`${backendUrl}/api/newsletter/stats`, {
       headers: {
         Authorization: request.headers.get("Authorization") || "",

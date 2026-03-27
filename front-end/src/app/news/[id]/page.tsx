@@ -1,4 +1,5 @@
 import { Metadata } from "next";
+import { getApiBaseUrl } from "@/lib/env";
 import Link from "next/link";
 import Image from "next/image";
 import Script from "next/script";
@@ -29,7 +30,7 @@ export async function generateMetadata({
 
   try {
     const backendUrl =
-      process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
+      getApiBaseUrl();
     const response = await fetch(`${backendUrl}/api/news/${id}`, {
       headers: {
         "Content-Type": "application/json",
@@ -120,7 +121,7 @@ export async function generateMetadata({
 async function getArticle(id: string): Promise<NewsArticle | null> {
   try {
     const backendUrl =
-      process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
+      getApiBaseUrl();
     const response = await fetch(`${backendUrl}/api/news/${id}`, {
       headers: {
         "Content-Type": "application/json",

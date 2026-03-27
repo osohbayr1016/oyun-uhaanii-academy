@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { getApiBaseUrl } from "@/lib/env";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 
@@ -16,7 +17,7 @@ export default function UnsubscribePage() {
     const unsubscribe = async () => {
       try {
         const backendUrl =
-          process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
+          getApiBaseUrl();
         const response = await fetch(
           `${backendUrl}/api/newsletter/unsubscribe/${token}`,
           {

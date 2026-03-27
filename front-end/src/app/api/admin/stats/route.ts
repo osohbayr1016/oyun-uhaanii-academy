@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getApiBaseUrl } from "@/lib/env";
 
 export async function GET(req: NextRequest) {
-  const backendUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
+  const backendUrl = getApiBaseUrl();
   let token = req.headers.get("authorization") || "";
   if (token && !/^bearer /i.test(token)) {
     token = `Bearer ${token}`;

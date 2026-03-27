@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getApiBaseUrl } from "@/lib/env";
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const backendUrl =
-      process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
+      getApiBaseUrl();
 
     const response = await fetch(`${backendUrl}/api/newsletter/send`, {
       method: "POST",

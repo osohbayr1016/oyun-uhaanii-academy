@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getApiBaseUrl } from "@/lib/env";
 
 export async function GET(request: NextRequest) {
   try {
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/api/course-filters/levels`,
+      `${getApiBaseUrl()}/api/course-filters/levels`,
       {
         method: "GET",
         headers: {
@@ -33,7 +34,7 @@ export async function POST(request: NextRequest) {
     const token = request.headers.get("authorization");
 
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/api/course-filters/levels`,
+      `${getApiBaseUrl()}/api/course-filters/levels`,
       {
         method: "POST",
         headers: {

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { getApiBaseUrl } from "@/lib/env";
 import "./globals.css";
 import ConditionalLayout from "./_components/ConditionalLayout";
 import RoutePrefetcher from "./_components/RoutePrefetcher";
@@ -65,8 +66,8 @@ export default function RootLayout({
         <meta name="googlebot" content="index, follow" />
         <link rel="canonical" href="https://academyofficer.mn" />
         {/* Speed up TLS handshake to backend and common CDNs */}
-        <link rel="preconnect" href={process.env.NEXT_PUBLIC_API_URL} />
-        <link rel="dns-prefetch" href={process.env.NEXT_PUBLIC_API_URL} />
+        <link rel="preconnect" href={getApiBaseUrl()} />
+        <link rel="dns-prefetch" href={getApiBaseUrl()} />
         <link
           rel="preload"
           href="https://db.onlinewebfonts.com/t/a28001a286f8e6a91583693769dbf876.woff2"
