@@ -81,6 +81,9 @@ public
 tmp/
 temp/
 
+# Accidental nested clone (must not be a git submodule without .gitmodules)
+oyun-uhaanii-academy/
+
 # Editor directories and files
 .vscode/
 .idea/
