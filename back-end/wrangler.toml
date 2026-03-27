@@ -1,14 +1,26 @@
+# Cloudflare Worker: Hono API (Prisma + Hyperdrive → PostgreSQL)
+# Default URL after deploy: https://oyun-uhaanii-api.<subdomain>.workers.dev
+# Secrets (set once): npx wrangler secret put JWT_SECRET
+#   RESEND_API_KEY, RESEND_FROM_EMAIL — optional email
+# Vars: tune CORS_ORIGIN / FRONTEND_URL in dashboard or [vars] below
+
 name = "oyun-uhaanii-api"
 main = "src/worker.ts"
-compatibility_date = "2024-11-01"
+compatibility_date = "2025-03-01"
 compatibility_flags = [ "nodejs_compat" ]
 
-# Replace id with your Hyperdrive UUID from the Cloudflare dashboard.
-# For local dev, set localConnectionString (or use .dev.vars + wrangler dev).
+workers_dev = true
+
+# Hyperdrive: connection pool to your Postgres (create with:
+#   npx wrangler hyperdrive create <name> --connection-string="$DATABASE_URL"
 [[hyperdrive]]
 binding = "HYPERDRIVE"
-id = "00000000-0000-0000-0000-000000000000"
+id = "2cbab3a14f294c559751d6e591cd39e8"
+# Used by `wrangler dev` only (local Worker → your machine DB)
 localConnectionString = "postgresql://postgres:postgres@127.0.0.1:5432/postgres"
 
 [vars]
-NODE_ENV = "development"
+NODE_ENV = "production"
+# Set your real Vercel URL so browsers can call the API (or set in Dashboard → Settings → Variables)
+# CORS_ORIGIN = "https://your-app.vercel.app"
+# FRONTEND_URL = "https://your-app.vercel.app"
