@@ -72,6 +72,15 @@ export const createHomeContent = async (c: PublicCtx) => {
   }
 };
 
+const OFFICER_STAT_KEYS = new Set([
+  "officer_stat_courses",
+  "officer_stat_tournaments",
+  "officer_stat_enrollments",
+  "officer_stat_teachers",
+  "officer_stat_products",
+  "officer_stat_years",
+]);
+
 export const updateHomeContent = async (c: PublicCtx) => {
   try {
     const updates = await c.req.json<Record<string, unknown>>();
@@ -83,6 +92,9 @@ export const updateHomeContent = async (c: PublicCtx) => {
     const results = [];
 
     for (const [key, value] of Object.entries(updates)) {
+      if (OFFICER_STAT_KEYS.has(key)) {
+        continue;
+      }
       try {
         const content = await getPrisma().textContent.upsert({
           where: { key },

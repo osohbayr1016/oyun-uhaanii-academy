@@ -4,35 +4,40 @@ import type { PublicCtx } from "../types/context";
 
 export const getAllCourses = async (c: PublicCtx) => {
   try {
-    const courses = await getPrisma().course.findMany({
+    const prisma = getPrisma();
+    const courses = await prisma.course.findMany({
+      orderBy: { createdAt: "desc" },
       include: {
-        enrollments: {
-          select: {
-            id: true,
-            status: true,
-          },
+        _count: {
+          select: { enrollments: true, reviews: true },
         },
-        reviews: {
-          select: {
-            id: true,
-            rating: true,
-          },
-        },
-      },
-      orderBy: {
-        createdAt: "desc",
       },
     });
 
-    const transformedCourses = courses.map((course) => ({
-      ...course,
-      studentCount: course.enrollments.length,
-      averageRating:
-        course.reviews.length > 0
-          ? course.reviews.reduce((acc, review) => acc + review.rating, 0) /
-            course.reviews.length
-          : 0,
-    }));
+    const courseIds = courses.map((row) => row.id);
+    const avgRows =
+      courseIds.length === 0
+        ? []
+        : await prisma.review.groupBy({
+            by: ["courseId"],
+            where: { courseId: { in: courseIds } },
+            _avg: { rating: true },
+          });
+
+    const avgByCourseId = new Map(
+      avgRows
+        .filter((r): r is typeof r & { courseId: string } => r.courseId != null)
+        .map((r) => [r.courseId, r._avg.rating ?? 0])
+    );
+
+    const transformedCourses = courses.map((course) => {
+      const { _count, ...rest } = course;
+      return {
+        ...rest,
+        studentCount: _count.enrollments,
+        averageRating: avgByCourseId.get(course.id) ?? 0,
+      };
+    });
 
     return c.json(transformedCourses);
   } catch (error) {

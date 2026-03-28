@@ -11,6 +11,11 @@ function jwtSecretFromEnv(env: WorkerBindings | undefined): string {
   );
 }
 
+/** DB/seed may use `admin`, `ADMIN`, etc. */
+export function isAdminRole(role: string | null | undefined): boolean {
+  return typeof role === "string" && role.toLowerCase() === "admin";
+}
+
 export const authenticateToken = createMiddleware<{
   Bindings: WorkerBindings;
   Variables: HonoVariables;
@@ -41,7 +46,7 @@ export const requireAdmin = createMiddleware<{
     const dbUser = await getPrisma().user.findUnique({
       where: { id: user.userId },
     });
-    if (!dbUser || dbUser.role !== "admin") {
+    if (!dbUser || !isAdminRole(dbUser.role)) {
       return c.json({ message: "Admin access required" }, 403);
     }
     await next();

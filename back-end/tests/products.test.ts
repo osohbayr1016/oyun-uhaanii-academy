@@ -1,11 +1,19 @@
 import { app } from "../src/index";
 import { getPrisma } from "../src/utils/prisma";
+import { createAdminUserWithToken } from "./helpers";
 
 const prisma = getPrisma();
+
+let adminToken: string;
 
 describe("Products Controller", () => {
   beforeAll(async () => {
     await prisma.product.deleteMany();
+    const { token } = await createAdminUserWithToken(
+      prisma,
+      process.env.JWT_SECRET as string
+    );
+    adminToken = token;
   });
 
   afterAll(async () => {
@@ -61,7 +69,10 @@ describe("Products Controller", () => {
 
       const response = await app.request("http://localhost/api/products", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${adminToken}`,
+        },
         body: JSON.stringify(productData),
       });
 
@@ -81,7 +92,10 @@ describe("Products Controller", () => {
 
       const response = await app.request("http://localhost/api/products", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${adminToken}`,
+        },
         body: JSON.stringify(invalidProductData),
       });
       expect(response.status).toBe(400);
@@ -147,7 +161,10 @@ describe("Products Controller", () => {
         `http://localhost/api/products/${testProduct.id}`,
         {
           method: "PUT",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${adminToken}`,
+          },
           body: JSON.stringify(updateData),
         }
       );
@@ -178,7 +195,10 @@ describe("Products Controller", () => {
 
       const del = await app.request(
         `http://localhost/api/products/${testProduct.id}`,
-        { method: "DELETE" }
+        {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${adminToken}` },
+        }
       );
       expect(del.status).toBe(200);
 

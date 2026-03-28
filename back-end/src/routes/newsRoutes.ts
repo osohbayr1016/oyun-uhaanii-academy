@@ -6,14 +6,16 @@ import {
   updateNews,
   deleteNews,
 } from "../controllers/newsController";
-import authenticateToken from "../middleware/authMiddleware";
+import authenticateToken, {
+  requireAdmin,
+} from "../middleware/authMiddleware";
 import type { AppEnv } from "../hono/appEnv";
 
 const r = new Hono<AppEnv>();
 r.get("/", getAllNews);
 r.get("/:id", getNewsById);
-r.post("/", authenticateToken, createNews);
-r.put("/:id", authenticateToken, updateNews);
-r.delete("/:id", authenticateToken, deleteNews);
+r.post("/", authenticateToken, requireAdmin, createNews);
+r.put("/:id", authenticateToken, requireAdmin, updateNews);
+r.delete("/:id", authenticateToken, requireAdmin, deleteNews);
 
 export default r;

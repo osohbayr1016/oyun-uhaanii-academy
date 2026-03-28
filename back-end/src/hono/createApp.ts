@@ -2,14 +2,12 @@ import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { corsOriginResolver } from "./corsConfig";
 import { createOnError } from "./onError";
-import { createStartupQueueMiddleware } from "../middleware/startupQueue";
-import { createWarmupMiddleware } from "./warmupOnce";
+import { safeCatchMiddleware } from "../middleware/safeCatch";
 import { getPrisma } from "../utils/prisma";
 import type { AppEnv } from "./appEnv";
 import { mountApiRoutes } from "./mountApiRoutes";
 
 export function createApp() {
-  const isWarmingUp = { value: true };
   const app = new Hono<AppEnv>();
 
   app.use("*", async (c, next) => {
@@ -22,8 +20,7 @@ export function createApp() {
     })(c, next);
   });
 
-  app.use("*", createStartupQueueMiddleware(isWarmingUp));
-  app.use("*", createWarmupMiddleware(isWarmingUp));
+  app.use("*", safeCatchMiddleware);
 
   mountApiRoutes(app);
 

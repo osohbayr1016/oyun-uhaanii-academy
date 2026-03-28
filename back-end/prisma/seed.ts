@@ -224,6 +224,20 @@ async function main() {
     skipDuplicates: true,
   });
 
+  await prisma.officerSectorStats.upsert({
+    where: { id: 1 },
+    update: {},
+    create: {
+      id: 1,
+      courses: 12,
+      tournaments: 8,
+      enrollments: 150,
+      teachers: 6,
+      products: 10,
+      years: 5,
+    },
+  });
+
   await prisma.carouselImage.createMany({
     data: [
       {

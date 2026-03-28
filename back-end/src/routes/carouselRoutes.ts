@@ -4,11 +4,14 @@ import {
   addCarouselImage,
   deleteCarouselImage,
 } from "../controllers/carouselController";
+import authenticateToken, {
+  requireAdmin,
+} from "../middleware/authMiddleware";
 import type { AppEnv } from "../hono/appEnv";
 
 const r = new Hono<AppEnv>();
 r.get("/", getCarouselImages);
-r.post("/", addCarouselImage);
-r.delete("/:id", deleteCarouselImage);
+r.post("/", authenticateToken, requireAdmin, addCarouselImage);
+r.delete("/:id", authenticateToken, requireAdmin, deleteCarouselImage);
 
 export default r;

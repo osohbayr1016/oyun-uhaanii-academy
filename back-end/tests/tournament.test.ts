@@ -1,8 +1,12 @@
 import type { Prisma } from "@prisma/client";
 import { app } from "../src/index";
+import { signUserToken } from "../src/utils/jwt";
 import { getPrisma } from "../src/utils/prisma";
+import { createAdminUserWithToken } from "./helpers";
 
 const prisma = getPrisma();
+
+let adminToken: string;
 
 const startDate = new Date();
 const endDate = new Date(Date.now() + 86400000);
@@ -24,6 +28,14 @@ const baseTournament: Prisma.TournamentCreateInput = {
 };
 
 describe("Tournament Controller", () => {
+  beforeAll(async () => {
+    const { token } = await createAdminUserWithToken(
+      prisma,
+      process.env.JWT_SECRET as string
+    );
+    adminToken = token;
+  });
+
   beforeEach(async () => {
     await prisma.tournamentParticipant.deleteMany();
     await prisma.tournament.deleteMany();
@@ -36,7 +48,10 @@ describe("Tournament Controller", () => {
   it("should create a new tournament", async () => {
     const res = await app.request("http://localhost/api/tournaments", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${adminToken}`,
+      },
       body: JSON.stringify({
         ...baseTournament,
         startDate: startDate.toISOString(),
@@ -123,7 +138,10 @@ describe("Tournament Controller", () => {
       `http://localhost/api/tournaments/${created.id}`,
       {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${adminToken}`,
+        },
         body: JSON.stringify({ title: "Updated Title" }),
       }
     );
@@ -152,7 +170,10 @@ describe("Tournament Controller", () => {
     });
     const del = await app.request(
       `http://localhost/api/tournaments/${created.id}`,
-      { method: "DELETE" }
+      {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${adminToken}` },
+      }
     );
     expect(del.status).toBe(200);
     const found = await prisma.tournament.findUnique({
@@ -187,11 +208,18 @@ describe("Tournament Controller", () => {
         role: "user",
       },
     });
+    const userToken = await signUserToken(
+      user.id,
+      process.env.JWT_SECRET as string
+    );
     const res = await app.request(
       `http://localhost/api/tournaments/${created.id}/participants`,
       {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${userToken}`,
+        },
         body: JSON.stringify({ userId: user.id }),
       }
     );

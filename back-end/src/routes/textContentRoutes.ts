@@ -6,11 +6,14 @@ import {
   updateTextContent,
   deleteTextContent,
 } from "../controllers/textContentController";
-import authenticateToken from "../middleware/authMiddleware";
+import authenticateToken, {
+  requireAdmin,
+} from "../middleware/authMiddleware";
 import type { AppEnv } from "../hono/appEnv";
 
 const r = new Hono<AppEnv>();
 r.use("*", authenticateToken);
+r.use("*", requireAdmin);
 r.get("/", getAllTextContents);
 r.get("/:key", getTextContentByKey);
 r.post("/", createTextContent);

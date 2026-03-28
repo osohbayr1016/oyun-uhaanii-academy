@@ -6,14 +6,16 @@ import {
   updateCourse,
   deleteCourse,
 } from "../controllers/courseController";
-import authenticateToken from "../middleware/authMiddleware";
+import authenticateToken, {
+  requireAdmin,
+} from "../middleware/authMiddleware";
 import type { AppEnv } from "../hono/appEnv";
 
 const r = new Hono<AppEnv>();
 r.get("/", getAllCourses);
 r.get("/:id", getCourseById);
-r.post("/", createCourse);
-r.put("/:id", authenticateToken, updateCourse);
-r.delete("/:id", deleteCourse);
+r.post("/", authenticateToken, requireAdmin, createCourse);
+r.put("/:id", authenticateToken, requireAdmin, updateCourse);
+r.delete("/:id", authenticateToken, requireAdmin, deleteCourse);
 
 export default r;

@@ -1,6 +1,7 @@
 import type { Prisma } from "@prisma/client";
 import { getPrisma } from "../utils/prisma";
-import type { PublicCtx } from "../types/context";
+import { isAdminRole } from "../middleware/authMiddleware";
+import type { AppCtx, PublicCtx } from "../types/context";
 
 export const getAllTournaments = async (c: PublicCtx) => {
   try {
@@ -219,11 +220,29 @@ export const deleteTournament = async (c: PublicCtx) => {
   }
 };
 
-export const registerParticipant = async (c: PublicCtx) => {
+export const registerParticipant = async (c: AppCtx) => {
   try {
+    const jwtUser = c.get("user");
+    if (!jwtUser) {
+      return c.json({ message: "Unauthorized" }, 401);
+    }
+
     const tournamentId = c.req.param("tournamentId")!;
     const body = await c.req.json<{ userId?: string }>();
     const { userId } = body;
+    if (!userId) {
+      return c.json({ message: "userId is required" }, 400);
+    }
+
+    if (userId !== jwtUser.userId) {
+      const requester = await getPrisma().user.findUnique({
+        where: { id: jwtUser.userId },
+        select: { role: true },
+      });
+      if (!requester || !isAdminRole(requester.role)) {
+        return c.json({ message: "Forbidden" }, 403);
+      }
+    }
 
     const participant = await getPrisma().tournamentParticipant.create({
       data: {
@@ -249,7 +268,7 @@ export const registerParticipant = async (c: PublicCtx) => {
   }
 };
 
-export const updateParticipantStatus = async (c: PublicCtx) => {
+export const updateParticipantStatus = async (c: AppCtx) => {
   try {
     const tournamentId = c.req.param("tournamentId")!;
     const userId = c.req.param("userId")!;

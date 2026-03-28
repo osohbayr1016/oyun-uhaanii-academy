@@ -1,11 +1,19 @@
 import { app } from "../src/index";
 import { getPrisma } from "../src/utils/prisma";
+import { createAdminUserWithToken } from "./helpers";
 
 const prisma = getPrisma();
+
+let adminToken: string;
 
 describe("Courses Controller", () => {
   beforeAll(async () => {
     await prisma.course.deleteMany();
+    const { token } = await createAdminUserWithToken(
+      prisma,
+      process.env.JWT_SECRET as string
+    );
+    adminToken = token;
   });
 
   afterAll(async () => {
@@ -66,7 +74,10 @@ describe("Courses Controller", () => {
 
       const response = await app.request("http://localhost/api/courses", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${adminToken}`,
+        },
         body: JSON.stringify(courseData),
       });
 
@@ -86,7 +97,10 @@ describe("Courses Controller", () => {
 
       const response = await app.request("http://localhost/api/courses", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${adminToken}`,
+        },
         body: JSON.stringify(invalidCourseData),
       });
       expect(response.status).toBe(400);

@@ -7,7 +7,8 @@ import type { WorkerBindings } from "../types/bindings";
 type AuthCtx = Context<{ Bindings: WorkerBindings }>;
 
 function jwtSecret(c: AuthCtx): string | undefined {
-  return c.env.JWT_SECRET ?? process.env.JWT_SECRET;
+  const s = c.env.JWT_SECRET ?? process.env.JWT_SECRET;
+  return typeof s === "string" && s.trim().length > 0 ? s.trim() : undefined;
 }
 
 const validateEmail = (email: string) => /.+@.+\..+/.test(email);
@@ -19,7 +20,13 @@ const validateName = (name: string) =>
 export const register = async (c: AuthCtx) => {
   const JWT_SECRET = jwtSecret(c);
   if (!JWT_SECRET) {
-    return c.json({ message: "Server misconfiguration" }, 500);
+    console.error(
+      "JWT_SECRET is not set. Set it with: npx wrangler secret put JWT_SECRET"
+    );
+    return c.json(
+      { message: "Authentication service unavailable", code: "AUTH_NOT_CONFIGURED" },
+      503
+    );
   }
   try {
     const body = await c.req.json<{ email?: string; password?: string; name?: string }>();
@@ -82,7 +89,13 @@ export const register = async (c: AuthCtx) => {
 export const login = async (c: AuthCtx) => {
   const JWT_SECRET = jwtSecret(c);
   if (!JWT_SECRET) {
-    return c.json({ message: "Server misconfiguration" }, 500);
+    console.error(
+      "JWT_SECRET is not set. Set it with: npx wrangler secret put JWT_SECRET"
+    );
+    return c.json(
+      { message: "Authentication service unavailable", code: "AUTH_NOT_CONFIGURED" },
+      503
+    );
   }
   try {
     const body = await c.req.json<{ email?: string; password?: string }>();
@@ -103,7 +116,13 @@ export const login = async (c: AuthCtx) => {
       return c.json({ message: "User not found" }, 404);
     }
 
-    const isPasswordValid = await bcrypt.compare(password, user.password);
+    let isPasswordValid = false;
+    try {
+      isPasswordValid = await bcrypt.compare(password, user.password);
+    } catch (compareErr) {
+      console.error("bcrypt.compare failed:", compareErr);
+      return c.json({ message: "Invalid credentials" }, 401);
+    }
 
     if (!isPasswordValid) {
       return c.json({ message: "Invalid credentials" }, 401);

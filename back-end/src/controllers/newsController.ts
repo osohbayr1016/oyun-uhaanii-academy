@@ -1,4 +1,5 @@
 import { getPrisma } from "../utils/prisma";
+import { isAdminRole } from "../middleware/authMiddleware";
 import type { AppCtx } from "../types/context";
 import type { PublicCtx } from "../types/context";
 
@@ -179,7 +180,7 @@ export const deleteNews = async (c: AppCtx) => {
     }
 
     const user = await getPrisma().user.findUnique({ where: { id: userId } });
-    if (existingNews.authorId !== userId && user?.role !== "admin") {
+    if (existingNews.authorId !== userId && !isAdminRole(user?.role)) {
       return c.json({ message: "Forbidden" }, 403);
     }
 

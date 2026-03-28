@@ -1,6 +1,8 @@
 # Cloudflare Worker: Hono API (Prisma + Hyperdrive → PostgreSQL)
 # Default URL after deploy: https://oyun-uhaanii-api.<subdomain>.workers.dev
-# Secrets (set once): npx wrangler secret put JWT_SECRET
+# Required for login/register: JWT signing (32+ random chars). Set once:
+#   npx wrangler secret put JWT_SECRET
+# Without it the API returns 503 AUTH_NOT_CONFIGURED for auth routes.
 #   RESEND_API_KEY, RESEND_FROM_EMAIL — optional email
 # Vars: tune CORS_ORIGIN / FRONTEND_URL in dashboard or [vars] below
 
