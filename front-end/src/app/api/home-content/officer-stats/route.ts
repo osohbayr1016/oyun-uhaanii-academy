@@ -38,8 +38,13 @@ export async function PUT(request: NextRequest) {
 
     if (!res.ok) {
       console.error("officer-stats PUT upstream:", res.status, text.slice(0, 500));
+      const msg = getMessage(parsed, "Failed to update officer sector stats");
+      const detail =
+        parsed && typeof parsed === "object" && parsed !== null && "detail" in parsed
+          ? String((parsed as { detail: unknown }).detail)
+          : undefined;
       return NextResponse.json(
-        { message: getMessage(parsed, "Failed to update officer sector stats") },
+        { message: msg, ...(detail ? { detail } : {}) },
         { status: res.status }
       );
     }

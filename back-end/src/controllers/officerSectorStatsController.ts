@@ -3,23 +3,21 @@ import { updateOfficerSectorStatsFromRequest } from "../services/officerSectorSt
 
 export const putOfficerSectorStats = async (c: AppCtx) => {
   try {
-    const body = await c.req.json<Record<string, unknown>>();
+    const raw = await c.req.text();
+    let body: Record<string, unknown>;
+    try {
+      body = JSON.parse(raw) as Record<string, unknown>;
+    } catch {
+      return c.json({ message: "Invalid JSON body" }, 400);
+    }
     const stats = await updateOfficerSectorStatsFromRequest(body);
     return c.json(stats);
   } catch (error) {
-    console.error("Put officer sector stats error:", error);
     const msg =
-      error instanceof Error ? error.message : "Failed to update officer sector stats";
-    const code =
-      error && typeof error === "object" && "code" in error
-        ? String((error as { code?: string }).code)
-        : "";
+      error instanceof Error ? error.message : String(error ?? "unknown");
+    console.error("Put officer sector stats error:", msg, error);
     return c.json(
-      {
-        message: "Failed to update officer sector stats",
-        detail: process.env.NODE_ENV === "development" ? msg : undefined,
-        code: code || undefined,
-      },
+      { message: "Failed to update officer sector stats", detail: msg },
       500
     );
   }

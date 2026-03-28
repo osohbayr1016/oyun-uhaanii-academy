@@ -79,7 +79,14 @@ export default function AdminOfficerStatsPage() {
           body: JSON.stringify(labels),
         }),
       ]);
-      if (!statsRes.ok || !contentRes.ok) throw new Error("Хадгалж чадсангүй");
+      if (!statsRes.ok) {
+        const err = await statsRes.json().catch(() => ({})) as { message?: string; detail?: string };
+        throw new Error(err.detail || err.message || `Stats save failed (${statsRes.status})`);
+      }
+      if (!contentRes.ok) {
+        const err = await contentRes.json().catch(() => ({})) as { message?: string };
+        throw new Error(err.message || `Content save failed (${contentRes.status})`);
+      }
       setMessage({ type: "success", text: "Амжилттай хадгалагдлаа." });
     } catch (err) {
       setMessage({ type: "error", text: err instanceof Error ? err.message : "Алдаа гарлаа" });
