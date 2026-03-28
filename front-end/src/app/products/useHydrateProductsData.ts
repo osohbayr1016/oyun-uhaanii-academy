@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 
 export type Product = {
   id: string;
@@ -20,18 +21,27 @@ export type Product = {
 };
 
 export function useHydrateProductsData(initial: Product[]) {
+  const pathname = usePathname();
   const [products, setProducts] = useState(initial);
   const [hydrating, setHydrating] = useState(false);
-  const hydrateAttempted = useRef(false);
+  const [refetchKey, setRefetchKey] = useState(0);
 
   useEffect(() => {
     setProducts(initial);
   }, [initial]);
 
   useEffect(() => {
-    if (products.length > 0) return;
-    if (hydrateAttempted.current) return;
-    hydrateAttempted.current = true;
+    const onPageShow = (e: PageTransitionEvent) => {
+      if (e.persisted) setRefetchKey((k) => k + 1);
+    };
+    window.addEventListener("pageshow", onPageShow);
+    return () => window.removeEventListener("pageshow", onPageShow);
+  }, []);
+
+  useEffect(() => {
+    if (pathname !== "/products") return;
+    if (initial.length > 0) return;
+
     let cancelled = false;
     (async () => {
       setHydrating(true);
@@ -46,7 +56,7 @@ export function useHydrateProductsData(initial: Product[]) {
     return () => {
       cancelled = true;
     };
-  }, [products.length]);
+  }, [initial.length, pathname, refetchKey]);
 
   return { products, hydrating };
 }

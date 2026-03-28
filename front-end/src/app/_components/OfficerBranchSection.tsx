@@ -33,7 +33,7 @@ const CARD_STYLES = [
 const ICONS = [Earth, Brain, Medal, Trophy, Crown, Star];
 
 function nz(n: number) {
-  return Math.max(1, Number.isFinite(n) ? n : 1);
+  return Math.max(0, Number.isFinite(n) ? n : 0);
 }
 
 export default function OfficerBranchSection({

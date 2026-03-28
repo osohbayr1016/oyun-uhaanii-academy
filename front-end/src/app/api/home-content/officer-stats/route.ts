@@ -2,31 +2,36 @@ import { NextRequest, NextResponse } from "next/server";
 import { fetchWithTimeout } from "@/lib/fetchWithTimeout";
 import { getApiBaseUrl } from "@/lib/env";
 
-const API_BASE_URL = getApiBaseUrl();
-
 export async function PUT(request: NextRequest) {
   try {
     const body = await request.json();
     const auth = request.headers.get("Authorization") ?? "";
-    const response = await fetchWithTimeout(
-      `${API_BASE_URL}/api/home-content/officer-stats`,
-      {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          ...(auth ? { Authorization: auth } : {}),
-        },
-        body: JSON.stringify(body),
-        timeoutMs: 15_000,
-      }
-    );
+    const url = `${getApiBaseUrl()}/api/home-content/officer-stats`;
+    const response = await fetchWithTimeout(url, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        ...(auth ? { Authorization: auth } : {}),
+      },
+      body: JSON.stringify(body),
+      timeoutMs: 30_000,
+    });
 
-    if (!response.ok) {
-      const err = await response.json().catch(() => ({}));
-      return NextResponse.json(err, { status: response.status });
+    const text = await response.text();
+    let data: { message?: string } = {};
+    try {
+      data = text ? (JSON.parse(text) as { message?: string }) : {};
+    } catch {
+      return NextResponse.json(
+        { message: "Invalid response from API" },
+        { status: 502 }
+      );
     }
 
-    const data = await response.json();
+    if (!response.ok) {
+      return NextResponse.json(data, { status: response.status });
+    }
+
     return NextResponse.json(data);
   } catch (error) {
     console.error("Error updating officer sector stats:", error);

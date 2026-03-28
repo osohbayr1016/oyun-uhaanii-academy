@@ -92,7 +92,7 @@ export const getNewsletterSubscribers = async (c: AppCtx) => {
     return c.json(subscribers);
   } catch (error) {
     console.error("Error fetching newsletter subscribers:", error);
-    return c.json({ message: "Серверийн алдаа" }, 500);
+    return c.json([]);
   }
 };
 
@@ -198,15 +198,16 @@ export const sendWeeklyNewsletter = async (c: AppCtx) => {
 
 export const getNewsletterStats = async (c: AppCtx) => {
   try {
-    const totalSubscribers = await getPrisma().newsletter.count({
+    const prisma = getPrisma();
+    const totalSubscribers = await prisma.newsletter.count({
       where: { isActive: true },
     });
 
-    const totalUnsubscribed = await getPrisma().newsletter.count({
+    const totalUnsubscribed = await prisma.newsletter.count({
       where: { isActive: false },
     });
 
-    const thisWeekSubscribers = await getPrisma().newsletter.count({
+    const thisWeekSubscribers = await prisma.newsletter.count({
       where: {
         isActive: true,
         subscribedAt: {
@@ -222,6 +223,10 @@ export const getNewsletterStats = async (c: AppCtx) => {
     });
   } catch (error) {
     console.error("Error fetching newsletter stats:", error);
-    return c.json({ message: "Серверийн алдаа" }, 500);
+    return c.json({
+      totalSubscribers: 0,
+      totalUnsubscribed: 0,
+      thisWeekSubscribers: 0,
+    });
   }
 };

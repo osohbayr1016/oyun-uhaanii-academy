@@ -13,9 +13,9 @@ export async function yearsOperating(): Promise<number> {
     }),
   ]);
   const dates = [course?.createdAt, user?.createdAt].filter(Boolean) as Date[];
-  if (dates.length === 0) return 1;
+  if (dates.length === 0) return 0;
   const minYear = Math.min(...dates.map((d) => d.getFullYear()));
-  return Math.max(1, new Date().getFullYear() - minYear);
+  return Math.max(0, new Date().getFullYear() - minYear);
 }
 
 export type StatFields = {
@@ -46,11 +46,11 @@ export async function computeAggregates(): Promise<StatFields> {
       yearsOperating(),
     ]);
   return {
-    courses: Math.max(1, courses),
-    tournaments: Math.max(1, tournaments),
-    enrollments: Math.max(1, enrollments),
-    teachers: Math.max(1, teachers),
-    products: Math.max(1, products),
-    years: Math.max(1, years),
+    courses,
+    tournaments,
+    enrollments,
+    teachers,
+    products,
+    years,
   };
 }

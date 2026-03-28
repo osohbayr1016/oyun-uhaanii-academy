@@ -3,6 +3,7 @@ import type { AppCtx } from "../types/context";
 
 export const getAdminStats = async (c: AppCtx) => {
   try {
+    const prisma = getPrisma();
     const [
       totalUsers,
       totalCourses,
@@ -10,11 +11,11 @@ export const getAdminStats = async (c: AppCtx) => {
       totalTournaments,
       totalNews,
     ] = await Promise.all([
-      getPrisma().user.count(),
-      getPrisma().course.count(),
-      getPrisma().product.count(),
-      getPrisma().tournament.count(),
-      getPrisma().news.count(),
+      prisma.user.count(),
+      prisma.course.count(),
+      prisma.product.count(),
+      prisma.tournament.count(),
+      prisma.news.count(),
     ]);
 
     return c.json({
@@ -26,7 +27,13 @@ export const getAdminStats = async (c: AppCtx) => {
     });
   } catch (error) {
     console.error("Error fetching admin stats:", error);
-    return c.json({ message: "Failed to fetch admin stats" }, 500);
+    return c.json({
+      totalUsers: 0,
+      totalCourses: 0,
+      totalProducts: 0,
+      totalTournaments: 0,
+      totalNews: 0,
+    });
   }
 };
 

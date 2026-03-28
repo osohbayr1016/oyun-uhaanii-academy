@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import type { Course } from "./CoursesClient";
 
 export function useHydrateCoursesData(
@@ -8,11 +9,12 @@ export function useHydrateCoursesData(
   categories: string[],
   levels: string[]
 ) {
+  const pathname = usePathname();
   const [coursesState, setCourses] = useState(courses);
   const [categoriesState, setCategories] = useState(categories);
   const [levelsState, setLevels] = useState(levels);
   const [hydrating, setHydrating] = useState(false);
-  const hydrateAttempted = useRef(false);
+  const [refetchKey, setRefetchKey] = useState(0);
 
   useEffect(() => {
     setCourses(courses);
@@ -21,9 +23,17 @@ export function useHydrateCoursesData(
   }, [courses, categories, levels]);
 
   useEffect(() => {
-    if (coursesState.length > 0) return;
-    if (hydrateAttempted.current) return;
-    hydrateAttempted.current = true;
+    const onPageShow = (e: PageTransitionEvent) => {
+      if (e.persisted) setRefetchKey((k) => k + 1);
+    };
+    window.addEventListener("pageshow", onPageShow);
+    return () => window.removeEventListener("pageshow", onPageShow);
+  }, []);
+
+  useEffect(() => {
+    if (pathname !== "/courses") return;
+    if (courses.length > 0) return;
+
     let cancelled = false;
     (async () => {
       setHydrating(true);
@@ -55,7 +65,7 @@ export function useHydrateCoursesData(
     return () => {
       cancelled = true;
     };
-  }, [coursesState.length]);
+  }, [courses.length, pathname, refetchKey]);
 
   return {
     courses: coursesState,

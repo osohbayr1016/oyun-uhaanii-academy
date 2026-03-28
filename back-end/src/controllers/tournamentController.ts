@@ -25,16 +25,8 @@ export const getAllTournaments = async (c: PublicCtx) => {
     return c.json(tournaments);
   } catch (error) {
     console.error("Get all tournaments error:", error);
-    if (process.env.NODE_ENV === "development") {
-      return c.json(
-        {
-          message: "Failed to fetch tournaments",
-          error: error instanceof Error ? error.stack : error,
-        },
-        500
-      );
-    }
-    return c.json({ message: "Failed to fetch tournaments" }, 500);
+    // Public list: never 500 — empty DB, schema drift, or DB issues → empty list
+    return c.json([]);
   }
 };
 

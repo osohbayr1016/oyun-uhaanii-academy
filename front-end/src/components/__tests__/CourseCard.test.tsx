@@ -9,6 +9,7 @@ const mockCourse = {
   description: "This is a test course description",
   duration: "10 hours",
   level: "Beginner",
+  levels: ["Beginner"],
   price: 50000,
   currency: "MNT",
   imageUrl: "https://example.com/course.jpg",

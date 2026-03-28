@@ -38,18 +38,24 @@ async function migrateFromTextContent(): Promise<Partial<StatFields>> {
   return out;
 }
 
+/** Stored / public stats: non-negative integers (0 allowed). */
+function clampNonNegative(n: number): number {
+  return Math.max(0, Math.floor(n));
+}
+
+/** Admin manual saves: minimum 1 per product rules. */
 function clampMinOne(n: number): number {
   return Math.max(1, Math.floor(n));
 }
 
 function normalizeRowData(data: StatFields): StatFields {
   return {
-    courses: clampMinOne(data.courses),
-    tournaments: clampMinOne(data.tournaments),
-    enrollments: clampMinOne(data.enrollments),
-    teachers: clampMinOne(data.teachers),
-    products: clampMinOne(data.products),
-    years: clampMinOne(data.years),
+    courses: clampNonNegative(data.courses),
+    tournaments: clampNonNegative(data.tournaments),
+    enrollments: clampNonNegative(data.enrollments),
+    teachers: clampNonNegative(data.teachers),
+    products: clampNonNegative(data.products),
+    years: clampNonNegative(data.years),
   };
 }
 
@@ -121,24 +127,35 @@ export async function updateOfficerSectorStatsFromRequest(
     return clampMinOne(n);
   };
 
-  await ensureOfficerSectorStatsRow();
-  const updated = await prisma.officerSectorStats.update({
+  const raw = {
+    courses: clamp(body.courses),
+    tournaments: clamp(body.tournaments),
+    enrollments: clamp(body.enrollments),
+    teachers: clamp(body.teachers),
+    products: clamp(body.products),
+    years: clamp(body.years),
+  };
+  const normalized = normalizeRowData(raw);
+
+  const row = await prisma.officerSectorStats.upsert({
     where: { id: SINGLETON_ID },
-    data: {
-      courses: clamp(body.courses),
-      tournaments: clamp(body.tournaments),
-      enrollments: clamp(body.enrollments),
-      teachers: clamp(body.teachers),
-      products: clamp(body.products),
-      years: clamp(body.years),
+    create: { id: SINGLETON_ID, ...normalized },
+    update: {
+      courses: normalized.courses,
+      tournaments: normalized.tournaments,
+      enrollments: normalized.enrollments,
+      teachers: normalized.teachers,
+      products: normalized.products,
+      years: normalized.years,
     },
   });
+
   return normalizeRowData({
-    courses: updated.courses,
-    tournaments: updated.tournaments,
-    enrollments: updated.enrollments,
-    teachers: updated.teachers,
-    products: updated.products,
-    years: updated.years,
+    courses: row.courses,
+    tournaments: row.tournaments,
+    enrollments: row.enrollments,
+    teachers: row.teachers,
+    products: row.products,
+    years: row.years,
   });
 }

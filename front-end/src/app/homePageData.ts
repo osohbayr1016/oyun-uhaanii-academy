@@ -1,5 +1,6 @@
 import { fetchWithTimeout } from "@/lib/fetchWithTimeout";
 import { getApiBaseUrl } from "@/lib/env";
+import { serverFetchJson } from "@/lib/serverFetchJson";
 
 export interface HomeContent {
   features_title?: string;
@@ -33,12 +34,12 @@ export interface HomeStats {
 }
 
 const DEFAULT_HOME_STATS: HomeStats = {
-  courses: 1,
-  tournaments: 1,
-  enrollments: 1,
-  teachers: 1,
-  products: 1,
-  years: 1,
+  courses: 0,
+  tournaments: 0,
+  enrollments: 0,
+  teachers: 0,
+  products: 0,
+  years: 0,
 };
 
 export async function getHomeContent(): Promise<HomeContent> {
@@ -65,45 +66,37 @@ export async function getHomeContent(): Promise<HomeContent> {
 }
 
 export async function getHomeStats(): Promise<HomeStats> {
-  try {
-    const API_BASE_URL = getApiBaseUrl();
-    const response = await fetchWithTimeout(
-      `${API_BASE_URL}/api/home-content/stats`,
-      {
-        cache: "no-store",
-        timeoutMs: 12_000,
-      }
-    );
-    if (!response.ok) {
-      console.error("Failed to fetch home stats:", response.status);
-      return { ...DEFAULT_HOME_STATS };
+  const data = await serverFetchJson<Record<string, unknown>>(
+    "/api/home-content/stats",
+    {
+      cache: "no-store",
+      timeoutMs: 25_000,
+      fallbackOnError: { ...DEFAULT_HOME_STATS },
     }
-    const data = await response.json();
-    if (!data || typeof data !== "object" || "message" in data) {
-      return { ...DEFAULT_HOME_STATS };
-    }
-    const raw = data as Record<string, unknown>;
-    const num = (key: string): number => {
-      const v = raw[key];
-      if (typeof v === "number" && Number.isFinite(v)) return Math.max(1, v);
-      if (typeof v === "string") {
-        const n = parseInt(v.replace(/[^\d]/g, ""), 10);
-        return Number.isFinite(n) ? Math.max(1, n) : 1;
-      }
-      return 1;
-    };
-    return {
-      courses: num("courses"),
-      tournaments: num("tournaments"),
-      enrollments: num("enrollments"),
-      teachers: num("teachers"),
-      products: num("products"),
-      years: num("years"),
-    };
-  } catch (error) {
-    console.error("Error fetching home stats:", error);
+  );
+  if (!data || typeof data !== "object" || "message" in data) {
     return { ...DEFAULT_HOME_STATS };
   }
+  const raw = data as Record<string, unknown>;
+  const num = (key: string): number => {
+    const v = raw[key];
+    if (typeof v === "number" && Number.isFinite(v)) {
+      return Math.max(0, Math.floor(v));
+    }
+    if (typeof v === "string") {
+      const n = parseInt(v.replace(/[^\d]/g, ""), 10);
+      return Number.isFinite(n) ? Math.max(0, n) : 0;
+    }
+    return 0;
+  };
+  return {
+    courses: num("courses"),
+    tournaments: num("tournaments"),
+    enrollments: num("enrollments"),
+    teachers: num("teachers"),
+    products: num("products"),
+    years: num("years"),
+  };
 }
 
 export async function getCarouselImages(): Promise<CarouselImage[]> {

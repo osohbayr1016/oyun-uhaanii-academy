@@ -8,6 +8,19 @@ export const putOfficerSectorStats = async (c: AppCtx) => {
     return c.json(stats);
   } catch (error) {
     console.error("Put officer sector stats error:", error);
-    return c.json({ message: "Failed to update officer sector stats" }, 500);
+    const msg =
+      error instanceof Error ? error.message : "Failed to update officer sector stats";
+    const code =
+      error && typeof error === "object" && "code" in error
+        ? String((error as { code?: string }).code)
+        : "";
+    return c.json(
+      {
+        message: "Failed to update officer sector stats",
+        detail: process.env.NODE_ENV === "development" ? msg : undefined,
+        code: code || undefined,
+      },
+      500
+    );
   }
 };
