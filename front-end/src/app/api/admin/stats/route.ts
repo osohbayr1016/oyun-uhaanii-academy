@@ -11,6 +11,11 @@ const EMPTY_STATS = {
   totalNews: 0,
 };
 
+function readMessage(data: Record<string, unknown>): string | undefined {
+  const m = data.message;
+  return typeof m === "string" && m.trim() ? m : undefined;
+}
+
 export async function GET(req: NextRequest) {
   const token = getBearerFromNextRequest(req);
   try {
@@ -38,21 +43,20 @@ export async function GET(req: NextRequest) {
     }
 
     if (!res.ok) {
-      return NextResponse.json(
-        { ...EMPTY_STATS, ...data },
-        { status: res.status }
-      );
+      const msg = readMessage(data) ?? "Серверийн алдаа";
+      if (res.status === 401 || res.status === 403) {
+        return NextResponse.json({ message: msg }, { status: res.status });
+      }
+      if (res.status >= 400 && res.status < 500) {
+        return NextResponse.json({ message: msg }, { status: res.status });
+      }
+      console.error("admin stats upstream:", res.status, text.slice(0, 400));
+      return NextResponse.json({ ...EMPTY_STATS });
     }
 
     return NextResponse.json({ ...EMPTY_STATS, ...data });
   } catch (error) {
     console.error("Error fetching stats:", error);
-    return NextResponse.json(
-      {
-        message: error instanceof Error ? error.message : "Failed to fetch stats",
-        ...EMPTY_STATS,
-      },
-      { status: 500 }
-    );
+    return NextResponse.json({ ...EMPTY_STATS });
   }
 }

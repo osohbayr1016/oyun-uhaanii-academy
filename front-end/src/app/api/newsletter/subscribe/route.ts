@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { fetchWithTimeout } from "@/lib/fetchWithTimeout";
 import { getApiBaseUrl } from "@/lib/env";
 
 export async function POST(request: NextRequest) {
@@ -12,25 +13,33 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const backendUrl =
-      getApiBaseUrl();
-    const response = await fetch(`${backendUrl}/api/newsletter/subscribe`, {
+    const res = await fetchWithTimeout(`${getApiBaseUrl()}/api/newsletter/subscribe`, {
       method: "POST",
+      cache: "no-store",
       headers: {
         "Content-Type": "application/json",
+        Accept: "application/json",
       },
       body: JSON.stringify({ email }),
+      timeoutMs: 30_000,
     });
 
-    const data = await response.json();
-
-    if (!response.ok) {
-      return NextResponse.json(data, { status: response.status });
+    const text = await res.text();
+    if (!text.trim()) {
+      return NextResponse.json(
+        { message: res.ok ? "Амжилттай" : "Empty response from server" },
+        { status: res.status }
+      );
     }
-
-    return NextResponse.json(data);
-  } catch (error) {
-    console.error("Newsletter subscription error:", error);
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(text) as unknown;
+    } catch {
+      return NextResponse.json({ message: "Invalid response from API" }, { status: 502 });
+    }
+    return NextResponse.json(parsed, { status: res.status });
+  } catch (e) {
+    console.error("Newsletter subscription error:", e);
     return NextResponse.json({ message: "Серверийн алдаа" }, { status: 500 });
   }
 }

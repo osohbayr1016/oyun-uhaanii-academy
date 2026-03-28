@@ -1,39 +1,41 @@
 import { NextRequest, NextResponse } from "next/server";
+import { fetchWithTimeout } from "@/lib/fetchWithTimeout";
 import { getApiBaseUrl } from "@/lib/env";
 
+function safeParseJson(text: string): unknown {
+  if (!text.trim()) return undefined;
+  try { return JSON.parse(text) as unknown; } catch { return undefined; }
+}
+
+function getMessage(parsed: unknown, fallback: string): string {
+  if (parsed && typeof parsed === "object" && parsed !== null && "message" in parsed) {
+    const m = (parsed as { message: unknown }).message;
+    if (typeof m === "string") return m;
+  }
+  return fallback;
+}
+
 export async function GET(
-  request: NextRequest,
+  _req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await params;
-    const backendUrl =
-      getApiBaseUrl();
-
-    const response = await fetch(`${backendUrl}/api/tournaments/${id}`, {
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
-    if (!response.ok) {
-      if (response.status === 404) {
-        return NextResponse.json(
-          { error: "Tournament not found" },
-          { status: 404 }
-        );
-      }
-      throw new Error(`Backend responded with status: ${response.status}`);
-    }
-
-    const data = await response.json();
-    return NextResponse.json(data);
-  } catch (error) {
-    console.error("Error fetching tournament:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch tournament" },
-      { status: 500 }
+    const res = await fetchWithTimeout(
+      `${getApiBaseUrl()}/api/tournaments/${encodeURIComponent(id)}`,
+      { cache: "no-store", headers: { Accept: "application/json" }, timeoutMs: 30_000 }
     );
+    const text = await res.text();
+    const parsed = safeParseJson(text);
+    if (res.status === 404) return NextResponse.json({ error: "Tournament not found" }, { status: 404 });
+    if (!res.ok) {
+      console.error("tournament[id] upstream:", res.status, text.slice(0, 400));
+      return NextResponse.json({ error: getMessage(parsed, "Failed to fetch tournament") }, { status: res.status });
+    }
+    return NextResponse.json(parsed ?? {});
+  } catch (e) {
+    console.error("Error fetching tournament:", e);
+    return NextResponse.json({ error: "Failed to fetch tournament" }, { status: 500 });
   }
 }
 
@@ -44,38 +46,27 @@ export async function PUT(
   try {
     const { id } = await params;
     const body = await request.json();
-    const backendUrl =
-      getApiBaseUrl();
-
-    const response = await fetch(`${backendUrl}/api/tournaments/${id}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: request.headers.get("Authorization") || "",
-      },
-      body: JSON.stringify(body),
-    });
-
-    if (!response.ok) {
-      let errorMsg = `Backend responded with status: ${response.status}`;
-      try {
-        const errorData = await response.json();
-        errorMsg = errorData.message || errorMsg;
-      } catch {}
-      return NextResponse.json(
-        { error: errorMsg },
-        { status: response.status }
-      );
-    }
-
-    const data = await response.json();
-    return NextResponse.json(data);
-  } catch (error) {
-    console.error("Error updating tournament:", error);
-    return NextResponse.json(
-      { error: "Failed to update tournament" },
-      { status: 500 }
+    const res = await fetchWithTimeout(
+      `${getApiBaseUrl()}/api/tournaments/${encodeURIComponent(id)}`,
+      {
+        method: "PUT",
+        cache: "no-store",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          Authorization: request.headers.get("Authorization") || "",
+        },
+        body: JSON.stringify(body),
+        timeoutMs: 30_000,
+      }
     );
+    const text = await res.text();
+    const parsed = safeParseJson(text);
+    if (!res.ok) return NextResponse.json({ error: getMessage(parsed, "Failed to update tournament") }, { status: res.status });
+    return NextResponse.json(parsed ?? {});
+  } catch (e) {
+    console.error("Error updating tournament:", e);
+    return NextResponse.json({ error: "Failed to update tournament" }, { status: 500 });
   }
 }
 
@@ -85,27 +76,21 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params;
-    const backendUrl =
-      getApiBaseUrl();
-
-    const response = await fetch(`${backendUrl}/api/tournaments/${id}`, {
-      method: "DELETE",
-      headers: {
-        Authorization: request.headers.get("Authorization") || "",
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error(`Backend responded with status: ${response.status}`);
-    }
-
-    const data = await response.json();
-    return NextResponse.json(data);
-  } catch (error) {
-    console.error("Error deleting tournament:", error);
-    return NextResponse.json(
-      { error: "Failed to delete tournament" },
-      { status: 500 }
+    const res = await fetchWithTimeout(
+      `${getApiBaseUrl()}/api/tournaments/${encodeURIComponent(id)}`,
+      {
+        method: "DELETE",
+        cache: "no-store",
+        headers: { Authorization: request.headers.get("Authorization") || "" },
+        timeoutMs: 30_000,
+      }
     );
+    const text = await res.text();
+    const parsed = safeParseJson(text);
+    if (!res.ok) return NextResponse.json({ error: getMessage(parsed, "Failed to delete tournament") }, { status: res.status });
+    return NextResponse.json(parsed ?? { message: "Tournament deleted successfully" });
+  } catch (e) {
+    console.error("Error deleting tournament:", e);
+    return NextResponse.json({ error: "Failed to delete tournament" }, { status: 500 });
   }
 }

@@ -7,8 +7,9 @@ export const getCarouselImages = async (c: PublicCtx) => {
       orderBy: { createdAt: "asc" },
     });
     return c.json(images);
-  } catch {
-    return c.json({ message: "Failed to fetch carousel images" }, 500);
+  } catch (error) {
+    console.error("Get carousel images error:", error);
+    return c.json([]);
   }
 };
 

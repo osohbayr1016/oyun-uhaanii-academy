@@ -54,7 +54,7 @@ export const getAllUsers = async (c: AppCtx) => {
     return c.json(users);
   } catch (error) {
     console.error("Error fetching users:", error);
-    return c.json({ message: "Failed to fetch users" }, 500);
+    return c.json([]);
   }
 };
 
@@ -67,6 +67,6 @@ export const getRecentActivities = async (c: AppCtx) => {
     return c.json(activities);
   } catch (error) {
     console.error("Error fetching activities:", error);
-    return c.json({ message: "Failed to fetch activities" }, 500);
+    return c.json([]);
   }
 };

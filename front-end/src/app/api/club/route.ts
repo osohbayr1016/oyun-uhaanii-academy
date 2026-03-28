@@ -1,113 +1,62 @@
 import { NextRequest, NextResponse } from "next/server";
+import { fetchWithTimeout } from "@/lib/fetchWithTimeout";
 import { getApiBaseUrl } from "@/lib/env";
 
-const API_BASE_URL = getApiBaseUrl();
+function safeParseJson(text: string): unknown {
+  if (!text.trim()) return undefined;
+  try { return JSON.parse(text) as unknown; } catch { return undefined; }
+}
 
-// GET /api/club - Get club content
+function getMessage(parsed: unknown, fallback: string): string {
+  if (parsed && typeof parsed === "object" && parsed !== null && "message" in parsed) {
+    const m = (parsed as { message: unknown }).message;
+    if (typeof m === "string") return m;
+  }
+  return fallback;
+}
+
 export async function GET() {
   try {
-    console.log("Fetching club content from:", `${API_BASE_URL}/api/club`);
-
-    // First, try to check if the backend is accessible
-    try {
-      const healthCheck = await fetch(`${API_BASE_URL}/`, {
-        method: "GET",
-        signal: AbortSignal.timeout(5000), // 5 second timeout
-      });
-      console.log("Backend health check status:", healthCheck.status);
-    } catch (healthError) {
-      console.error("Backend health check failed:", healthError);
-    }
-
-    // Add timeout to prevent hanging requests
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
-
-    const response = await fetch(`${API_BASE_URL}/api/club`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      signal: controller.signal,
+    const res = await fetchWithTimeout(`${getApiBaseUrl()}/api/club`, {
+      cache: "no-store",
+      headers: { Accept: "application/json" },
+      timeoutMs: 30_000,
     });
-
-    clearTimeout(timeoutId);
-
-    console.log("Response status:", response.status);
-    console.log("Response ok:", response.ok);
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("Backend error response:", errorText);
-      throw new Error(
-        `Backend responded with status: ${response.status} - ${errorText}`
-      );
+    const text = await res.text();
+    if (!res.ok) {
+      console.error("club upstream:", res.status, text.slice(0, 400));
+      return NextResponse.json({});
     }
-
-    const data = await response.json();
-    console.log("Club content fetched successfully");
-    return NextResponse.json(data);
-  } catch (error) {
-    console.error("Error fetching club content:", error);
-
-    // Check if it's a timeout error
-    if (error instanceof Error && error.name === "AbortError") {
-      return NextResponse.json(
-        {
-          success: false,
-          message: "Backend request timed out",
-          error: "Request timeout after 10 seconds",
-          apiUrl: API_BASE_URL,
-        },
-        { status: 500 }
-      );
-    }
-
+    const parsed = safeParseJson(text);
     return NextResponse.json(
-      {
-        success: false,
-        message: "Failed to fetch club content",
-        error: error instanceof Error ? error.message : "Unknown error",
-        apiUrl: API_BASE_URL,
-      },
-      { status: 500 }
+      parsed && typeof parsed === "object" && !Array.isArray(parsed) ? parsed : {}
     );
+  } catch (e) {
+    console.error("Error fetching club content:", e);
+    return NextResponse.json({});
   }
 }
 
-// PUT /api/club - Update club content
 export async function PUT(request: NextRequest) {
   try {
     const body = await request.json();
-    const token = request.headers.get("authorization");
-
-    const response = await fetch(`${API_BASE_URL}/api/club`, {
+    const res = await fetchWithTimeout(`${getApiBaseUrl()}/api/club`, {
       method: "PUT",
+      cache: "no-store",
       headers: {
         "Content-Type": "application/json",
-        ...(token && { Authorization: token }),
+        Accept: "application/json",
+        Authorization: request.headers.get("Authorization") || "",
       },
       body: JSON.stringify(body),
+      timeoutMs: 30_000,
     });
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(
-        errorData.message || `Backend responded with status: ${response.status}`
-      );
-    }
-
-    const data = await response.json();
-    return NextResponse.json(data);
-  } catch (error) {
-    console.error("Error updating club content:", error);
-    return NextResponse.json(
-      {
-        success: false,
-        message: "Failed to update club content",
-        error: error instanceof Error ? error.message : "Unknown error",
-      },
-      { status: 500 }
-    );
+    const text = await res.text();
+    const parsed = safeParseJson(text);
+    if (!res.ok) return NextResponse.json({ error: getMessage(parsed, "Failed to update club content") }, { status: res.status });
+    return NextResponse.json(parsed ?? {});
+  } catch (e) {
+    console.error("Error updating club content:", e);
+    return NextResponse.json({ error: "Failed to update club content" }, { status: 500 });
   }
 }

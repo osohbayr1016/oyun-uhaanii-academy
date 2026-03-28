@@ -45,7 +45,7 @@ export const getHomeContent = async (c: PublicCtx) => {
     return c.json(contentObject);
   } catch (error) {
     console.error("Get home content error:", error);
-    return c.json({ message: "Failed to fetch home content" }, 500);
+    return c.json({});
   }
 };
 

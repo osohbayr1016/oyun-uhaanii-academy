@@ -2,40 +2,54 @@ import { NextRequest, NextResponse } from "next/server";
 import { fetchWithTimeout } from "@/lib/fetchWithTimeout";
 import { getApiBaseUrl } from "@/lib/env";
 
-const API_BASE_URL = getApiBaseUrl();
+function safeJsonParse(text: string): unknown {
+  if (!text.trim()) return undefined;
+  try {
+    return JSON.parse(text) as unknown;
+  } catch {
+    return undefined;
+  }
+}
+
+function asHomeContentRecord(data: unknown): Record<string, string> {
+  if (!data || typeof data !== "object" || Array.isArray(data)) return {};
+  const out: Record<string, string> = {};
+  for (const [k, v] of Object.entries(data as Record<string, unknown>)) {
+    if (typeof v === "string") out[k] = v;
+  }
+  return out;
+}
 
 // GET /api/home-content
 export async function GET() {
   try {
     const response = await fetchWithTimeout(
-      `${API_BASE_URL}/api/home-content`,
+      `${getApiBaseUrl()}/api/home-content`,
       {
         cache: "no-store",
         headers: {
+          Accept: "application/json",
           "Content-Type": "application/json",
         },
-        timeoutMs: 6000,
+        timeoutMs: 25_000,
       }
     );
 
+    const text = await response.text();
     if (!response.ok) {
       console.error(
-        `Home content API error: ${response.status} ${response.statusText}`
+        "Home content API upstream:",
+        response.status,
+        text.slice(0, 400)
       );
-      return NextResponse.json(
-        { error: "Failed to fetch home content" },
-        { status: response.status }
-      );
+      return NextResponse.json({});
     }
 
-    const content = await response.json();
-    return NextResponse.json(content);
+    const parsed = safeJsonParse(text);
+    return NextResponse.json(asHomeContentRecord(parsed));
   } catch (error) {
     console.error("Error fetching home content:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch home content" },
-      { status: 500 }
-    );
+    return NextResponse.json({});
   }
 }
 
@@ -46,7 +60,7 @@ export async function POST(request: NextRequest) {
 
     const auth = request.headers.get("Authorization") ?? "";
     const response = await fetchWithTimeout(
-      `${API_BASE_URL}/api/home-content`,
+      `${getApiBaseUrl()}/api/home-content`,
       {
         method: "POST",
         headers: {
@@ -54,17 +68,25 @@ export async function POST(request: NextRequest) {
           ...(auth ? { Authorization: auth } : {}),
         },
         body: JSON.stringify(body),
-        timeoutMs: 8000,
+        timeoutMs: 30_000,
       }
     );
 
+    const text = await response.text();
+    const parsed = safeJsonParse(text);
+
     if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || "Failed to create home content");
+      const msg =
+        parsed &&
+        typeof parsed === "object" &&
+        parsed !== null &&
+        "message" in parsed
+          ? String((parsed as { message: unknown }).message)
+          : "Failed to create home content";
+      return NextResponse.json({ error: msg }, { status: response.status });
     }
 
-    const content = await response.json();
-    return NextResponse.json(content, { status: 201 });
+    return NextResponse.json(parsed ?? {}, { status: 201 });
   } catch (error) {
     console.error("Error creating home content:", error);
     return NextResponse.json(
@@ -86,7 +108,7 @@ export async function PUT(request: NextRequest) {
 
     const auth = request.headers.get("Authorization") ?? "";
     const response = await fetchWithTimeout(
-      `${API_BASE_URL}/api/home-content`,
+      `${getApiBaseUrl()}/api/home-content`,
       {
         method: "PUT",
         headers: {
@@ -94,17 +116,25 @@ export async function PUT(request: NextRequest) {
           ...(auth ? { Authorization: auth } : {}),
         },
         body: JSON.stringify(body),
-        timeoutMs: 8000,
+        timeoutMs: 30_000,
       }
     );
 
+    const text = await response.text();
+    const parsed = safeJsonParse(text);
+
     if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || "Failed to update home content");
+      const msg =
+        parsed &&
+        typeof parsed === "object" &&
+        parsed !== null &&
+        "message" in parsed
+          ? String((parsed as { message: unknown }).message)
+          : "Failed to update home content";
+      return NextResponse.json({ error: msg }, { status: response.status });
     }
 
-    const content = await response.json();
-    return NextResponse.json(content);
+    return NextResponse.json(parsed ?? []);
   } catch (error) {
     console.error("Error updating home content:", error);
     return NextResponse.json(

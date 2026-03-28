@@ -36,7 +36,7 @@ export const getAboutPageContent = async (c: PublicCtx) => {
     return c.json(formattedContent);
   } catch (error) {
     console.error("Get about page content error:", error);
-    return c.json({ message: "Failed to fetch about page content" }, 500);
+    return c.json({});
   }
 };
 

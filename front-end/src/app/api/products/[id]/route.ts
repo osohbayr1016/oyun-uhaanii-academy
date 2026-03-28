@@ -1,30 +1,41 @@
 import { NextRequest, NextResponse } from "next/server";
+import { fetchWithTimeout } from "@/lib/fetchWithTimeout";
 import { getApiBaseUrl } from "@/lib/env";
-import { serverFetchJson } from "@/lib/serverFetchJson";
 
-const API_BASE_URL = getApiBaseUrl();
+function safeParseJson(text: string): unknown {
+  if (!text.trim()) return undefined;
+  try { return JSON.parse(text) as unknown; } catch { return undefined; }
+}
+
+function getMessage(parsed: unknown, fallback: string): string {
+  if (parsed && typeof parsed === "object" && parsed !== null && "message" in parsed) {
+    const m = (parsed as { message: unknown }).message;
+    if (typeof m === "string") return m;
+  }
+  return fallback;
+}
 
 export async function GET(
-  request: NextRequest,
+  _req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await params;
-    const product = await serverFetchJson<unknown>(
-      `/api/products/${encodeURIComponent(id)}`,
-      { cache: "no-store", timeoutMs: 12000 }
+    const res = await fetchWithTimeout(
+      `${getApiBaseUrl()}/api/products/${encodeURIComponent(id)}`,
+      { cache: "no-store", headers: { Accept: "application/json" }, timeoutMs: 30_000 }
     );
-    return NextResponse.json(product);
-  } catch (error) {
-    const msg = error instanceof Error ? error.message : String(error);
-    if (msg.includes("Fetch failed 404")) {
-      return NextResponse.json({ error: "Product not found" }, { status: 404 });
+    const text = await res.text();
+    const parsed = safeParseJson(text);
+    if (res.status === 404) return NextResponse.json({ error: "Product not found" }, { status: 404 });
+    if (!res.ok) {
+      console.error("product[id] upstream:", res.status, text.slice(0, 400));
+      return NextResponse.json({ error: getMessage(parsed, "Failed to fetch product") }, { status: res.status });
     }
-    console.error("Error fetching product:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch product" },
-      { status: 500 }
-    );
+    return NextResponse.json(parsed ?? {});
+  } catch (e) {
+    console.error("Error fetching product:", e);
+    return NextResponse.json({ error: "Failed to fetch product" }, { status: 500 });
   }
 }
 
@@ -35,33 +46,27 @@ export async function PUT(
   try {
     const { id } = await params;
     const body = await request.json();
-
-    const auth = request.headers.get("Authorization") ?? "";
-    const response = await fetch(`${API_BASE_URL}/api/products/${id}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        ...(auth ? { Authorization: auth } : {}),
-      },
-      body: JSON.stringify(body),
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || "Failed to update product");
-    }
-
-    const product = await response.json();
-    return NextResponse.json(product);
-  } catch (error) {
-    console.error("Error updating product:", error);
-    return NextResponse.json(
+    const res = await fetchWithTimeout(
+      `${getApiBaseUrl()}/api/products/${encodeURIComponent(id)}`,
       {
-        error:
-          error instanceof Error ? error.message : "Failed to update product",
-      },
-      { status: 500 }
+        method: "PUT",
+        cache: "no-store",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          Authorization: request.headers.get("Authorization") || "",
+        },
+        body: JSON.stringify(body),
+        timeoutMs: 30_000,
+      }
     );
+    const text = await res.text();
+    const parsed = safeParseJson(text);
+    if (!res.ok) return NextResponse.json({ error: getMessage(parsed, "Failed to update product") }, { status: res.status });
+    return NextResponse.json(parsed ?? {});
+  } catch (e) {
+    console.error("Error updating product:", e);
+    return NextResponse.json({ error: "Failed to update product" }, { status: 500 });
   }
 }
 
@@ -71,28 +76,21 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params;
-    const auth = request.headers.get("Authorization") ?? "";
-    const response = await fetch(`${API_BASE_URL}/api/products/${id}`, {
-      method: "DELETE",
-      headers: {
-        ...(auth ? { Authorization: auth } : {}),
-      },
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || "Failed to delete product");
-    }
-
-    return NextResponse.json({ message: "Product deleted successfully" });
-  } catch (error) {
-    console.error("Error deleting product:", error);
-    return NextResponse.json(
+    const res = await fetchWithTimeout(
+      `${getApiBaseUrl()}/api/products/${encodeURIComponent(id)}`,
       {
-        error:
-          error instanceof Error ? error.message : "Failed to delete product",
-      },
-      { status: 500 }
+        method: "DELETE",
+        cache: "no-store",
+        headers: { Authorization: request.headers.get("Authorization") || "" },
+        timeoutMs: 30_000,
+      }
     );
+    const text = await res.text();
+    const parsed = safeParseJson(text);
+    if (!res.ok) return NextResponse.json({ error: getMessage(parsed, "Failed to delete product") }, { status: res.status });
+    return NextResponse.json(parsed ?? { message: "Product deleted successfully" });
+  } catch (e) {
+    console.error("Error deleting product:", e);
+    return NextResponse.json({ error: "Failed to delete product" }, { status: 500 });
   }
 }

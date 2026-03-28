@@ -17,7 +17,7 @@ export async function ensureDatabaseReady(): Promise<void> {
   if (!inflight) {
     inflight = (async () => {
       const prisma = getPrisma();
-      const maxAttempts = 8;
+      const maxAttempts = 3;
       for (let attempt = 1; attempt <= maxAttempts; attempt++) {
         try {
           await prisma.$connect();

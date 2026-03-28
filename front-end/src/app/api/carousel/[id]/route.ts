@@ -1,7 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
+import { fetchWithTimeout } from "@/lib/fetchWithTimeout";
 import { getApiBaseUrl } from "@/lib/env";
 
-const API_BASE_URL = getApiBaseUrl();
+function safeParseJson(text: string): unknown {
+  if (!text.trim()) return undefined;
+  try { return JSON.parse(text) as unknown; } catch { return undefined; }
+}
+
+function getMessage(parsed: unknown, fallback: string): string {
+  if (parsed && typeof parsed === "object" && parsed !== null && "message" in parsed) {
+    const m = (parsed as { message: unknown }).message;
+    if (typeof m === "string") return m;
+  }
+  return fallback;
+}
 
 export async function DELETE(
   request: NextRequest,
@@ -9,29 +21,21 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params;
-    const auth = request.headers.get("Authorization") ?? "";
-    const response = await fetch(`${API_BASE_URL}/api/carousel/${id}`, {
-      method: "DELETE",
-      headers: {
-        ...(auth ? { Authorization: auth } : {}),
-      },
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      return NextResponse.json(
-        { error: data.message || "Failed to delete carousel image" },
-        { status: response.status }
-      );
-    }
-
-    return NextResponse.json(data);
-  } catch (error) {
-    console.error("Error deleting carousel image:", error);
-    return NextResponse.json(
-      { error: "Failed to delete carousel image" },
-      { status: 500 }
+    const res = await fetchWithTimeout(
+      `${getApiBaseUrl()}/api/carousel/${encodeURIComponent(id)}`,
+      {
+        method: "DELETE",
+        cache: "no-store",
+        headers: { Authorization: request.headers.get("Authorization") || "" },
+        timeoutMs: 30_000,
+      }
     );
+    const text = await res.text();
+    const parsed = safeParseJson(text);
+    if (!res.ok) return NextResponse.json({ error: getMessage(parsed, "Failed to delete carousel image") }, { status: res.status });
+    return NextResponse.json(parsed ?? { message: "Carousel image deleted successfully" });
+  } catch (e) {
+    console.error("Error deleting carousel image:", e);
+    return NextResponse.json({ error: "Failed to delete carousel image" }, { status: 500 });
   }
 }

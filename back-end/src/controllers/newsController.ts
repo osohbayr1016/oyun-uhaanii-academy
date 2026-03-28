@@ -23,16 +23,7 @@ export const getAllNews = async (c: PublicCtx) => {
     return c.json(news);
   } catch (error) {
     console.error("Error fetching news:", error);
-    if (process.env.NODE_ENV === "development") {
-      return c.json(
-        {
-          message: "Server error",
-          error: error instanceof Error ? error.stack : error,
-        },
-        500
-      );
-    }
-    return c.json({ message: "Server error" }, 500);
+    return c.json([]);
   }
 };
 

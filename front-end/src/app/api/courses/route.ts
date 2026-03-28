@@ -1,34 +1,35 @@
 import { NextRequest, NextResponse } from "next/server";
+import { fetchWithTimeout } from "@/lib/fetchWithTimeout";
 import { getApiBaseUrl } from "@/lib/env";
-import { serverFetchJson } from "@/lib/serverFetchJson";
 
 export async function GET() {
   try {
-    const data = await serverFetchJson<unknown[]>("/api/courses", {
+    const res = await fetchWithTimeout(`${getApiBaseUrl()}/api/courses`, {
       cache: "no-store",
-      timeoutMs: 25_000,
+      headers: { Accept: "application/json" },
+      timeoutMs: 30_000,
     });
-    const list = Array.isArray(data) ? data : [];
-    return NextResponse.json(list);
-  } catch (error) {
-    console.error("Error fetching courses:", error);
-    return NextResponse.json(
-      {
-        error:
-          error instanceof Error ? error.message : "Failed to fetch courses",
-      },
-      { status: 500 }
-    );
+    const text = await res.text();
+    if (!res.ok) {
+      console.error("courses upstream:", res.status, text.slice(0, 500));
+      return NextResponse.json([]);
+    }
+    if (!text.trim()) return NextResponse.json([]);
+    try {
+      const data = JSON.parse(text) as unknown;
+      return NextResponse.json(Array.isArray(data) ? data : []);
+    } catch {
+      return NextResponse.json([]);
+    }
+  } catch (e) {
+    console.error("Error fetching courses:", e);
+    return NextResponse.json([]);
   }
 }
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const backendUrl =
-      getApiBaseUrl();
-
-    // Ensure levels is properly formatted as an array
     const courseData = {
       ...body,
       levels: Array.isArray(body.levels)
@@ -37,37 +38,40 @@ export async function POST(request: NextRequest) {
         ? [body.levels]
         : [],
     };
-
-    const response = await fetch(`${backendUrl}/api/courses`, {
+    const response = await fetchWithTimeout(`${getApiBaseUrl()}/api/courses`, {
       method: "POST",
       cache: "no-store",
       headers: {
         "Content-Type": "application/json",
+        Accept: "application/json",
         Authorization: request.headers.get("Authorization") || "",
       },
       body: JSON.stringify(courseData),
+      timeoutMs: 30_000,
     });
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      const errorMessage =
-        errorData.message ||
-        `Backend responded with status: ${response.status}`;
-      return NextResponse.json(
-        { error: errorMessage },
-        { status: response.status }
-      );
+    const text = await response.text();
+    let parsed: unknown;
+    if (text.trim()) {
+      try {
+        parsed = JSON.parse(text) as unknown;
+      } catch {
+        return NextResponse.json({ error: "Invalid response from API" }, { status: 502 });
+      }
+    } else {
+      parsed = null;
     }
-
-    const data = await response.json();
-    return NextResponse.json(data);
+    if (!response.ok) {
+      const msg =
+        parsed && typeof parsed === "object" && parsed !== null && "message" in parsed
+          ? String((parsed as { message: unknown }).message)
+          : "Failed to create course";
+      return NextResponse.json({ error: msg }, { status: response.status });
+    }
+    return NextResponse.json(parsed ?? {});
   } catch (error) {
     console.error("Error creating course:", error);
     return NextResponse.json(
-      {
-        error:
-          error instanceof Error ? error.message : "Failed to create course",
-      },
+      { error: error instanceof Error ? error.message : "Failed to create course" },
       { status: 500 }
     );
   }

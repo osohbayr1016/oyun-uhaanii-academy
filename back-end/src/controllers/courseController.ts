@@ -42,16 +42,7 @@ export const getAllCourses = async (c: PublicCtx) => {
     return c.json(transformedCourses);
   } catch (error) {
     console.error("Error fetching courses:", error);
-    if (process.env.NODE_ENV === "development") {
-      return c.json(
-        {
-          message: "Server error",
-          error: error instanceof Error ? error.stack : error,
-        },
-        500
-      );
-    }
-    return c.json({ message: "Server error" }, 500);
+    return c.json([]);
   }
 };
 

@@ -14,7 +14,7 @@ r.get("/categories", async (c) => {
     return c.json(categories);
   } catch (error) {
     console.error("Error fetching categories:", error);
-    return c.json({ error: "Failed to fetch categories" }, 500);
+    return c.json([]);
   }
 });
 
@@ -27,7 +27,7 @@ r.get("/levels", async (c) => {
     return c.json(levels);
   } catch (error) {
     console.error("Error fetching levels:", error);
-    return c.json({ error: "Failed to fetch levels" }, 500);
+    return c.json([]);
   }
 });
 

@@ -9,16 +9,7 @@ export const getAllProducts = async (c: PublicCtx) => {
     return c.json(products);
   } catch (error) {
     console.error("Get all products error:", error);
-    if (process.env.NODE_ENV === "development") {
-      return c.json(
-        {
-          message: "Failed to fetch products",
-          error: error instanceof Error ? error.stack : error,
-        },
-        500
-      );
-    }
-    return c.json({ message: "Failed to fetch products" }, 500);
+    return c.json([]);
   }
 };
 

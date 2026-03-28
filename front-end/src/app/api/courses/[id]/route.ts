@@ -1,39 +1,41 @@
 import { NextRequest, NextResponse } from "next/server";
+import { fetchWithTimeout } from "@/lib/fetchWithTimeout";
 import { getApiBaseUrl } from "@/lib/env";
 
+function safeParseJson(text: string): unknown {
+  if (!text.trim()) return undefined;
+  try { return JSON.parse(text) as unknown; } catch { return undefined; }
+}
+
+function getMessage(parsed: unknown, fallback: string): string {
+  if (parsed && typeof parsed === "object" && parsed !== null && "message" in parsed) {
+    const m = (parsed as { message: unknown }).message;
+    if (typeof m === "string") return m;
+  }
+  return fallback;
+}
+
 export async function GET(
-  request: NextRequest,
+  _req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await params;
-    const backendUrl =
-      getApiBaseUrl();
-
-    const response = await fetch(`${backendUrl}/api/courses/${id}`, {
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
-    if (!response.ok) {
-      if (response.status === 404) {
-        return NextResponse.json(
-          { error: "Course not found" },
-          { status: 404 }
-        );
-      }
-      throw new Error(`Backend responded with status: ${response.status}`);
-    }
-
-    const data = await response.json();
-    return NextResponse.json(data);
-  } catch (error) {
-    console.error("Error fetching course:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch course" },
-      { status: 500 }
+    const res = await fetchWithTimeout(
+      `${getApiBaseUrl()}/api/courses/${encodeURIComponent(id)}`,
+      { cache: "no-store", headers: { Accept: "application/json" }, timeoutMs: 30_000 }
     );
+    const text = await res.text();
+    const parsed = safeParseJson(text);
+    if (res.status === 404) return NextResponse.json({ error: "Course not found" }, { status: 404 });
+    if (!res.ok) {
+      console.error("course[id] upstream:", res.status, text.slice(0, 400));
+      return NextResponse.json({ error: getMessage(parsed, "Failed to fetch course") }, { status: res.status });
+    }
+    return NextResponse.json(parsed ?? {});
+  } catch (e) {
+    console.error("Error fetching course:", e);
+    return NextResponse.json({ error: "Failed to fetch course" }, { status: 500 });
   }
 }
 
@@ -44,40 +46,31 @@ export async function PUT(
   try {
     const { id } = await params;
     const body = await request.json();
-    const backendUrl =
-      getApiBaseUrl();
-
-    // Ensure levels is properly formatted as an array
     const courseData = {
       ...body,
-      levels: Array.isArray(body.levels)
-        ? body.levels
-        : body.levels
-        ? [body.levels]
-        : undefined,
+      levels: Array.isArray(body.levels) ? body.levels : body.levels ? [body.levels] : undefined,
     };
-
-    const response = await fetch(`${backendUrl}/api/courses/${id}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: request.headers.get("Authorization") || "",
-      },
-      body: JSON.stringify(courseData),
-    });
-
-    if (!response.ok) {
-      throw new Error(`Backend responded with status: ${response.status}`);
-    }
-
-    const data = await response.json();
-    return NextResponse.json(data);
-  } catch (error) {
-    console.error("Error updating course:", error);
-    return NextResponse.json(
-      { error: "Failed to update course" },
-      { status: 500 }
+    const res = await fetchWithTimeout(
+      `${getApiBaseUrl()}/api/courses/${encodeURIComponent(id)}`,
+      {
+        method: "PUT",
+        cache: "no-store",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          Authorization: request.headers.get("Authorization") || "",
+        },
+        body: JSON.stringify(courseData),
+        timeoutMs: 30_000,
+      }
     );
+    const text = await res.text();
+    const parsed = safeParseJson(text);
+    if (!res.ok) return NextResponse.json({ error: getMessage(parsed, "Failed to update course") }, { status: res.status });
+    return NextResponse.json(parsed ?? {});
+  } catch (e) {
+    console.error("Error updating course:", e);
+    return NextResponse.json({ error: "Failed to update course" }, { status: 500 });
   }
 }
 
@@ -87,27 +80,21 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params;
-    const backendUrl =
-      getApiBaseUrl();
-
-    const response = await fetch(`${backendUrl}/api/courses/${id}`, {
-      method: "DELETE",
-      headers: {
-        Authorization: request.headers.get("Authorization") || "",
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error(`Backend responded with status: ${response.status}`);
-    }
-
-    const data = await response.json();
-    return NextResponse.json(data);
-  } catch (error) {
-    console.error("Error deleting course:", error);
-    return NextResponse.json(
-      { error: "Failed to delete course" },
-      { status: 500 }
+    const res = await fetchWithTimeout(
+      `${getApiBaseUrl()}/api/courses/${encodeURIComponent(id)}`,
+      {
+        method: "DELETE",
+        cache: "no-store",
+        headers: { Authorization: request.headers.get("Authorization") || "" },
+        timeoutMs: 30_000,
+      }
     );
+    const text = await res.text();
+    const parsed = safeParseJson(text);
+    if (!res.ok) return NextResponse.json({ error: getMessage(parsed, "Failed to delete course") }, { status: res.status });
+    return NextResponse.json(parsed ?? { message: "Course deleted successfully" });
+  } catch (e) {
+    console.error("Error deleting course:", e);
+    return NextResponse.json({ error: "Failed to delete course" }, { status: 500 });
   }
 }
