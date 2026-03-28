@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { bearerHeaders } from "@/lib/authHeaders";
+import { fetchBffJson } from "@/lib/fetchBffWithRetry";
 
 const AddCourse = () => {
   const [form, setForm] = useState({
@@ -27,37 +29,28 @@ const AddCourse = () => {
   const [levels, setLevels] = useState<string[]>([]);
 
   useEffect(() => {
-    fetchCategories();
-    fetchLevels();
+    let cancelled = false;
+    (async () => {
+      try {
+        const [catData, levData] = await Promise.all([
+          fetchBffJson<{ name: string }[]>("/api/course-filters/categories"),
+          fetchBffJson<{ name: string }[]>("/api/course-filters/levels"),
+        ]);
+        if (cancelled) return;
+        if (Array.isArray(catData)) {
+          setCategories(catData.map((c) => c.name));
+        }
+        if (Array.isArray(levData)) {
+          setLevels(levData.map((l) => l.name));
+        }
+      } catch (error) {
+        console.error("Error fetching filters:", error);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, []);
-
-  const fetchCategories = async () => {
-    try {
-      const response = await fetch("/api/course-filters/categories");
-      if (response.ok) {
-        const data = await response.json();
-        const categoryNames = data.map((cat: any) => cat.name);
-        console.log("Fetched categories:", categoryNames);
-        setCategories(categoryNames);
-      }
-    } catch (error) {
-      console.error("Error fetching categories:", error);
-    }
-  };
-
-  const fetchLevels = async () => {
-    try {
-      const response = await fetch("/api/course-filters/levels");
-      if (response.ok) {
-        const data = await response.json();
-        const levelNames = data.map((level: any) => level.name);
-        console.log("Fetched levels:", levelNames);
-        setLevels(levelNames);
-      }
-    } catch (error) {
-      console.error("Error fetching levels:", error);
-    }
-  };
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -82,7 +75,7 @@ const AddCourse = () => {
     try {
       const response = await fetch("/api/courses", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: bearerHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify({
           ...form,
           content: form.description, // Use description as content

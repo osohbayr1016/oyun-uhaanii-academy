@@ -3,6 +3,8 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/lib/auth";
 import { Plus, Edit, Trash2, Eye } from "lucide-react";
+import { fetchBffJson } from "@/lib/fetchBffWithRetry";
+import AdminLoadErrorBanner from "../_components/AdminLoadErrorBanner";
 
 interface NewsArticle {
   id: string;
@@ -22,6 +24,7 @@ export default function AdminNewsPage() {
   const { user, isAuthenticated, isAdmin } = useAuth();
   const [news, setNews] = useState<NewsArticle[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [editingNews, setEditingNews] = useState<NewsArticle | null>(null);
   const [formData, setFormData] = useState({
@@ -38,13 +41,17 @@ export default function AdminNewsPage() {
   }, [user]);
 
   const fetchNews = async () => {
+    setLoading(true);
+    setLoadError(null);
     try {
-      const response = await fetch("/api/news");
-      if (!response.ok) throw new Error("Failed to fetch news");
-      const data = await response.json();
-      setNews(data);
+      const data = await fetchBffJson<NewsArticle[]>("/api/news");
+      setNews(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error("Error fetching news:", error);
+      setNews([]);
+      setLoadError(
+        error instanceof Error ? error.message : "Мэдээг ачаалж чадсангүй"
+      );
     } finally {
       setLoading(false);
     }
@@ -155,6 +162,7 @@ export default function AdminNewsPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-4 py-8">
+        <AdminLoadErrorBanner message={loadError} />
         {/* Header */}
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold text-gray-800">Мэдээ удирдлага</h1>

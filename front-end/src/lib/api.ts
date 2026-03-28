@@ -1,33 +1,31 @@
 import axios, { AxiosInstance, AxiosResponse, AxiosError } from "axios";
-import { fetchWithTimeout } from "./fetchWithTimeout";
 import { getApiBaseUrl } from "./env";
 
-const API_BASE_URL = getApiBaseUrl();
+export { serverFetchJson } from "./serverFetchJson";
 
-// Create axios instance with default configuration
+// Browser: same-origin `/api/*` (Next BFF → Worker). Server/SSR: direct Worker if needed.
 const apiClient: AxiosInstance = axios.create({
-  baseURL: API_BASE_URL,
-  timeout: 10000, // 10 seconds
+  baseURL: "",
+  timeout: 10000,
   headers: {
     "Content-Type": "application/json",
   },
 });
 
-// Request interceptor to add auth token
 apiClient.interceptors.request.use(
   (config) => {
-    // Try to get token from localStorage (client-side)
     if (typeof window !== "undefined") {
+      config.baseURL = "";
       const token = localStorage.getItem("token");
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
       }
+    } else {
+      config.baseURL = getApiBaseUrl();
     }
     return config;
   },
-  (error) => {
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
 // Response interceptor for error handling
@@ -118,40 +116,3 @@ export const api = {
 };
 
 export default apiClient;
-
-// Server-side fetch helper with caching controls
-export async function serverFetchJson<T>(
-  path: string,
-  options?: {
-    revalidateSeconds?: number | false;
-    cache?: RequestCache;
-    init?: RequestInit;
-    timeoutMs?: number;
-  }
-): Promise<T> {
-  const API_BASE_URL = getApiBaseUrl();
-
-  const { revalidateSeconds, cache, init, timeoutMs } = options || {};
-
-  const url = path.startsWith("http") ? path : `${API_BASE_URL}${path}`;
-
-  const response = await fetchWithTimeout(url, {
-    ...(init || {}),
-    next:
-      typeof revalidateSeconds === "number"
-        ? { revalidate: revalidateSeconds }
-        : undefined,
-    cache: cache,
-    headers: {
-      Accept: "application/json",
-      ...(init?.headers || {}),
-    },
-    timeoutMs: timeoutMs ?? 8000,
-  } as any);
-
-  if (!response.ok) {
-    const text = await response.text().catch(() => "");
-    throw new Error(`Fetch failed ${response.status}: ${text}`);
-  }
-  return (await response.json()) as T;
-}

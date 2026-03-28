@@ -3,19 +3,15 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import {
-  BarChart3,
   Download,
   ArrowLeft,
-  TrendingUp,
-  TrendingDown,
   Users,
   BookOpen,
   ShoppingBag,
   Trophy,
-  Calendar,
-  DollarSign,
-  Eye,
 } from "lucide-react";
+import { fetchBffJsonAdmin } from "@/lib/adminFetchBff";
+import AdminLoadErrorBanner from "../_components/AdminLoadErrorBanner";
 
 const AdminReportsPage = () => {
   const [selectedPeriod, setSelectedPeriod] = useState("month");
@@ -28,21 +24,25 @@ const AdminReportsPage = () => {
     totalNews: 0,
   });
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchStats = async () => {
+      setLoading(true);
+      setLoadError(null);
       try {
-        const token =
-          typeof window !== "undefined" ? localStorage.getItem("token") : null;
-        const headers: Record<string, string> = {};
-        if (token) headers["Authorization"] = `Bearer ${token}`;
-        const res = await fetch("/api/admin/stats", { headers });
-        if (!res.ok) throw new Error("Failed to fetch stats");
-        const data = await res.json();
+        const data = await fetchBffJsonAdmin<{
+          totalUsers: number;
+          totalCourses: number;
+          totalProducts: number;
+          totalTournaments: number;
+          totalNews: number;
+        }>("/api/admin/stats");
         setStats(data);
-      } catch (err: any) {
-        setError(err.message || "Failed to load stats");
+      } catch (err: unknown) {
+        setLoadError(
+          err instanceof Error ? err.message : "Статистик ачаалж чадсангүй"
+        );
       } finally {
         setLoading(false);
       }
@@ -50,45 +50,7 @@ const AdminReportsPage = () => {
     fetchStats();
   }, []);
 
-  const recentActivities = [
-    {
-      action: "Шинэ хэрэглэгч бүртгэгдлээ",
-      time: "2 минутын өмнө",
-      type: "user",
-    },
-    { action: "Сургалт нэмэгдлээ", time: "15 минутын өмнө", type: "course" },
-    { action: "Бүтээгдэхүүн захиалга", time: "1 цагийн өмнө", type: "product" },
-    { action: "Тэмцээн үүсгэгдлээ", time: "2 цагийн өмнө", type: "tournament" },
-    { action: "Төлбөр төлөгдлөө", time: "3 цагийн өмнө", type: "payment" },
-  ];
-
-  const getActivityIcon = (type: string) => {
-    switch (type) {
-      case "user":
-        return <Users className="w-4 h-4 text-blue-500" />;
-      case "course":
-        return <BookOpen className="w-4 h-4 text-green-500" />;
-      case "product":
-        return <ShoppingBag className="w-4 h-4 text-purple-500" />;
-      case "tournament":
-        return <Trophy className="w-4 h-4 text-orange-500" />;
-      case "payment":
-        return <DollarSign className="w-4 h-4 text-green-600" />;
-      default:
-        return <Eye className="w-4 h-4 text-gray-500" />;
-    }
-  };
-
-  const getGrowthIcon = (growth: number) => {
-    return growth >= 0 ? (
-      <TrendingUp className="w-4 h-4 text-green-500" />
-    ) : (
-      <TrendingDown className="w-4 h-4 text-red-500" />
-    );
-  };
-
   if (loading) return <div className="p-8">Уншиж байна...</div>;
-  if (error) return <div className="p-8 text-red-500">{error}</div>;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -128,6 +90,7 @@ const AdminReportsPage = () => {
       </header>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <AdminLoadErrorBanner message={loadError} />
         {/* Overview Stats */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <div className="bg-white rounded-lg shadow p-6">
@@ -195,7 +158,6 @@ const AdminReportsPage = () => {
           </div>
         </div>
 
-        {/* Recent Activities */}
         <div className="mt-8 bg-white rounded-lg shadow">
           <div className="px-6 py-4 border-b border-gray-200">
             <h3 className="text-lg font-semibold text-gray-900">
@@ -203,24 +165,13 @@ const AdminReportsPage = () => {
             </h3>
           </div>
           <div className="p-6">
-            <div className="space-y-4">
-              {recentActivities.map((activity, index) => (
-                <div
-                  key={index}
-                  className="flex items-center justify-between py-2"
-                >
-                  <div className="flex items-center">
-                    {getActivityIcon(activity.type)}
-                    <div className="ml-3">
-                      <p className="text-sm font-medium text-gray-900">
-                        {activity.action}
-                      </p>
-                      <p className="text-sm text-gray-500">{activity.time}</p>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
+            <p className="text-sm text-gray-600">
+              Бодит үйл ажиллагааны түүхийг{" "}
+              <Link href="/admin" className="text-blue-600 underline">
+                Хянах самбар
+              </Link>{" "}
+              хуудаснаас харна уу. Энд жагсаасан жишээ өгөгдлийг хассан.
+            </p>
           </div>
         </div>
 

@@ -6,8 +6,10 @@ export async function GET(request: NextRequest) {
     const backendUrl =
       getApiBaseUrl();
     const response = await fetch(`${backendUrl}/api/news`, {
+      cache: "no-store",
       headers: {
         "Content-Type": "application/json",
+        Accept: "application/json",
       },
     });
 

@@ -14,7 +14,9 @@ import {
   Trash2,
   Users2,
   Home,
+  Target,
 } from "lucide-react";
+import { fetchBffJsonAdmin } from "@/lib/adminFetchBff";
 
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState("overview");
@@ -28,30 +30,24 @@ const AdminDashboard = () => {
       setLoading(true);
       setError("");
       try {
-        const token = localStorage.getItem("token");
-        const res = await fetch("/api/admin/stats", {
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
-        });
-        if (!res.ok) throw new Error("Failed to fetch stats");
-        const data = await res.json();
+        const data = await fetchBffJsonAdmin<Record<string, unknown>>(
+          "/api/admin/stats"
+        );
         setStats(data);
-      } catch (err: any) {
-        setError(err.message || "Unknown error");
+      } catch (err: unknown) {
+        setError(err instanceof Error ? err.message : "Unknown error");
       } finally {
         setLoading(false);
       }
     };
     const fetchActivities = async () => {
       try {
-        const token = localStorage.getItem("token");
-        const res = await fetch("/api/admin/activities", {
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
-        });
-        if (!res.ok) throw new Error("Failed to fetch activities");
-        const data = await res.json();
-        setActivities(data);
-      } catch (err: any) {
-        // Optionally handle error
+        const data = await fetchBffJsonAdmin<unknown[]>(
+          "/api/admin/activities"
+        );
+        setActivities(Array.isArray(data) ? data : []);
+      } catch {
+        setActivities([]);
       }
     };
     fetchStats();
@@ -148,6 +144,13 @@ const AdminDashboard = () => {
       icon: Home,
       href: "/admin/home-content",
       color: "bg-teal-500",
+    },
+    {
+      title: "Офицер салбарын тоо",
+      description: "ОФИЦЕР САЛБАРЫН АМЖИЛТ — нүүр хуудсын тоо",
+      icon: Target,
+      href: "/admin/officer-stats",
+      color: "bg-emerald-600",
     },
     {
       title: "Тохиргоо",

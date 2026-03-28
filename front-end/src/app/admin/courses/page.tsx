@@ -16,6 +16,9 @@ import {
   User,
   DollarSign,
 } from "lucide-react";
+import { bearerHeaders } from "@/lib/authHeaders";
+import { fetchBffJson } from "@/lib/fetchBffWithRetry";
+import AdminListThumbnail from "../_components/AdminListThumbnail";
 
 interface Course {
   id: string;
@@ -81,6 +84,7 @@ const AdminCoursesPage = () => {
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -107,11 +111,50 @@ const AdminCoursesPage = () => {
 
   const router = useRouter();
 
-  // Fetch courses on component mount
   useEffect(() => {
-    fetchCourses();
-    fetchCategories();
-    fetchLevels();
+    let cancelled = false;
+    (async () => {
+      setLoading(true);
+      setLoadError(null);
+      try {
+        const coursesData = await fetchBffJson<Course[]>("/api/courses");
+        if (!cancelled) {
+          setCourses(Array.isArray(coursesData) ? coursesData : []);
+        }
+      } catch (error) {
+        console.error("Error fetching courses:", error);
+        if (!cancelled) {
+          setCourses([]);
+          setLoadError(
+            error instanceof Error
+              ? error.message
+              : "Сургалтууд ачаалж чадсангүй"
+          );
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+      if (cancelled) return;
+      try {
+        const [catData, levData] = await Promise.all([
+          fetchBffJson<{ name: string }[]>("/api/course-filters/categories"),
+          fetchBffJson<{ name: string }[]>("/api/course-filters/levels"),
+        ]);
+        if (!cancelled) {
+          if (Array.isArray(catData)) {
+            setCategories(["all", ...catData.map((c) => c.name)]);
+          }
+          if (Array.isArray(levData)) {
+            setLevels(["all", ...levData.map((l) => l.name)]);
+          }
+        }
+      } catch (e) {
+        console.error("Error fetching filters:", e);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   // When a course is selected for editing, populate the edit form data
@@ -145,47 +188,6 @@ const AdminCoursesPage = () => {
       });
     }
   }, [showEditModal, selectedCourse]);
-
-  const fetchCourses = async () => {
-    try {
-      const response = await fetch("/api/courses");
-      if (!response.ok) {
-        throw new Error("Failed to fetch courses");
-      }
-      const data = await response.json();
-      setCourses(data);
-    } catch (error) {
-      console.error("Error fetching courses:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchCategories = async () => {
-    try {
-      const response = await fetch("/api/course-filters/categories");
-      if (response.ok) {
-        const data = await response.json();
-        const categoryNames = data.map((cat: any) => cat.name);
-        setCategories(["all", ...categoryNames]);
-      }
-    } catch (error) {
-      console.error("Error fetching categories:", error);
-    }
-  };
-
-  const fetchLevels = async () => {
-    try {
-      const response = await fetch("/api/course-filters/levels");
-      if (response.ok) {
-        const data = await response.json();
-        const levelNames = data.map((level: any) => level.name);
-        setLevels(["all", ...levelNames]);
-      }
-    } catch (error) {
-      console.error("Error fetching levels:", error);
-    }
-  };
 
   const handleInputChange = (
     e: React.ChangeEvent<
@@ -239,9 +241,7 @@ const AdminCoursesPage = () => {
 
       const response = await fetch("/api/courses", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: bearerHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify(courseData),
       });
 
@@ -320,14 +320,9 @@ const AdminCoursesPage = () => {
         enrollLink: formData.enrollLink || null,
       };
 
-      const token =
-        typeof window !== "undefined" ? localStorage.getItem("token") : null;
       const response = await fetch(`/api/courses/${selectedCourse.id}`, {
         method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
+        headers: bearerHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify(courseData),
       });
 
@@ -357,6 +352,7 @@ const AdminCoursesPage = () => {
     try {
       const response = await fetch(`/api/courses/${courseId}`, {
         method: "DELETE",
+        headers: bearerHeaders(),
       });
 
       if (!response.ok) {
@@ -456,6 +452,21 @@ const AdminCoursesPage = () => {
       </header>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {loadError && (
+          <div
+            className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800"
+            role="alert"
+          >
+            {loadError}
+            <button
+              type="button"
+              onClick={() => window.location.reload()}
+              className="ml-3 underline font-medium"
+            >
+              Дахин ачаалах
+            </button>
+          </div>
+        )}
         {/* Filters */}
         <div className="bg-white rounded-lg shadow p-6 mb-6">
           <div className="flex flex-col md:flex-row gap-4">
@@ -511,9 +522,15 @@ const AdminCoursesPage = () => {
                 key={course.id}
                 className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-200"
               >
-                <div className="h-48 bg-gradient-to-br from-blue-100 to-indigo-100 flex items-center justify-center">
-                  <BookOpen className="h-16 w-16 text-blue-600" />
-                </div>
+                <AdminListThumbnail
+                  src={course.imageUrl}
+                  alt={course.title}
+                  fallback={
+                    <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-blue-100 to-indigo-100">
+                      <BookOpen className="h-16 w-16 text-blue-600" />
+                    </div>
+                  }
+                />
                 <div className="p-6">
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex flex-wrap gap-1">

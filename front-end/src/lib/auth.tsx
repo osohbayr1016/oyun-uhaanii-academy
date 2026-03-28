@@ -5,9 +5,9 @@ import React, {
   useContext,
   useState,
   useEffect,
+  useCallback,
   ReactNode,
 } from "react";
-import { getApiBaseUrl } from "@/lib/env";
 
 export interface User {
   id: string;
@@ -41,10 +41,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     token: null,
     loading: true,
   });
-
-  // Always use NEXT_PUBLIC_API_URL, fallback to localhost
-  const API_BASE_URL =
-    getApiBaseUrl();
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -107,7 +103,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
           return { success: true, data, needsLogin: true };
         }
       } else {
-        throw new Error(data.message || "Registration failed");
+        throw new Error(
+          data.error || data.message || "Registration failed"
+        );
       }
     } catch (error: any) {
       throw new Error(error.message || "Network error");
@@ -120,12 +118,15 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     setAuthState({ user: null, token: null, loading: false });
   };
 
-  const isAuthenticated = () => !!authState.user && !!authState.token;
-  const isAdmin = () => {
+  const isAuthenticated = useCallback(
+    () => !!authState.user && !!authState.token,
+    [authState.user, authState.token]
+  );
+  const isAdmin = useCallback(() => {
     const role = authState.user?.role;
     if (!role) return false;
     return role.toLowerCase() === "admin";
-  };
+  }, [authState.user?.role]);
 
   return (
     <AuthContext.Provider
@@ -149,23 +150,4 @@ export const useAuth = () => {
     throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
-};
-
-// API utility for authenticated requests
-export const apiRequest = async (url: string, options: RequestInit = {}) => {
-  const token = localStorage.getItem("token");
-
-  const headers: Record<string, string> = {
-    "Content-Type": "application/json",
-    ...(options.headers as Record<string, string>),
-  };
-
-  if (token) {
-    headers["Authorization"] = `Bearer ${token}`;
-  }
-
-  return fetch(url, {
-    ...options,
-    headers,
-  });
 };

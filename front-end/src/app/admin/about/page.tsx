@@ -16,6 +16,8 @@ import {
   Plus,
   Trash2,
 } from "lucide-react";
+import { fetchBffJson } from "@/lib/fetchBffWithRetry";
+import AdminLoadErrorBanner from "../_components/AdminLoadErrorBanner";
 
 interface TeamMember {
   name: string;
@@ -47,6 +49,7 @@ const AdminAboutPage = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   useEffect(() => {
     setMounted(true);
@@ -67,15 +70,15 @@ const AdminAboutPage = () => {
   }, [authLoading, isAuthenticated, isAdmin, router]);
 
   const fetchContent = async () => {
+    setLoadError(null);
     try {
-      const response = await fetch("/api/about");
-      if (!response.ok) {
-        throw new Error("Failed to fetch about page content");
-      }
-      const data = await response.json();
-      setContent(data);
+      const data = await fetchBffJson<AboutContent>("/api/about");
+      setContent((data && typeof data === "object" ? data : {}) as AboutContent);
     } catch (error) {
       console.error("Error fetching about page content:", error);
+      setLoadError(
+        error instanceof Error ? error.message : "Агуулга ачаалж чадсангүй"
+      );
     } finally {
       setLoading(false);
     }
@@ -199,6 +202,7 @@ const AdminAboutPage = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <AdminLoadErrorBanner message={loadError} />
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-4">
             About хуудасны контент удирдлага

@@ -15,6 +15,10 @@ import {
   DollarSign,
   Tag,
 } from "lucide-react";
+import { bearerHeaders } from "@/lib/authHeaders";
+import { fetchBffJson } from "@/lib/fetchBffWithRetry";
+import AdminLoadErrorBanner from "../_components/AdminLoadErrorBanner";
+import AdminListThumbnail from "../_components/AdminListThumbnail";
 
 interface Product {
   id: string;
@@ -59,6 +63,7 @@ const AdminProductsPage = () => {
   const [mounted, setMounted] = useState(false);
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [formData, setFormData] = useState<ProductFormData>({
     name: "",
     description: "",
@@ -89,7 +94,35 @@ const AdminProductsPage = () => {
 
   useEffect(() => {
     setMounted(true);
-    fetchProducts();
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      setLoading(true);
+      setLoadError(null);
+      try {
+        const data = await fetchBffJson<Product[]>("/api/products");
+        if (!cancelled) {
+          setProducts(Array.isArray(data) ? data : []);
+        }
+      } catch (error) {
+        console.error("Error fetching products:", error);
+        if (!cancelled) {
+          setProducts([]);
+          setLoadError(
+            error instanceof Error
+              ? error.message
+              : "Бүтээгдэхүүн ачаалж чадсангүй"
+          );
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   // When a product is selected for editing, populate the edit form data
@@ -112,21 +145,6 @@ const AdminProductsPage = () => {
       });
     }
   }, [selectedProduct]);
-
-  const fetchProducts = async () => {
-    try {
-      const response = await fetch("/api/products");
-      if (!response.ok) {
-        throw new Error("Failed to fetch products");
-      }
-      const data = await response.json();
-      setProducts(data);
-    } catch (error) {
-      console.error("Error fetching products:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleInputChange = (
     e: React.ChangeEvent<
@@ -178,9 +196,7 @@ const AdminProductsPage = () => {
 
       const response = await fetch("/api/products", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: bearerHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify(productData),
       });
 
@@ -232,9 +248,7 @@ const AdminProductsPage = () => {
     try {
       const response = await fetch(`/api/products/${selectedProduct.id}`, {
         method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: bearerHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify({
           ...editFormData,
           materials: editFormData.materials
@@ -269,6 +283,7 @@ const AdminProductsPage = () => {
     try {
       const response = await fetch(`/api/products/${productId}`, {
         method: "DELETE",
+        headers: bearerHeaders(),
       });
 
       if (!response.ok) {
@@ -373,6 +388,7 @@ const AdminProductsPage = () => {
       </header>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <AdminLoadErrorBanner message={loadError} />
         {/* Filters */}
         <div className="bg-white rounded-lg shadow p-6 mb-6">
           <div className="flex flex-col md:flex-row gap-4">
@@ -404,15 +420,27 @@ const AdminProductsPage = () => {
         </div>
 
         {/* Products Grid */}
+        {loading ? (
+          <div className="text-center py-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto" />
+            <p className="mt-4 text-gray-600">Ачаалж байна...</p>
+          </div>
+        ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredProducts.map((product) => (
             <div
               key={product.id}
               className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-200"
             >
-              <div className="h-48 bg-gradient-to-br from-purple-100 to-pink-100 flex items-center justify-center">
-                <ShoppingBag className="h-16 w-16 text-purple-600" />
-              </div>
+              <AdminListThumbnail
+                src={product.imageUrl}
+                alt={product.name}
+                fallback={
+                  <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-purple-100 to-pink-100">
+                    <ShoppingBag className="h-16 w-16 text-purple-600" />
+                  </div>
+                }
+              />
               <div className="p-6">
                 <div className="flex items-center justify-between mb-2">
                   {getCategoryBadge(product.category)}
@@ -474,6 +502,7 @@ const AdminProductsPage = () => {
             </div>
           ))}
         </div>
+        )}
       </div>
 
       {/* Add Product Modal */}

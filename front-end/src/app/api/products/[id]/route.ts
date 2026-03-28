@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getApiBaseUrl } from "@/lib/env";
+import { serverFetchJson } from "@/lib/serverFetchJson";
 
 const API_BASE_URL = getApiBaseUrl();
 
@@ -9,21 +10,16 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-    const response = await fetch(`${API_BASE_URL}/api/products/${id}`);
-
-    if (!response.ok) {
-      if (response.status === 404) {
-        return NextResponse.json(
-          { error: "Product not found" },
-          { status: 404 }
-        );
-      }
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const product = await response.json();
+    const product = await serverFetchJson<unknown>(
+      `/api/products/${encodeURIComponent(id)}`,
+      { cache: "no-store", timeoutMs: 12000 }
+    );
     return NextResponse.json(product);
   } catch (error) {
+    const msg = error instanceof Error ? error.message : String(error);
+    if (msg.includes("Fetch failed 404")) {
+      return NextResponse.json({ error: "Product not found" }, { status: 404 });
+    }
     console.error("Error fetching product:", error);
     return NextResponse.json(
       { error: "Failed to fetch product" },
@@ -40,10 +36,12 @@ export async function PUT(
     const { id } = await params;
     const body = await request.json();
 
+    const auth = request.headers.get("Authorization") ?? "";
     const response = await fetch(`${API_BASE_URL}/api/products/${id}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
+        ...(auth ? { Authorization: auth } : {}),
       },
       body: JSON.stringify(body),
     });
@@ -73,8 +71,12 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params;
+    const auth = request.headers.get("Authorization") ?? "";
     const response = await fetch(`${API_BASE_URL}/api/products/${id}`, {
       method: "DELETE",
+      headers: {
+        ...(auth ? { Authorization: auth } : {}),
+      },
     });
 
     if (!response.ok) {

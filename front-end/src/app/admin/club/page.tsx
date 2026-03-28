@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
+import { fetchBffJson } from "@/lib/fetchBffWithRetry";
 
 interface Activity {
   imageUrl: string;
@@ -19,6 +20,10 @@ interface Award {
   imageUrl: string;
   title: string;
   description: string;
+}
+
+function str(v: unknown): string {
+  return typeof v === "string" ? v : "";
 }
 
 export default function AdminClubPage() {
@@ -144,35 +149,35 @@ export default function AdminClubPage() {
   useEffect(() => {
     const fetchClubContent = async () => {
       try {
-        const response = await fetch("/api/club");
-        if (!response.ok) {
-          throw new Error("Failed to fetch club content");
-        }
-        const data = await response.json();
+        const data = await fetchBffJson<{
+          success?: boolean;
+          data?: Record<string, unknown>;
+        }>("/api/club");
 
         if (data.success && data.data) {
+          const d = data.data as Record<string, unknown>;
           setHeroBackgroundImage(
-            data.data.heroBackgroundImage || "/about3.png"
+            (d.heroBackgroundImage as string) || "/about3.png"
           );
-          setClubLogo(data.data.clubLogo || "/logosalbariin.png");
-          setMotto(data.data.motto || "");
-          setMission(data.data.mission || "");
-          setAthletesCount(data.data.athletesCount || "");
-          setTypesCount(data.data.typesCount || "");
-          setCoachesCount(data.data.coachesCount || "");
-          setTournamentTitle(data.data.tournamentTitle || "");
-          setTournamentDescription(data.data.tournamentDescription || "");
-          setTournamentName(data.data.tournamentName || "");
-          setTournamentFrequency(data.data.tournamentFrequency || "");
-          setTournamentParticipants(data.data.tournamentParticipants || "");
-          setTournamentDetails(data.data.tournamentDetails || "");
-          setTournamentButtonText(data.data.tournamentButtonText || "");
-          setIntroductionTitle(data.data.introductionTitle || "");
-          setIntroductionContent(data.data.introductionContent || "");
-          setIntroductionImage(data.data.introductionImage || "");
-          setActivitiesTitle(data.data.activitiesTitle || "");
+          setClubLogo((d.clubLogo as string) || "/logosalbariin.png");
+          setMotto(str(d.motto));
+          setMission(str(d.mission));
+          setAthletesCount(str(d.athletesCount));
+          setTypesCount(str(d.typesCount));
+          setCoachesCount(str(d.coachesCount));
+          setTournamentTitle(str(d.tournamentTitle));
+          setTournamentDescription(str(d.tournamentDescription));
+          setTournamentName(str(d.tournamentName));
+          setTournamentFrequency(str(d.tournamentFrequency));
+          setTournamentParticipants(str(d.tournamentParticipants));
+          setTournamentDetails(str(d.tournamentDetails));
+          setTournamentButtonText(str(d.tournamentButtonText));
+          setIntroductionTitle(str(d.introductionTitle));
+          setIntroductionContent(str(d.introductionContent));
+          setIntroductionImage(str(d.introductionImage));
+          setActivitiesTitle(str(d.activitiesTitle));
           setActivities(
-            data.data.activities || [
+            (Array.isArray(d.activities) ? (d.activities as Activity[]) : null) || [
               {
                 imageUrl: "/about3.png",
                 title: "Сэтгэхүйн тэмцээн",
@@ -193,9 +198,9 @@ export default function AdminClubPage() {
               },
             ]
           );
-          setTypesTitle(data.data.typesTitle || "");
+          setTypesTitle(str(d.typesTitle));
           setTypes(
-            data.data.types || [
+            (Array.isArray(d.types) ? (d.types as ClubType[]) : null) || [
               {
                 imageUrl: "/logo.svg",
                 title: "ТҮРГЭН БОДОЛТ",
@@ -229,21 +234,25 @@ export default function AdminClubPage() {
               },
             ]
           );
-          setMembershipTitle(data.data.membershipTitle || "");
-          setMembershipDescription(data.data.membershipDescription || "");
+          setMembershipTitle(str(d.membershipTitle));
+          setMembershipDescription(str(d.membershipDescription));
           setMembershipRequirements(
-            data.data.membershipRequirements || [
+            (Array.isArray(d.membershipRequirements)
+              ? (d.membershipRequirements as string[])
+              : null) || [
               "8-18 насны сурагч байх",
               "Оюуны спорт, сэтгэхүйн тоглоомд сонирхолтой байх",
               "Багаар ажиллах, хамт олны уур амьсгалыг дэмжих хүсэлтэй байх",
               "Сургалт, тэмцээнд идэвхтэй оролцох",
             ]
           );
-          setRegisterButtonText(data.data.registerButtonText || "");
-          setGoogleFormLink(data.data.googleFormLink || "");
-          setInternationalAwardsTitle(data.data.internationalAwardsTitle || "");
+          setRegisterButtonText(str(d.registerButtonText));
+          setGoogleFormLink(str(d.googleFormLink));
+          setInternationalAwardsTitle(str(d.internationalAwardsTitle));
           setInternationalAwards(
-            data.data.internationalAwards || [
+            (Array.isArray(d.internationalAwards)
+              ? (d.internationalAwards as Award[])
+              : null) || [
               {
                 imageUrl: "/about3.png",
                 title: "World Memory Championship",
@@ -256,9 +265,9 @@ export default function AdminClubPage() {
               },
             ]
           );
-          setDomesticAwardsTitle(data.data.domesticAwardsTitle || "");
+          setDomesticAwardsTitle(str(d.domesticAwardsTitle));
           setDomesticAwards(
-            data.data.domesticAwards || [
+            (Array.isArray(d.domesticAwards) ? (d.domesticAwards as Award[]) : null) || [
               {
                 imageUrl: "/xyno.jpg",
                 title: "Монголын Оюуны Спортын Олимпиад",

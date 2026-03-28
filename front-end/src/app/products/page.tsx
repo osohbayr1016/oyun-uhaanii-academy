@@ -1,11 +1,13 @@
 import ProductsClient from "./ProductsClient";
 import { serverFetchJson } from "@/lib/api";
+import type { Product } from "./useHydrateProductsData";
 
-export const revalidate = 300;
+export const dynamic = "force-dynamic";
 
 export default async function ProductsPage() {
-  const products = await serverFetchJson<any[]>("/api/products", {
-    revalidateSeconds: 300,
+  const products = await serverFetchJson<Product[]>("/api/products", {
+    cache: "no-store",
+    fallbackOnError: [],
   });
   return <ProductsClient products={products} />;
 }

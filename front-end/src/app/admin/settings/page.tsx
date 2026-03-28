@@ -43,9 +43,9 @@ const AdminSettingsPage = () => {
   };
 
   const handleSave = () => {
-    // Save settings logic here
-    console.log("Settings saved:", settings);
-    alert("Тохиргоо хадгалагдлаа!");
+    alert(
+      "Тохиргоог серверт хадгалах боломж одоогоор байхгүй. Удахгүй нэмэгдэнэ."
+    );
   };
 
   const tabs = [

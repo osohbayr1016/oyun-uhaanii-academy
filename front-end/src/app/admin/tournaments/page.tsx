@@ -18,6 +18,9 @@ import {
   DollarSign,
   Eye,
 } from "lucide-react";
+import { bearerHeaders } from "@/lib/authHeaders";
+import { fetchBffJson } from "@/lib/fetchBffWithRetry";
+import AdminLoadErrorBanner from "../_components/AdminLoadErrorBanner";
 
 interface Tournament {
   id: string;
@@ -86,6 +89,7 @@ const AdminTournamentsPage = () => {
   const [mounted, setMounted] = useState(false);
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [formData, setFormData] = useState<TournamentFormData>({
     title: "",
     description: "",
@@ -126,36 +130,43 @@ const AdminTournamentsPage = () => {
 
   useEffect(() => {
     setMounted(true);
+  }, []);
 
-    // Check authentication and admin status
-    if (!authLoading) {
-      if (!isAuthenticated()) {
-        router.push("/login");
-        return;
-      }
-      if (!isAdmin()) {
-        router.push("/");
-        return;
-      }
+  useEffect(() => {
+    if (authLoading) return;
+    if (!isAuthenticated()) {
+      router.push("/login");
+      return;
     }
-
-    fetchTournaments();
-  }, [authLoading, isAuthenticated, isAdmin, router]);
-
-  const fetchTournaments = async () => {
-    try {
-      const response = await fetch("/api/tournaments");
-      if (!response.ok) {
-        throw new Error("Failed to fetch tournaments");
-      }
-      const data = await response.json();
-      setTournaments(data);
-    } catch (error) {
-      console.error("Error fetching tournaments:", error);
-    } finally {
-      setLoading(false);
+    if (!isAdmin()) {
+      router.push("/");
+      return;
     }
-  };
+    let cancelled = false;
+    (async () => {
+      setLoading(true);
+      setLoadError(null);
+      try {
+        const data = await fetchBffJson<Tournament[]>("/api/tournaments");
+        if (!cancelled) setTournaments(Array.isArray(data) ? data : []);
+      } catch (error) {
+        console.error("Error fetching tournaments:", error);
+        if (!cancelled) {
+          setTournaments([]);
+          setLoadError(
+            error instanceof Error
+              ? error.message
+              : "Тэмцээнүүдийг ачаалж чадсангүй"
+          );
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [authLoading, router, isAuthenticated, isAdmin]);
 
   const handleInputChange = (
     e: React.ChangeEvent<
@@ -214,9 +225,7 @@ const AdminTournamentsPage = () => {
 
       const response = await fetch("/api/tournaments", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: bearerHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify(tournamentData),
       });
 
@@ -290,9 +299,7 @@ const AdminTournamentsPage = () => {
         `/api/tournaments/${selectedTournament.id}`,
         {
           method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers: bearerHeaders({ "Content-Type": "application/json" }),
           body: JSON.stringify(tournamentData),
         }
       );
@@ -332,6 +339,7 @@ const AdminTournamentsPage = () => {
     try {
       const response = await fetch(`/api/tournaments/${tournamentId}`, {
         method: "DELETE",
+        headers: bearerHeaders(),
       });
 
       if (!response.ok) {
@@ -517,6 +525,7 @@ const AdminTournamentsPage = () => {
       </header>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <AdminLoadErrorBanner message={loadError} />
         {/* Filters */}
         <div className="bg-white rounded-lg shadow p-6 mb-6">
           <div className="flex flex-col md:flex-row gap-4">

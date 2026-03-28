@@ -1,24 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import Link from "next/link";
-
-type Product = {
-  id: string;
-  name: string;
-  description: string;
-  price: number;
-  currency: string;
-  imageUrl: string;
-  category: string;
-  stock: number;
-  materials: string[];
-  dimensions?: any;
-  weight?: number;
-  isActive: boolean;
-  createdAt: string;
-  updatedAt: string;
-};
+import { useMemo, useState } from "react";
+import ProductsList from "./ProductsList";
+import { useHydrateProductsData, type Product } from "./useHydrateProductsData";
 
 const CATEGORIES = [
   "Кимастер",
@@ -30,6 +14,8 @@ const CATEGORIES = [
 ];
 
 export default function ProductsClient({ products }: { products: Product[] }) {
+  const { products: list, hydrating } = useHydrateProductsData(products);
+
   const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [priceRange, setPriceRange] = useState<{ min: number; max: number }>({
     min: 0,
@@ -37,7 +23,7 @@ export default function ProductsClient({ products }: { products: Product[] }) {
   });
 
   const filteredProducts = useMemo(() => {
-    let filtered = products || [];
+    let filtered = list || [];
     if (selectedCategory) {
       filtered = filtered.filter((p) => p.category === selectedCategory);
     }
@@ -45,7 +31,7 @@ export default function ProductsClient({ products }: { products: Product[] }) {
       (p) => p.price >= priceRange.min && p.price <= priceRange.max
     );
     return filtered;
-  }, [products, selectedCategory, priceRange]);
+  }, [list, selectedCategory, priceRange]);
 
   const handleCategoryChange = (category: string) => {
     setSelectedCategory(category === selectedCategory ? "" : category);
@@ -62,34 +48,12 @@ export default function ProductsClient({ products }: { products: Product[] }) {
     setPriceRange({ min: 0, max: 1000000 });
   };
 
-  const getStatusBadge = (product: Product) => {
-    if (product.stock === 0) {
-      return (
-        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800 border border-red-200">
-          <span className="w-1.5 h-1.5 bg-red-500 rounded-full mr-1.5"></span>
-          Дууссан
-        </span>
-      );
-    } else if (product.stock < 10) {
-      return (
-        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 border border-yellow-200">
-          <span className="w-1.5 h-1.5 bg-yellow-500 rounded-full mr-1.5"></span>
-          Бага нөөц
-        </span>
-      );
-    } else {
-      return (
-        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-200">
-          <span className="w-1.5 h-1.5 bg-green-500 rounded-full mr-1.5"></span>
-          Бэлэн байгаа
-        </span>
-      );
-    }
-  };
-
   return (
     <div className="bg-gray-50">
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {hydrating && list.length === 0 && (
+          <p className="text-center text-gray-600 py-4">Ачаалж байна…</p>
+        )}
         <section className="text-center mb-12">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
             СУРГАЛТЫН ХЭРЭГЛЭГДЭХҮҮН
@@ -114,6 +78,7 @@ export default function ProductsClient({ products }: { products: Product[] }) {
                   {CATEGORIES.map((category) => (
                     <button
                       key={category}
+                      type="button"
                       onClick={() => handleCategoryChange(category)}
                       className={`px-3 py-1 text-sm rounded-full border transition-colors ${
                         selectedCategory === category
@@ -162,6 +127,7 @@ export default function ProductsClient({ products }: { products: Product[] }) {
 
             <div className="flex flex-col items-end gap-2">
               <button
+                type="button"
                 onClick={clearFilters}
                 className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
               >
@@ -185,48 +151,7 @@ export default function ProductsClient({ products }: { products: Product[] }) {
             </p>
           </div>
         ) : (
-          <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {filteredProducts
-              .filter(
-                (product) => product.imageUrl && product.imageUrl.trim() !== ""
-              )
-              .map((product) => (
-                <Link
-                  key={product.id}
-                  href={`/products/${product.id}`}
-                  className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300"
-                >
-                  <div className="aspect-w-16 aspect-h-9">
-                    <img
-                      src={product.imageUrl}
-                      alt={product.name}
-                      className="w-full h-full object-cover aspect-video"
-                    />
-                  </div>
-                  <div className="p-4">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-2">
-                      {product.name}
-                    </h3>
-                    <p className="text-gray-600 text-sm mb-3 line-clamp-3">
-                      {product.description}
-                    </p>
-                    <div className="flex items-center justify-between">
-                      <span className="text-lg font-bold text-blue-600">
-                        {product.price.toLocaleString()} {product.currency}
-                      </span>
-                      {getStatusBadge(product)}
-                    </div>
-                    {product.category && (
-                      <div className="mt-2">
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                          {product.category}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                </Link>
-              ))}
-          </section>
+          <ProductsList products={filteredProducts} />
         )}
       </main>
     </div>

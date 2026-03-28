@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import {
@@ -14,6 +14,8 @@ import {
   Award,
 } from "lucide-react";
 import Image from "next/image";
+import { fetchBffJson } from "@/lib/fetchBffWithRetry";
+import PublicLoadErrorBanner from "@/components/PublicLoadErrorBanner";
 
 interface Tournament {
   id: string;
@@ -66,29 +68,38 @@ const TournamentDetailPage = () => {
   const params = useParams();
   const [tournament, setTournament] = useState<Tournament | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
 
-  useEffect(() => {
-    setMounted(true);
-    if (params.id) {
-      fetchTournament();
+  const fetchTournament = useCallback(async () => {
+    if (!params.id || typeof params.id !== "string") {
+      setLoading(false);
+      return;
     }
-  }, [params.id]);
-
-  const fetchTournament = async () => {
+    setLoading(true);
+    setLoadError(null);
     try {
-      const response = await fetch(`/api/tournaments/${params.id}`);
-      if (!response.ok) {
-        throw new Error("Failed to fetch tournament");
-      }
-      const data = await response.json();
+      const data = await fetchBffJson<Tournament>(
+        `/api/tournaments/${params.id}`
+      );
       setTournament(data);
     } catch (error) {
       console.error("Error fetching tournament:", error);
+      setTournament(null);
+      setLoadError(
+        error instanceof Error
+          ? error.message
+          : "Тэмцээний мэдээлэл ачаалагдсангүй."
+      );
     } finally {
       setLoading(false);
     }
-  };
+  }, [params.id]);
+
+  useEffect(() => {
+    setMounted(true);
+    fetchTournament();
+  }, [fetchTournament]);
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -183,6 +194,21 @@ const TournamentDetailPage = () => {
             Тэмцээний мэдээллийг ачаалж байна...
           </p>
         </div>
+      </div>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center bg-gray-50 px-4">
+        <PublicLoadErrorBanner message={loadError} onRetry={fetchTournament} />
+        <Link
+          href="/tournaments"
+          className="mt-6 inline-flex items-center text-sm font-medium text-blue-600 hover:text-blue-700"
+        >
+          <ArrowLeft className="mr-1 h-4 w-4" />
+          Тэмцээнүүд рүү буцах
+        </Link>
       </div>
     );
   }

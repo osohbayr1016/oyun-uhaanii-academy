@@ -1,24 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getApiBaseUrl } from "@/lib/env";
+import { serverFetchJson } from "@/lib/serverFetchJson";
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
-    const response = await fetch(
-      `${getApiBaseUrl()}/api/course-filters/levels`,
-      {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
+    const levels = await serverFetchJson<unknown[]>(
+      "/api/course-filters/levels",
+      { cache: "no-store", timeoutMs: 20_000 }
     );
-
-    if (!response.ok) {
-      throw new Error("Failed to fetch levels");
-    }
-
-    const levels = await response.json();
-    return NextResponse.json(levels);
+    return NextResponse.json(Array.isArray(levels) ? levels : []);
   } catch (error) {
     console.error("Error fetching levels:", error);
     return NextResponse.json(

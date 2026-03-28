@@ -1,35 +1,35 @@
 "use client";
 import Image from "next/image";
 import { useEffect, useState } from "react";
+import { bearerHeaders } from "@/lib/authHeaders";
+import { fetchBffJson } from "@/lib/fetchBffWithRetry";
+import AdminLoadErrorBanner from "../_components/AdminLoadErrorBanner";
 
 interface CarouselImage {
   id: string;
   imageUrl: string;
 }
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "";
-const API_CAROUSEL = BACKEND_URL
-  ? `${BACKEND_URL}/api/carousel`
-  : "/api/carousel";
+const API_CAROUSEL = "/api/carousel";
 
 export default function AdminCarouselPage() {
   const [images, setImages] = useState<CarouselImage[]>([]);
   const [imageUrl, setImageUrl] = useState("");
   const [loading, setLoading] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   const fetchImages = async () => {
     setLoading(true);
+    setLoadError(null);
     try {
-      const res = await fetch(API_CAROUSEL, {
-        cache: "no-store", // Ensure fresh data
-        headers: {
-          "Cache-Control": "no-cache",
-        },
-      });
-      const data = await res.json();
-      setImages(data);
+      const data = await fetchBffJson<CarouselImage[]>(API_CAROUSEL);
+      setImages(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error("Error fetching images:", error);
+      setImages([]);
+      setLoadError(
+        error instanceof Error ? error.message : "Зургуудыг ачаалж чадсангүй"
+      );
     } finally {
       setLoading(false);
     }
@@ -46,7 +46,7 @@ export default function AdminCarouselPage() {
       setLoading(true);
       const response = await fetch(API_CAROUSEL, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: bearerHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify({ imageUrl: imageUrl.trim() }),
       });
 
@@ -73,14 +73,13 @@ export default function AdminCarouselPage() {
 
     try {
       setLoading(true);
-      console.log("Attempting to delete image with ID:", id);
 
       const response = await fetch(`${API_CAROUSEL}/${id}`, {
         method: "DELETE",
+        headers: bearerHeaders(),
       });
 
       const data = await response.json();
-      console.log("Delete response:", { status: response.status, data });
 
       if (!response.ok) {
         throw new Error(
@@ -110,6 +109,7 @@ export default function AdminCarouselPage() {
 
   return (
     <div className="max-w-2xl mx-auto py-8">
+      <AdminLoadErrorBanner message={loadError} />
       <h1 className="text-2xl font-bold mb-6">Карусел зураг удирдах</h1>
       <div className="mb-6 flex gap-4 items-center">
         <input

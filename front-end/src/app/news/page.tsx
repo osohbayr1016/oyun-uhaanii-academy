@@ -2,11 +2,13 @@ import { serverFetchJson } from "@/lib/api";
 import NewsGridClient from "./NewsGridClient";
 import NewsletterSignupClient from "./NewsletterSignupClient";
 
-export const revalidate = 300;
+export const dynamic = "force-dynamic";
 
 export default async function NewsPage() {
   const news = await serverFetchJson<any[]>("/api/news", {
-    revalidateSeconds: 300,
+    cache: "no-store",
+    timeoutMs: 30_000,
+    fallbackOnError: [],
   });
 
   return (

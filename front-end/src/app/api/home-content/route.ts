@@ -10,10 +10,10 @@ export async function GET() {
     const response = await fetchWithTimeout(
       `${API_BASE_URL}/api/home-content`,
       {
+        cache: "no-store",
         headers: {
           "Content-Type": "application/json",
         },
-        next: { revalidate: 3600 }, // Cache for 1 hour
         timeoutMs: 6000,
       }
     );
@@ -44,12 +44,14 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
 
+    const auth = request.headers.get("Authorization") ?? "";
     const response = await fetchWithTimeout(
       `${API_BASE_URL}/api/home-content`,
       {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          ...(auth ? { Authorization: auth } : {}),
         },
         body: JSON.stringify(body),
         timeoutMs: 8000,
@@ -82,12 +84,14 @@ export async function PUT(request: NextRequest) {
   try {
     const body = await request.json();
 
+    const auth = request.headers.get("Authorization") ?? "";
     const response = await fetchWithTimeout(
       `${API_BASE_URL}/api/home-content`,
       {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
+          ...(auth ? { Authorization: auth } : {}),
         },
         body: JSON.stringify(body),
         timeoutMs: 8000,

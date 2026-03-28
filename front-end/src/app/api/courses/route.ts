@@ -1,27 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getApiBaseUrl } from "@/lib/env";
+import { serverFetchJson } from "@/lib/serverFetchJson";
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
-    const backendUrl =
-      getApiBaseUrl();
-    const response = await fetch(`${backendUrl}/api/courses`, {
+    const data = await serverFetchJson<unknown[]>("/api/courses", {
       cache: "no-store",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
+      timeoutMs: 25_000,
     });
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(
-        errorData.message || `Backend responded with status: ${response.status}`
-      );
-    }
-
-    const data = await response.json();
-    return NextResponse.json(data);
+    const list = Array.isArray(data) ? data : [];
+    return NextResponse.json(list);
   } catch (error) {
     console.error("Error fetching courses:", error);
     return NextResponse.json(

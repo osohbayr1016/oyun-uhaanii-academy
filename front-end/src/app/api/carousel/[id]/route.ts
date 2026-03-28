@@ -9,8 +9,12 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params;
+    const auth = request.headers.get("Authorization") ?? "";
     const response = await fetch(`${API_BASE_URL}/api/carousel/${id}`, {
       method: "DELETE",
+      headers: {
+        ...(auth ? { Authorization: auth } : {}),
+      },
     });
 
     const data = await response.json();

@@ -28,10 +28,12 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
 
+    const auth = request.headers.get("Authorization") ?? "";
     const response = await fetch(`${API_BASE_URL}/api/products`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        ...(auth ? { Authorization: auth } : {}),
       },
       body: JSON.stringify(body),
     });

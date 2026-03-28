@@ -10,6 +10,8 @@ import {
   Tag,
   Layers,
 } from "lucide-react";
+import { fetchBffJson } from "@/lib/fetchBffWithRetry";
+import AdminLoadErrorBanner from "../_components/AdminLoadErrorBanner";
 
 interface Category {
   id: string;
@@ -31,6 +33,7 @@ const AdminCourseFiltersPage = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [levels, setLevels] = useState<Level[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [showLevelModal, setShowLevelModal] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
@@ -40,33 +43,52 @@ const AdminCourseFiltersPage = () => {
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    fetchCategories();
-    fetchLevels();
+    let cancelled = false;
+    (async () => {
+      setLoading(true);
+      setLoadError(null);
+      try {
+        const [catData, levData] = await Promise.all([
+          fetchBffJson<Category[]>("/api/course-filters/categories"),
+          fetchBffJson<Level[]>("/api/course-filters/levels"),
+        ]);
+        if (!cancelled) {
+          setCategories(Array.isArray(catData) ? catData : []);
+          setLevels(Array.isArray(levData) ? levData : []);
+        }
+      } catch (e) {
+        console.error(e);
+        if (!cancelled) {
+          setLoadError(
+            e instanceof Error ? e.message : "Ангилал/түвшин ачаалж чадсангүй"
+          );
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const fetchCategories = async () => {
     try {
-      const response = await fetch("/api/course-filters/categories");
-      if (response.ok) {
-        const data = await response.json();
-        setCategories(data);
-      }
-    } catch (error) {
-      console.error("Error fetching categories:", error);
-    } finally {
-      setLoading(false);
+      const data = await fetchBffJson<Category[]>(
+        "/api/course-filters/categories"
+      );
+      setCategories(Array.isArray(data) ? data : []);
+    } catch (e) {
+      console.error(e);
     }
   };
 
   const fetchLevels = async () => {
     try {
-      const response = await fetch("/api/course-filters/levels");
-      if (response.ok) {
-        const data = await response.json();
-        setLevels(data);
-      }
-    } catch (error) {
-      console.error("Error fetching levels:", error);
+      const data = await fetchBffJson<Level[]>("/api/course-filters/levels");
+      setLevels(Array.isArray(data) ? data : []);
+    } catch (e) {
+      console.error(e);
     }
   };
 
@@ -244,6 +266,7 @@ const AdminCourseFiltersPage = () => {
       </header>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <AdminLoadErrorBanner message={loadError} />
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Categories Section */}
           <div className="bg-white rounded-lg shadow-md">

@@ -14,6 +14,8 @@ import {
   UserCheck,
   UserX,
 } from "lucide-react";
+import { fetchBffJsonAdmin } from "@/lib/adminFetchBff";
+import AdminLoadErrorBanner from "../_components/AdminLoadErrorBanner";
 
 const AdminUsersPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -23,33 +25,36 @@ const AdminUsersPage = () => {
   const [selectedUser, setSelectedUser] = useState<any>(null);
   const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchUsers = async () => {
+    let cancelled = false;
+    (async () => {
       setLoading(true);
-      setError("");
+      setLoadError(null);
       try {
-        const token = localStorage.getItem("token");
-        const res = await fetch("/api/admin/users", {
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
-        });
-        if (!res.ok) throw new Error("Failed to fetch users");
-        let data = await res.json();
-        // Map isActive to status and add placeholder for lastLogin
-        data = data.map((user: any) => ({
+        const data = await fetchBffJsonAdmin<any[]>("/api/admin/users");
+        let mapped = Array.isArray(data) ? data : [];
+        mapped = mapped.map((user: any) => ({
           ...user,
           status: user.isActive ? "active" : "inactive",
-          lastLogin: user.lastLogin || "-", // Placeholder
+          lastLogin: user.lastLogin || "-",
         }));
-        setUsers(data);
-      } catch (err: any) {
-        setError(err.message || "Unknown error");
+        if (!cancelled) setUsers(mapped);
+      } catch (err: unknown) {
+        if (!cancelled) {
+          setUsers([]);
+          setLoadError(
+            err instanceof Error ? err.message : "Хэрэглэгчдийг ачаалж чадсангүй"
+          );
+        }
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
+    })();
+    return () => {
+      cancelled = true;
     };
-    fetchUsers();
   }, []);
 
   const filteredUsers = users.filter((user) => {
@@ -105,6 +110,7 @@ const AdminUsersPage = () => {
 
   return (
     <>
+      <AdminLoadErrorBanner message={loadError} />
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Хэрэглэгчид</h1>
@@ -186,12 +192,6 @@ const AdminUsersPage = () => {
                   <tr>
                     <td colSpan={6} className="text-center py-8">
                       Уншиж байна...
-                    </td>
-                  </tr>
-                ) : error ? (
-                  <tr>
-                    <td colSpan={6} className="text-center text-red-500">
-                      {error}
                     </td>
                   </tr>
                 ) : filteredUsers.length === 0 ? (

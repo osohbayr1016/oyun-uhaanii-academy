@@ -12,7 +12,7 @@ interface Course {
   duration: string;
   level: string;
   levels: string[];
-  category: string;
+  category?: string | null;
 }
 
 interface CourseCardProps {

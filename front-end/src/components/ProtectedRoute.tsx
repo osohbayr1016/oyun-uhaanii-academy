@@ -17,28 +17,36 @@ export default function ProtectedRoute({
   const router = useRouter();
 
   useEffect(() => {
-    console.log("ProtectedRoute: Checking auth", {
-      loading,
-      user,
-      requireAdmin,
-      isAuthenticated: isAuthenticated(),
-      isAdmin: isAdmin(),
-    });
+    if (process.env.NODE_ENV === "development") {
+      console.log("ProtectedRoute: Checking auth", {
+        loading,
+        user,
+        requireAdmin,
+        isAuthenticated: isAuthenticated(),
+        isAdmin: isAdmin(),
+      });
+    }
 
     if (!loading) {
       if (!isAuthenticated()) {
-        console.log("ProtectedRoute: Not authenticated, redirecting to login");
+        if (process.env.NODE_ENV === "development") {
+          console.log("ProtectedRoute: Not authenticated, redirecting to login");
+        }
         router.push("/login");
         return;
       }
 
       if (requireAdmin && !isAdmin()) {
-        console.log("ProtectedRoute: Not admin, redirecting to home");
+        if (process.env.NODE_ENV === "development") {
+          console.log("ProtectedRoute: Not admin, redirecting to home");
+        }
         router.push("/");
         return;
       }
 
-      console.log("ProtectedRoute: Auth check passed");
+      if (process.env.NODE_ENV === "development") {
+        console.log("ProtectedRoute: Auth check passed");
+      }
     }
   }, [user, loading, requireAdmin, router, isAuthenticated, isAdmin]);
 
@@ -54,15 +62,12 @@ export default function ProtectedRoute({
   }
 
   if (!isAuthenticated()) {
-    console.log("ProtectedRoute: Rendering null - not authenticated");
-    return null; // Will redirect to login
+    return null;
   }
 
   if (requireAdmin && !isAdmin()) {
-    console.log("ProtectedRoute: Rendering null - not admin");
-    return null; // Will redirect to home
+    return null;
   }
 
-  console.log("ProtectedRoute: Rendering children");
   return <>{children}</>;
 }

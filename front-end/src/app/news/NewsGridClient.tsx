@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import { useEffect, useState } from "react";
 
 type NewsArticle = {
   id: string;
@@ -21,7 +22,60 @@ function formatDate(dateString: string) {
   });
 }
 
-export default function NewsGridClient({ news }: { news: NewsArticle[] }) {
+async function fetchNewsList(signal: AbortSignal): Promise<NewsArticle[]> {
+  const r = await fetch("/api/news", { cache: "no-store", signal });
+  if (!r.ok) return [];
+  const data = await r.json();
+  return Array.isArray(data) ? data : [];
+}
+
+export default function NewsGridClient({ news: initial }: { news: NewsArticle[] }) {
+  const [news, setNews] = useState(initial);
+  const [hydrating, setHydrating] = useState(() => initial.length === 0);
+
+  useEffect(() => {
+    if (initial.length > 0) {
+      setNews(initial);
+      setHydrating(false);
+    }
+  }, [initial]);
+
+  useEffect(() => {
+    if (initial.length > 0) return;
+
+    const ac = new AbortController();
+    let cancelled = false;
+
+    (async () => {
+      setHydrating(true);
+      for (let attempt = 1; attempt <= 3; attempt++) {
+        if (cancelled) return;
+        try {
+          const list = await fetchNewsList(ac.signal);
+          if (!cancelled) setNews(list);
+          break;
+        } catch (e) {
+          if (e instanceof Error && e.name === "AbortError") return;
+          if (attempt < 3) {
+            await new Promise((r) => setTimeout(r, 250 * attempt));
+          }
+        }
+      }
+      if (!cancelled) setHydrating(false);
+    })();
+
+    return () => {
+      cancelled = true;
+      ac.abort();
+    };
+  }, [initial.length]);
+
+  if (hydrating && news.length === 0) {
+    return (
+      <div className="text-center py-12 text-gray-600">Ачаалж байна…</div>
+    );
+  }
+
   if (!news || news.length === 0) {
     return (
       <div className="text-center py-12">
@@ -63,7 +117,7 @@ export default function NewsGridClient({ news }: { news: NewsArticle[] }) {
           )}
           <div className="p-6">
             <div className="flex items-center text-sm text-gray-500 mb-3">
-              <span>👤 {article.author.name}</span>
+              <span>👤 {article.author?.name ?? "—"}</span>
               <span className="mx-2">•</span>
               <span>{formatDate(article.publishedAt)}</span>
             </div>

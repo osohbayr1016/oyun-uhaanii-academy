@@ -6,8 +6,10 @@ export async function GET(request: NextRequest) {
     const backendUrl =
       getApiBaseUrl();
     const response = await fetch(`${backendUrl}/api/tournaments`, {
+      cache: "no-store",
       headers: {
         "Content-Type": "application/json",
+        Accept: "application/json",
       },
     });
 
@@ -32,33 +34,29 @@ export async function POST(request: NextRequest) {
     const backendUrl =
       getApiBaseUrl();
 
-    console.log("Frontend API: Sending tournament to backend:", body);
-    console.log("Backend URL:", backendUrl);
-
     const response = await fetch(`${backendUrl}/api/tournaments`, {
       method: "POST",
+      cache: "no-store",
       headers: {
         "Content-Type": "application/json",
+        Accept: "application/json",
         Authorization: request.headers.get("Authorization") || "",
       },
       body: JSON.stringify(body),
     });
 
-    console.log("Frontend API: Backend response status:", response.status);
-
     if (!response.ok) {
       const errorText = await response.text();
-      console.error("Frontend API: Backend error response:", errorText);
+      console.error("Tournament create failed:", response.status, errorText);
       throw new Error(
         `Backend responded with status: ${response.status} - ${errorText}`
       );
     }
 
     const data = await response.json();
-    console.log("Frontend API: Backend success response:", data);
     return NextResponse.json(data);
   } catch (error) {
-    console.error("Frontend API: Error creating tournament:", error);
+    console.error("Error creating tournament:", error);
     return NextResponse.json(
       {
         error: `Failed to create tournament: ${

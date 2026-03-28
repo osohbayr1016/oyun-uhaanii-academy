@@ -1,29 +1,45 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getApiBaseUrl } from "@/lib/env";
 
+const REGISTER_TIMEOUT_MS = 25_000;
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const { email, password, name } = body;
 
-    const response = await fetch(
-      `${
-        getApiBaseUrl()
-      }/api/auth/register`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, password, name }),
-      }
-    );
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), REGISTER_TIMEOUT_MS);
 
-    const data = await response.json();
+    const response = await fetch(`${getApiBaseUrl()}/api/auth/register`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ email, password, name }),
+      cache: "no-store",
+      signal: controller.signal,
+    });
+    clearTimeout(timeout);
+
+    const text = await response.text();
+    let data: { message?: string; code?: string; token?: string; user?: unknown } =
+      {};
+    try {
+      data = text ? (JSON.parse(text) as typeof data) : {};
+    } catch {
+      return NextResponse.json(
+        {
+          error:
+            "Authentication server returned an invalid response. Please try again.",
+        },
+        { status: 502 }
+      );
+    }
 
     if (!response.ok) {
       return NextResponse.json(
-        { error: data.message || "Registration failed" },
+        { error: data.message || "Registration failed", code: data.code },
         { status: response.status }
       );
     }
@@ -31,6 +47,12 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(data);
   } catch (error) {
     console.error("Register API error:", error);
+    if (error instanceof Error && error.name === "AbortError") {
+      return NextResponse.json(
+        { error: "Registration timed out. Please try again." },
+        { status: 504 }
+      );
+    }
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }

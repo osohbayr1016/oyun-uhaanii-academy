@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { useAuth } from "@/lib/auth";
+import { fetchBffJsonAdmin } from "@/lib/adminFetchBff";
+import AdminLoadErrorBanner from "../_components/AdminLoadErrorBanner";
 
 interface NewsletterSubscriber {
   id: string;
@@ -22,6 +24,7 @@ export default function NewsletterAdminPage() {
   const [subscribers, setSubscribers] = useState<NewsletterSubscriber[]>([]);
   const [stats, setStats] = useState<NewsletterStats | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [sendingEmail, setSendingEmail] = useState(false);
   const [emailForm, setEmailForm] = useState({
     subject: "",
@@ -34,18 +37,18 @@ export default function NewsletterAdminPage() {
   }, []);
 
   const fetchSubscribers = async () => {
+    setLoadError(null);
     try {
-      const response = await fetch("/api/admin/newsletter/subscribers", {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setSubscribers(data);
-      }
+      const data = await fetchBffJsonAdmin<NewsletterSubscriber[]>(
+        "/api/admin/newsletter/subscribers"
+      );
+      setSubscribers(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error("Error fetching subscribers:", error);
+      setSubscribers([]);
+      setLoadError(
+        error instanceof Error ? error.message : "Жагсаалт ачаалж чадсангүй"
+      );
     } finally {
       setLoading(false);
     }
@@ -53,15 +56,10 @@ export default function NewsletterAdminPage() {
 
   const fetchStats = async () => {
     try {
-      const response = await fetch("/api/admin/newsletter/stats", {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setStats(data);
-      }
+      const data = await fetchBffJsonAdmin<NewsletterStats>(
+        "/api/admin/newsletter/stats"
+      );
+      setStats(data);
     } catch (error) {
       console.error("Error fetching stats:", error);
     }
@@ -116,6 +114,7 @@ export default function NewsletterAdminPage() {
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <AdminLoadErrorBanner message={loadError} />
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">
             Мэдээний жагсаалт удирдлага
