@@ -1,26 +1,24 @@
 "use client";
 
-export type OfficerSectorStatsValues = {
-  courses: number;
-  tournaments: number;
-  enrollments: number;
-  teachers: number;
-  products: number;
-  years: number;
-};
+import {
+  useState,
+  useEffect,
+  useRef,
+  useImperativeHandle,
+  forwardRef,
+} from "react";
+import type { OfficerSectorStatsValues, OfficerStatKey } from "./types";
+import {
+  STAT_KEYS,
+  parseDraftToNum,
+  valuesToDrafts,
+} from "./officerSectorStatsDraft";
 
-type StatKey = keyof OfficerSectorStatsValues;
+export type { OfficerSectorStatsValues } from "./types";
+
 export type LabelKey = `feature_${1 | 2 | 3 | 4 | 5 | 6}_title`;
 export type OfficerCardLabels = Partial<Record<LabelKey, string>>;
 
-const STAT_KEYS: StatKey[] = [
-  "courses",
-  "tournaments",
-  "enrollments",
-  "teachers",
-  "products",
-  "years",
-];
 const LABEL_KEYS: LabelKey[] = [
   "feature_1_title",
   "feature_2_title",
@@ -38,24 +36,68 @@ const DEFAULT_LABELS = [
   "Ажилласан жил",
 ];
 
-export default function OfficerSectorStatsFields({
-  values,
-  labels,
-  onValueChange,
-  onLabelChange,
-}: {
+export type OfficerSectorStatsFieldsHandle = {
+  /** Returns merged stats for immediate use (e.g. fetch body); parent state updates async */
+  flushDraftsToParent: () => OfficerSectorStatsValues;
+};
+
+type Props = {
   values: OfficerSectorStatsValues;
   labels: OfficerCardLabels;
   onValueChange: (next: OfficerSectorStatsValues) => void;
   onLabelChange: (key: LabelKey, value: string) => void;
-}) {
+};
+
+const OfficerSectorStatsFields = forwardRef<
+  OfficerSectorStatsFieldsHandle,
+  Props
+>(function OfficerSectorStatsFields(
+  { values, labels, onValueChange, onLabelChange },
+  ref
+) {
+  const [drafts, setDrafts] = useState<Record<OfficerStatKey, string>>(() =>
+    valuesToDrafts(values)
+  );
+  const lastSyncedJson = useRef<string>("");
+
+  useEffect(() => {
+    const j = JSON.stringify(values);
+    if (j !== lastSyncedJson.current) {
+      lastSyncedJson.current = j;
+      setDrafts(valuesToDrafts(values));
+    }
+  }, [values]);
+
+  const draftsRef = useRef(drafts);
+  draftsRef.current = drafts;
+  const valuesRef = useRef(values);
+  valuesRef.current = values;
+
+  const commitKey = (key: OfficerStatKey, raw: string) => {
+    onValueChange({
+      ...valuesRef.current,
+      [key]: parseDraftToNum(raw),
+    });
+  };
+
+  useImperativeHandle(ref, () => ({
+    flushDraftsToParent() {
+      const next: OfficerSectorStatsValues = { ...valuesRef.current };
+      for (const k of STAT_KEYS) {
+        next[k] = parseDraftToNum(draftsRef.current[k] ?? "");
+      }
+      onValueChange(next);
+      return next;
+    },
+  }));
+
   return (
     <div className="bg-white rounded-lg shadow p-6">
       <h2 className="text-xl font-semibold text-gray-900 mb-1">
         ОФИЦЕР САЛБАРЫН АМЖИЛТ — карт засах
       </h2>
       <p className="text-sm text-gray-500 mb-5">
-        Картын гарчиг болон тоог хамт засна. Тоон оролтод сум харагдахгүй.
+        Картын гарчиг болон тоог хамт засна. Тоог бүрэн устгаад дахин бичиж болно.
       </p>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {STAT_KEYS.map((key, i) => (
@@ -83,18 +125,19 @@ export default function OfficerSectorStatsFields({
                 Тоо
               </label>
               <input
-                type="number"
-                min={0}
-                step={1}
-                value={values[key]}
+                type="text"
+                inputMode="numeric"
+                autoComplete="off"
+                value={drafts[key]}
                 onChange={(e) => {
-                  const n = parseInt(e.target.value, 10);
-                  onValueChange({
-                    ...values,
-                    [key]: Number.isFinite(n) ? Math.max(0, n) : 0,
-                  });
+                  const t = e.target.value;
+                  if (t === "" || /^\d+$/.test(t)) {
+                    setDrafts((d) => ({ ...d, [key]: t }));
+                  }
                 }}
-                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                onBlur={(e) => commitKey(key, e.target.value)}
+                placeholder="0"
+                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500 tabular-nums"
               />
             </div>
           </div>
@@ -102,4 +145,6 @@ export default function OfficerSectorStatsFields({
       </div>
     </div>
   );
-}
+});
+
+export default OfficerSectorStatsFields;

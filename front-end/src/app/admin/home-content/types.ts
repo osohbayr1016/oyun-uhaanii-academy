@@ -1,3 +1,14 @@
+export type OfficerSectorStatsValues = {
+  courses: number;
+  tournaments: number;
+  enrollments: number;
+  teachers: number;
+  products: number;
+  years: number;
+};
+
+export type OfficerStatKey = keyof OfficerSectorStatsValues;
+
 export interface HomeContent {
   hero_title?: string;
   hero_subtitle?: string;

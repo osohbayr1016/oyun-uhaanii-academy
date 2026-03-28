@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { ArrowLeft, Save, Home } from "lucide-react";
 import { bearerHeaders } from "@/lib/authHeaders";
@@ -9,6 +9,7 @@ import OfficerSectorStatsFields, {
   type OfficerSectorStatsValues,
   type OfficerCardLabels,
   type LabelKey,
+  type OfficerSectorStatsFieldsHandle,
 } from "./OfficerSectorStatsFields";
 import { parseOfficerStatsPayload } from "./parseOfficerStats";
 import HeroFields from "./HeroFields";
@@ -24,6 +25,7 @@ const AdminHomeContentPage = () => {
   const [officerStats, setOfficerStats] = useState<OfficerSectorStatsValues>({
     courses: 0, tournaments: 0, enrollments: 0, teachers: 0, products: 0, years: 0,
   });
+  const officerStatsRef = useRef<OfficerSectorStatsFieldsHandle>(null);
 
   useEffect(() => { fetchData(); }, []);
 
@@ -58,13 +60,15 @@ const AdminHomeContentPage = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const statsPayload =
+      officerStatsRef.current?.flushDraftsToParent() ?? officerStats;
     setSaving(true);
     setMessage(null);
     try {
       const statsRes = await fetch("/api/home-content/officer-stats", {
         method: "PUT",
         headers: bearerHeaders({ "Content-Type": "application/json" }),
-        body: JSON.stringify(officerStats),
+        body: JSON.stringify(statsPayload),
       });
       if (!statsRes.ok) {
         const err = await statsRes.json().catch(() => ({}));
@@ -123,6 +127,7 @@ const AdminHomeContentPage = () => {
 
         <form onSubmit={handleSubmit} className="space-y-8">
           <OfficerSectorStatsFields
+            ref={officerStatsRef}
             values={officerStats}
             labels={cardLabels}
             onValueChange={setOfficerStats}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { ArrowLeft, Save, Home } from "lucide-react";
 import { bearerHeaders } from "@/lib/authHeaders";
@@ -9,6 +9,7 @@ import OfficerSectorStatsFields, {
   type OfficerSectorStatsValues,
   type OfficerCardLabels,
   type LabelKey,
+  type OfficerSectorStatsFieldsHandle,
 } from "../home-content/OfficerSectorStatsFields";
 import { parseOfficerStatsPayload } from "../home-content/parseOfficerStats";
 
@@ -27,6 +28,7 @@ export default function AdminOfficerStatsPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const officerStatsRef = useRef<OfficerSectorStatsFieldsHandle>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -60,6 +62,8 @@ export default function AdminOfficerStatsPage() {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
+    const statsPayload =
+      officerStatsRef.current?.flushDraftsToParent() ?? stats;
     setSaving(true);
     setMessage(null);
     try {
@@ -67,7 +71,7 @@ export default function AdminOfficerStatsPage() {
         fetch("/api/home-content/officer-stats", {
           method: "PUT",
           headers: bearerHeaders({ "Content-Type": "application/json" }),
-          body: JSON.stringify(stats),
+          body: JSON.stringify(statsPayload),
         }),
         fetch("/api/home-content", {
           method: "PUT",
@@ -115,6 +119,7 @@ export default function AdminOfficerStatsPage() {
 
       <form onSubmit={handleSave} className="space-y-6">
         <OfficerSectorStatsFields
+          ref={officerStatsRef}
           values={stats}
           labels={labels}
           onValueChange={setStats}
