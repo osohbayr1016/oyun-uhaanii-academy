@@ -123,8 +123,8 @@ export async function updateOfficerSectorStatsFromRequest(
   const prisma = getPrisma();
   const clamp = (v: unknown): number => {
     const n = typeof v === "number" ? v : parseInt(String(v ?? ""), 10);
-    if (!Number.isFinite(n)) return 1;
-    return clampMinOne(n);
+    if (!Number.isFinite(n)) return 0;
+    return clampNonNegative(n);
   };
 
   const raw = {

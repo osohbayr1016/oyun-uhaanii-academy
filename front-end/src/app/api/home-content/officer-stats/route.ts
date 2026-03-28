@@ -2,39 +2,50 @@ import { NextRequest, NextResponse } from "next/server";
 import { fetchWithTimeout } from "@/lib/fetchWithTimeout";
 import { getApiBaseUrl } from "@/lib/env";
 
+function safeParseJson(text: string): unknown {
+  if (!text.trim()) return undefined;
+  try { return JSON.parse(text) as unknown; } catch { return undefined; }
+}
+
+function getMessage(parsed: unknown, fallback: string): string {
+  if (parsed && typeof parsed === "object" && parsed !== null && "message" in parsed) {
+    const m = (parsed as { message: unknown }).message;
+    if (typeof m === "string") return m;
+  }
+  return fallback;
+}
+
 export async function PUT(request: NextRequest) {
   try {
     const body = await request.json();
     const auth = request.headers.get("Authorization") ?? "";
-    const url = `${getApiBaseUrl()}/api/home-content/officer-stats`;
-    const response = await fetchWithTimeout(url, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        ...(auth ? { Authorization: auth } : {}),
-      },
-      body: JSON.stringify(body),
-      timeoutMs: 30_000,
-    });
+    const res = await fetchWithTimeout(
+      `${getApiBaseUrl()}/api/home-content/officer-stats`,
+      {
+        method: "PUT",
+        cache: "no-store",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          ...(auth ? { Authorization: auth } : {}),
+        },
+        body: JSON.stringify(body),
+        timeoutMs: 30_000,
+      }
+    );
+    const text = await res.text();
+    const parsed = safeParseJson(text);
 
-    const text = await response.text();
-    let data: { message?: string } = {};
-    try {
-      data = text ? (JSON.parse(text) as { message?: string }) : {};
-    } catch {
+    if (!res.ok) {
+      console.error("officer-stats PUT upstream:", res.status, text.slice(0, 500));
       return NextResponse.json(
-        { message: "Invalid response from API" },
-        { status: 502 }
+        { message: getMessage(parsed, "Failed to update officer sector stats") },
+        { status: res.status }
       );
     }
-
-    if (!response.ok) {
-      return NextResponse.json(data, { status: response.status });
-    }
-
-    return NextResponse.json(data);
-  } catch (error) {
-    console.error("Error updating officer sector stats:", error);
+    return NextResponse.json(parsed ?? {});
+  } catch (e) {
+    console.error("Error updating officer sector stats:", e);
     return NextResponse.json(
       { message: "Failed to update officer sector stats" },
       { status: 500 }
