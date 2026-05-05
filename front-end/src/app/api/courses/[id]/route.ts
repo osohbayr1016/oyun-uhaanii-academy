@@ -16,14 +16,22 @@ function getMessage(parsed: unknown, fallback: string): string {
 }
 
 export async function GET(
-  _req: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await params;
+    const auth = request.headers.get("Authorization") ?? "";
     const res = await fetchWithTimeout(
       `${getApiBaseUrl()}/api/courses/${encodeURIComponent(id)}`,
-      { cache: "no-store", headers: { Accept: "application/json" }, timeoutMs: 30_000 }
+      {
+        cache: "no-store",
+        headers: {
+          Accept: "application/json",
+          ...(auth ? { Authorization: auth } : {}),
+        },
+        timeoutMs: 30_000,
+      }
     );
     const text = await res.text();
     const parsed = safeParseJson(text);

@@ -6,9 +6,35 @@ function shouldRetryStatus(status: number): boolean {
   return status === 429 || status === 503 || status >= 500;
 }
 
+function getStoredToken(): string | null {
+  if (typeof window === "undefined") return null;
+  try {
+    return localStorage.getItem("token");
+  } catch {
+    return null;
+  }
+}
+
+/** Headers that should not be auto-overridden if the caller set them already. */
+function hasHeader(init: RequestInit | undefined, name: string): boolean {
+  const h = init?.headers;
+  if (!h) return false;
+  const lc = name.toLowerCase();
+  if (h instanceof Headers) return h.has(name);
+  if (Array.isArray(h)) return h.some(([k]) => k.toLowerCase() === lc);
+  if (typeof h === "object") {
+    return Object.keys(h as Record<string, string>).some(
+      (k) => k.toLowerCase() === lc
+    );
+  }
+  return false;
+}
+
 /**
  * Same-origin `/api/*` BFF calls from the browser with retries for cold starts
- * and transient 5xx from the Worker.
+ * and transient 5xx from the Worker. Auto-attaches `Authorization` from
+ * localStorage so signed-in admins bypass the edge cache and always see fresh
+ * data after writes.
  */
 export async function fetchBffJson<T>(
   path: string,
@@ -18,12 +44,20 @@ export async function fetchBffJson<T>(
   const maxAttempts = opts?.maxAttempts ?? 5;
   let lastErr = new Error("fetch failed");
 
+  const finalInit: RequestInit = { ...init, cache: "no-store" };
+  if (!hasHeader(init, "Authorization")) {
+    const token = getStoredToken();
+    if (token) {
+      finalInit.headers = {
+        ...(init?.headers as Record<string, string> | undefined),
+        Authorization: `Bearer ${token}`,
+      };
+    }
+  }
+
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
-      const response = await fetch(path, {
-        ...init,
-        cache: "no-store",
-      });
+      const response = await fetch(path, finalInit);
       if (!response.ok) {
         if (shouldRetryStatus(response.status) && attempt < maxAttempts) {
           await sleep(300 * attempt);

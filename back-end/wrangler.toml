@@ -19,6 +19,8 @@ bucket_name = "oyun-uhaanii-media"
 
 # Hyperdrive: connection pool to your Postgres (create with:
 #   npx wrangler hyperdrive create <name> --connection-string="$DATABASE_URL"
+# Caching settings live on the Hyperdrive config itself; tune with:
+#   npx wrangler hyperdrive update <id> --max-age=10 --swr=5
 [[hyperdrive]]
 binding = "HYPERDRIVE"
 id = "2cbab3a14f294c559751d6e591cd39e8"

@@ -2,13 +2,15 @@ import { NextRequest, NextResponse } from "next/server";
 import { fetchWithTimeout } from "@/lib/fetchWithTimeout";
 import { getApiBaseUrl } from "@/lib/env";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    const auth = request.headers.get("Authorization") ?? "";
     const res = await fetchWithTimeout(`${getApiBaseUrl()}/api/news`, {
       cache: "no-store",
       headers: {
         Accept: "application/json",
         "Content-Type": "application/json",
+        ...(auth ? { Authorization: auth } : {}),
       },
       timeoutMs: 30_000,
     });
