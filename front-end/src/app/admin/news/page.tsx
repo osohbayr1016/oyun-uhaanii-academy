@@ -5,6 +5,7 @@ import { useAuth } from "@/lib/auth";
 import { Plus, Edit, Trash2, Eye } from "lucide-react";
 import { fetchBffJson } from "@/lib/fetchBffWithRetry";
 import AdminLoadErrorBanner from "../_components/AdminLoadErrorBanner";
+import AdminR2ImageUpload from "../_components/AdminR2ImageUpload";
 
 interface NewsArticle {
   id: string;
@@ -211,6 +212,12 @@ export default function AdminNewsPage() {
                     }
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="https://example.com/image.jpg"
+                  />
+                  <AdminR2ImageUpload
+                    prefix="news"
+                    onUploaded={(url) =>
+                      setFormData((f) => ({ ...f, imageUrl: url }))
+                    }
                   />
                 </div>
 

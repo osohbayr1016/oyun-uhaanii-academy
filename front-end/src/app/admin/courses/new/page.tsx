@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { bearerHeaders } from "@/lib/authHeaders";
 import { fetchBffJson } from "@/lib/fetchBffWithRetry";
+import AdminR2ImageUpload from "../../_components/AdminR2ImageUpload";
 
 const AddCourse = () => {
   const [form, setForm] = useState({
@@ -154,6 +155,10 @@ const AddCourse = () => {
         className="w-full border p-2 rounded"
         required
       />
+      <AdminR2ImageUpload
+        prefix="courses"
+        onUploaded={(url) => setForm((prev) => ({ ...prev, imageUrl: url }))}
+      />
 
       <input
         type="number"
@@ -261,6 +266,10 @@ const AddCourse = () => {
         value={form.heroImage}
         onChange={handleChange}
         className="w-full border p-2 rounded"
+      />
+      <AdminR2ImageUpload
+        prefix="courses"
+        onUploaded={(url) => setForm((prev) => ({ ...prev, heroImage: url }))}
       />
 
       <textarea

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { bearerHeaders } from "@/lib/authHeaders";
 import { fetchBffJson } from "@/lib/fetchBffWithRetry";
 import AdminLoadErrorBanner from "../_components/AdminLoadErrorBanner";
+import AdminR2ImageUpload from "../_components/AdminR2ImageUpload";
 
 interface CarouselImage {
   id: string;
@@ -111,6 +112,13 @@ export default function AdminCarouselPage() {
     <div className="max-w-2xl mx-auto py-8">
       <AdminLoadErrorBanner message={loadError} />
       <h1 className="text-2xl font-bold mb-6">Карусел зураг удирдах</h1>
+      <div className="mb-6 space-y-2">
+        <AdminR2ImageUpload
+          prefix="carousel"
+          onUploaded={(url) => setImageUrl(url)}
+        />
+        <p className="text-sm text-gray-500">Эсвэл гадаад линк оруулна уу:</p>
+      </div>
       <div className="mb-6 flex gap-4 items-center">
         <input
           type="text"

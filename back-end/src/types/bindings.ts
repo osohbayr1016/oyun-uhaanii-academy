@@ -2,6 +2,8 @@
 
 export type WorkerBindings = {
   HYPERDRIVE: Hyperdrive;
+  /** Public images (R2); optional so non-Worker test envs can omit it */
+  MEDIA_BUCKET?: R2Bucket;
   JWT_SECRET?: string;
   /** One origin or comma-separated list (e.g. www + apex domain). */
   CORS_ORIGIN?: string;

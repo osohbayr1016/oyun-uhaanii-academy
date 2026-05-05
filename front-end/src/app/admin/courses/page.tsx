@@ -19,6 +19,7 @@ import {
 import { bearerHeaders } from "@/lib/authHeaders";
 import { fetchBffJson } from "@/lib/fetchBffWithRetry";
 import AdminListThumbnail from "../_components/AdminListThumbnail";
+import AdminR2ImageUpload from "../_components/AdminR2ImageUpload";
 
 interface Course {
   id: string;
@@ -651,6 +652,12 @@ const AdminCoursesPage = () => {
                     onChange={handleInputChange}
                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                   />
+                  <AdminR2ImageUpload
+                    prefix="courses"
+                    onUploaded={(url) =>
+                      setFormData((f) => ({ ...f, imageUrl: url }))
+                    }
+                  />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
@@ -733,6 +740,12 @@ const AdminCoursesPage = () => {
                     value={formData.heroImage}
                     onChange={handleInputChange}
                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  />
+                  <AdminR2ImageUpload
+                    prefix="courses"
+                    onUploaded={(url) =>
+                      setFormData((f) => ({ ...f, heroImage: url }))
+                    }
                   />
                 </div>
                 <div>
@@ -861,6 +874,12 @@ const AdminCoursesPage = () => {
                     onChange={handleInputChange}
                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                   />
+                  <AdminR2ImageUpload
+                    prefix="courses"
+                    onUploaded={(url) =>
+                      setFormData((f) => ({ ...f, imageUrl: url }))
+                    }
+                  />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
@@ -943,6 +962,12 @@ const AdminCoursesPage = () => {
                     value={formData.heroImage}
                     onChange={handleInputChange}
                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  />
+                  <AdminR2ImageUpload
+                    prefix="courses"
+                    onUploaded={(url) =>
+                      setFormData((f) => ({ ...f, heroImage: url }))
+                    }
                   />
                 </div>
                 <div>

@@ -12,9 +12,11 @@ import aboutRoutes from "../routes/aboutRoutes";
 import carouselRoutes from "../routes/carouselRoutes";
 import clubRoutes from "../routes/clubRoutes";
 import courseFiltersRoutes from "../routes/courseFiltersRoutes";
+import uploadRoutes from "../routes/uploadRoutes";
 import type { AppEnv } from "./appEnv";
 
 export function mountApiRoutes(app: Hono<AppEnv>) {
+  app.route("/api/uploads", uploadRoutes);
   app.route("/api/products", productRoutes);
   app.route("/api/auth", authRoutes);
   app.route("/api/news", newsRoutes);

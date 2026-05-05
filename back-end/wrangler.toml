@@ -13,6 +13,10 @@ compatibility_flags = [ "nodejs_compat" ]
 
 workers_dev = true
 
+[[r2_buckets]]
+binding = "MEDIA_BUCKET"
+bucket_name = "oyun-uhaanii-media"
+
 # Hyperdrive: connection pool to your Postgres (create with:
 #   npx wrangler hyperdrive create <name> --connection-string="$DATABASE_URL"
 [[hyperdrive]]
